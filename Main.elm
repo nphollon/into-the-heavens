@@ -4,15 +4,22 @@ import Array as A
 import List as L
 import Color
 
-main = Graphics.collage 360 180 (cartography)
-  |> Element.color Color.white
-  |> Element.container 600 200 Element.middle
-  |> Element.color Color.black
-  |> Element.container 620 220 Element.middle
+main =
+  let 
+    width = 600
+    height = 400
+    xBox = 900
+    yBox = 450
+    padding = 20
+  in Graphics.collage width height (cartography (width, height))
+    |> Element.color Color.white
+    |> Element.container xBox yBox Element.middle
+    |> Element.color Color.black
+    |> Element.container (xBox + padding) (yBox + padding) Element.middle
 
-cartography : List Graphics.Form
-cartography = let
-  toForm (curve, color) = L.map fromRaDec curve |> Graphics.path |> Graphics.traced (Graphics.solid color)
+cartography : (Float, Float) -> List Graphics.Form
+cartography bounds = let
+  toForm (curve, color) = L.map (fromRaDec bounds) curve |> Graphics.path |> Graphics.traced (Graphics.solid color)
   in L.map toForm [
     (parallel 0, Color.blue),
     (parallel 23.5, Color.red),
@@ -27,4 +34,9 @@ parallel declination = A.initialize 24 (\i -> (toFloat i, declination)) |> A.toL
 meridian : Float -> List (Float, Float)
 meridian rightAscension = A.initialize 19 (\i -> (rightAscension, 10 * toFloat i - 90)) |> A.toList
 
-fromRaDec (ra, dec) = (ra * 15 - 180, dec)
+fromRaDec : (Float, Float) -> (Float, Float) -> (Float, Float)
+fromRaDec (width, height) (ra, dec) =
+  let
+    x = (ra / 24 - 0.5) * width
+    y = dec / 180 * height
+  in (x, y)
