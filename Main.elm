@@ -12,15 +12,19 @@ main = Graphics.collage 360 180 (cartography)
 
 cartography : List Graphics.Form
 cartography = let
-  toForm (curve, color) = L.map fromRaDec curve |> plotCurve color
-  in L.map toForm [ (equator, Color.blue), (primeMeridian, Color.blue), (cancer, Color.red), (capricorn, Color.red) ]
+  toForm (curve, color) = L.map fromRaDec curve |> Graphics.path |> Graphics.traced (Graphics.solid color)
+  in L.map toForm [
+    (parallel 0, Color.blue),
+    (parallel 23.5, Color.red),
+    (parallel -23.5, Color.red),
+    (meridian 6, Color.blue),
+    (meridian 18, Color.red)
+  ]
 
-equator = A.initialize 24 (\i -> (toFloat i, 0.0)) |> A.toList
-primeMeridian = A.initialize 19 (\i -> (12, 10 * toFloat i - 90)) |> A.toList
-cancer = A.initialize 24 (\i -> (toFloat i, 23.5)) |> A.toList
-capricorn = A.initialize 24 (\i -> (toFloat i, -23.5)) |> A.toList
+parallel : Float -> List (Float, Float)
+parallel declination = A.initialize 24 (\i -> (toFloat i, declination)) |> A.toList
+
+meridian : Float -> List (Float, Float)
+meridian rightAscension = A.initialize 19 (\i -> (rightAscension, 10 * toFloat i - 90)) |> A.toList
 
 fromRaDec (ra, dec) = (ra * 15 - 180, dec)
-
-plotCurve : Color.Color -> List (Float, Float) -> Graphics.Form
-plotCurve color = Graphics.path >> Graphics.traced (Graphics.solid color)
