@@ -4,12 +4,17 @@ import Array as A
 import List as L
 import Color
 
-main = canvas <| cartography (600, 400) <| [
+type alias Dimensions = (Float, Float)
+type WorldPoint = WPt (Float, Float)
+type CameraPoint = CPt (Float, Float)
+type alias ScreenPoint = (Float, Float)
+
+main = canvas <| cartography (600, 400) -4 <| [
     (parallel 0, Color.blue),
     (parallel 23.5, Color.red),
     (parallel -23.5, Color.red),
-    (meridian 6, Color.blue),
-    (meridian 18, Color.red)
+    (meridian 0, Color.blue),
+    (meridian 12, Color.red)
   ]
 
 canvas : List Graphics.Form -> Element.Element
@@ -26,18 +31,29 @@ canvas forms =
     |> Element.color Color.black
     |> Element.container (xBox + padding) (yBox + padding) Element.middle
 
-cartography : (Float, Float) -> List (List (Float, Float), Color.Color) -> List Graphics.Form
-cartography bounds = L.map (\(curve, color) -> L.map (fromRaDec bounds) curve |> Graphics.path |> Graphics.traced (Graphics.solid color))
-
-parallel : Float -> List (Float, Float)
-parallel declination = A.initialize 24 (\i -> (toFloat i, declination)) |> A.toList
-
-meridian : Float -> List (Float, Float)
-meridian rightAscension = A.initialize 19 (\i -> (rightAscension, 10 * toFloat i - 90)) |> A.toList
-
-fromRaDec : (Float, Float) -> (Float, Float) -> (Float, Float)
-fromRaDec (width, height) (ra, dec) =
+cartography : Dimensions -> Float -> List (List WorldPoint, Color.Color) -> List Graphics.Form
+cartography bounds azimuth = 
   let
-    x = (ra / 24 - 0.5) * width
-    y = dec / 180 * height
+    transform = toCamera azimuth >> toScreen bounds
+    drawCurve (curve, color) = L.map transform curve |> Graphics.path |> Graphics.traced (Graphics.solid color)
+  in L.map drawCurve
+
+parallel : Float -> List WorldPoint
+parallel declination = A.initialize 12 (\i -> WPt (toFloat i, declination)) |> A.toList
+
+meridian : Float -> List WorldPoint
+meridian rightAscension = A.initialize 19 (\i -> WPt (rightAscension, 10 * toFloat i - 90)) |> A.toList
+
+toCamera : Float -> WorldPoint -> CameraPoint
+toCamera azimuth (WPt (ra, dec)) = 
+  let
+    lon = degrees <| (ra - azimuth) * 15
+    lat = degrees dec
+  in CPt (lon, lat)
+
+toScreen : Dimensions -> CameraPoint -> ScreenPoint
+toScreen (width, height) (CPt (lon, lat)) =
+  let
+    x = (lon / pi - 1) * 0.5 * width
+    y = lat / pi * height
   in (x, y)
