@@ -1,6 +1,7 @@
 import Graphics.Element as Element
 import Graphics.Collage as Graphics
 import Array as A
+import List as L
 import Color
 
 main = Graphics.collage 360 180 (mapForms)
@@ -10,11 +11,15 @@ main = Graphics.collage 360 180 (mapForms)
   |> Element.container 620 220 Element.middle
 
 mapForms : List Graphics.Form
-mapForms = A.initialize 24 (\i -> plot (toFloat i, 0.0)) |> A.toList
+mapForms = [ L.map fromRaDec equator |> plotCurve Color.blue ]
 
-plot : (Float, Float) -> Graphics.Form
-plot (ra, dec) = 
+equator : List (Float, Float)
+equator = 
   let
-    x = ra * 15 - 180
-    y = dec
-  in Graphics.circle 5 |> Graphics.filled Color.blue |> Graphics.move (x, y)
+    toRaDec i = (toFloat i, 0.0)
+  in A.initialize 24 toRaDec |> A.toList
+
+fromRaDec (ra, dec) = (ra * 15 - 180, dec)
+
+plotCurve : Color.Color -> List (Float, Float) -> Graphics.Form
+plotCurve color = Graphics.path >> Graphics.traced (Graphics.solid color)
