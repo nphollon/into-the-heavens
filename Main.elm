@@ -11,13 +11,19 @@ main = Graphics.collage 360 180 (mapForms)
   |> Element.container 620 220 Element.middle
 
 mapForms : List Graphics.Form
-mapForms = [ L.map fromRaDec equator |> plotCurve Color.blue ]
+mapForms = [
+  L.map fromRaDec equator |> plotCurve Color.blue,
+  L.map fromRaDec primeMeridian |> plotCurve Color.red
+  ]
 
 equator : List (Float, Float)
 equator = 
   let
     toRaDec i = (toFloat i, 0.0)
   in A.initialize 24 toRaDec |> A.toList
+
+primeMeridian : List (Float, Float)
+primeMeridian = A.initialize 19 (\i -> (12, 10 * toFloat i - 90)) |> A.toList
 
 fromRaDec (ra, dec) = (ra * 15 - 180, dec)
 
