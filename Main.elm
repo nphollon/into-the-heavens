@@ -37,8 +37,12 @@ entities = [
     (parallel 0, Color.blue),
     (parallel 23.5, Color.red),
     (parallel -23.5, Color.red),
+    (parallel 66.5, Color.red),
+    (parallel -66.5, Color.red),
     (meridian 0, Color.blue),
-    (meridian 12, Color.red),
+    (meridian 12, Color.blue),
+    (meridian 6, Color.red),
+    (meridian 18, Color.red),
     ([skyPoint 1 15, skyPoint 3 30, skyPoint 7 50], Color.black)
   ]
 
