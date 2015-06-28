@@ -45,8 +45,9 @@ entities = [
 main = graphics << (\t -> skyPoint (t * 0.01) (t * 0.01)) <~ Time.every (Time.millisecond * 10)
 
 graphics : CameraPosition -> Element
-graphics cameraPosition = project cameraPosition entities
-  |> tile (degrees 360, degrees 180)
+graphics cameraPosition = 
+  project cameraPosition entities
+  |> split
   |> plot (600, 400)
   |> render (600, 400)
   |> frame (900, 450)
@@ -77,6 +78,36 @@ toScreen (width, height) (lon, lat) =
     y = lat * height * 2 / tau
   in (x, y)
 
+split : List Image -> List Image
+split = L.concatMap splitImage
+
+splitImage : Image -> List Image
+splitImage (path, color) = splitPath path |> L.map (\p -> (p, color))
+
+splitPath : List ScreenPoint -> List (List ScreenPoint)
+splitPath points = 
+  let
+    prevPoints = (L.take 1 points) ++ points
+    jumps = L.map2 markJumps prevPoints points
+  in splitAtJumps jumps
+
+splitAtJumps : List (a, Bool) -> List (List a)
+splitAtJumps = 
+  let
+    addElement (x, mark) (inProgress, finished) = case mark of
+      True -> ([], (x :: inProgress) :: finished)
+      False -> (x :: inProgress, finished)
+    finalize (inProgress, finished) = inProgress :: finished
+  in L.foldr addElement ([], []) >> finalize
+
+addElement : (a, Bool) -> (List a, List (List a)) -> (List a, List (List a))
+addElement (x, mark) (inProgress, finished) = case mark of
+  True -> ([], (x :: inProgress) :: finished)
+  False -> (x :: inProgress, finished)
+
+markJumps : ScreenPoint -> ScreenPoint -> (ScreenPoint, Bool)
+markJumps a b = (b, round ((fst a - fst b) / tau) /= 0)
+
 project : CameraPosition -> List Entity -> List Image
 project center = L.map (\(pts, color) -> (L.map (toCamera center) pts, color))
 
@@ -88,25 +119,12 @@ toCamera (lon, lat) (ra, dec) =
     az = atan2 (sin hour) ((cos hour) * (sin lat) - (tan dec) * (cos lat))
   in (az, alt)
 
-tile : CameraDimensions -> List Image -> List Image
-tile _ = L.concatMap tileImage
-
-tileImage : Image -> List Image
-tileImage (pts, color) =
-  let
-    addIfEmpty key f dict = if D.member key dict then dict else D.insert key (f key) dict
-    offset dx = L.map (\(x, y) -> (x - dx, y))
-    roundTurns x = round (x / tau)
-    unroundTurns i = toFloat i * tau
-    addImage (x,_) = addIfEmpty (roundTurns x) unroundTurns
-  in L.foldl addImage D.empty pts |> D.values |> L.map (\dx -> (offset dx pts, color))
-
 skyPoint : Float -> Float -> WorldPoint
 skyPoint ra dec =
   (turns ra / 24, degrees dec)
 
 parallel : Float -> List WorldPoint
-parallel declination = A.initialize 25 (\i -> skyPoint (toFloat i) declination) |> A.toList
+parallel declination = A.initialize 500 (\i -> skyPoint (0.05 * toFloat i) declination) |> A.toList
 
 meridian : Float -> List WorldPoint
-meridian rightAscension = A.initialize 19 (\i -> skyPoint rightAscension (10 * toFloat i - 90)) |> A.toList
+meridian rightAscension = A.initialize 500 (\i -> skyPoint rightAscension (toFloat i * 0.36 - 90)) |> A.toList
