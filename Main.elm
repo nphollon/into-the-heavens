@@ -25,7 +25,6 @@ transform the camera coordinates to screen coordinates
 tau = turns 1
 
 type alias CameraPosition = WorldPoint
-type alias CameraDimensions = (Float, Float)
 type alias Dimensions = (Int, Int)
 type alias WorldPoint = (Float, Float)
 type alias ScreenPoint = (Float, Float)
@@ -46,15 +45,12 @@ entities = [
     ([skyPoint 1 15, skyPoint 3 30, skyPoint 7 50], Color.black)
   ]
 
-main = graphics << (\t -> skyPoint (t * 0.01) (t * 0.01)) <~ Time.every (Time.millisecond * 10)
+main = graphics (skyPoint 0 0) -- << (\t -> skyPoint (t * 0.01) (t * 0.01)) <~ Time.every (Time.millisecond * 10)
 
 graphics : CameraPosition -> Element
 graphics cameraPosition = 
-  project cameraPosition entities
-  |> split
-  |> plot (600, 400)
-  |> render (600, 400)
-  |> frame (900, 450)
+  let grid dim = project cameraPosition entities |> split |> plot dim
+  in render (600, 400) [ grid ] |> frame (900, 450)
 
 frame : Dimensions -> Element -> Element
 frame (width, height) = 
@@ -63,23 +59,23 @@ frame (width, height) =
     >> Element.color Color.black
     >> Element.container (width + padding) (height + padding) Element.middle
 
-render : Dimensions -> List Form -> Element
-render (width, height) = Graphics.collage width height >> Element.color Color.white
+render : Dimensions -> List (Dimensions -> Form) -> Element
+render (width, height) layers = L.map (flip identity (width, height)) layers |> Graphics.collage width height |> Element.color Color.white
 
-plot : CameraDimensions -> List Image -> List Form
-plot dim = L.map (scale dim >> toForm)
+plot : Dimensions -> List Image -> Form
+plot dim = L.map (scale dim >> toForm) >> Graphics.group
 
 toForm : Image -> Form
 toForm (pts, color) = Graphics.traced (Graphics.solid color) pts
 
-scale : CameraDimensions -> Image -> Image
+scale : Dimensions -> Image -> Image
 scale dim (pts, color) = (L.map (toScreen dim) pts, color)
 
-toScreen : CameraDimensions -> ScreenPoint -> ScreenPoint
+toScreen : Dimensions -> ScreenPoint -> ScreenPoint
 toScreen (width, height) (lon, lat) =
   let
-    x = lon * width / tau
-    y = lat * height * 2 / tau
+    x = lon * (toFloat width) / tau
+    y = lat * (toFloat height) * 2 / tau
   in (x, y)
 
 split : List Image -> List Image
