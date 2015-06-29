@@ -119,7 +119,7 @@ toCamera : CameraPosition -> WorldPoint -> ScreenPoint
 toCamera (lon, lat) (ra, dec) = 
   let
     hour = lon - ra
-    alt = asin (sin lat) * (sin dec) + (cos lat) * (cos dec) * (cos hour)
+    alt = asin ((sin lat) * (sin dec) + (cos lat) * (cos dec) * (cos hour))
     az = atan2 (sin hour) ((cos hour) * (sin lat) - (tan dec) * (cos lat))
   in (az, alt)
 
