@@ -6,6 +6,7 @@ import List as L
 import Time
 import Signal exposing ((<~))
 import Color exposing (Color)
+import Keyboard
 
 {-
 We have a list of world elements
@@ -45,11 +46,19 @@ entities = [
     ([skyPoint 1 15, skyPoint 3 30, skyPoint 7 50], Color.black)
   ]
 
-main = graphics (skyPoint 0 0) -- << (\t -> skyPoint (t * 0.01) (t * 0.01)) <~ Time.every (Time.millisecond * 10)
+main = graphics <~ cameraPosition
+
+cameraPosition =
+  let
+    startPosition = skyPoint 0 90
+    (dRa, dDec) = skyPoint 0.3 5
+    nudgeCamera { x, y } (ra, dec) = (ra + toFloat x * dRa, dec + toFloat y * dDec)
+    keyboardSignal = Signal.sampleOn (Time.every (10 * Time.millisecond)) Keyboard.wasd
+  in Signal.foldp nudgeCamera startPosition keyboardSignal
 
 graphics : CameraPosition -> Element
-graphics cameraPosition = 
-  let grid dim = project cameraPosition entities |> split |> plot dim
+graphics center = 
+  let grid dim = project center entities |> split |> plot dim
   in render (600, 400) [ grid ] |> frame (900, 450)
 
 frame : Dimensions -> Element -> Element
