@@ -8,21 +8,6 @@ import Signal exposing ((<~))
 import Color exposing (Color)
 import Keyboard
 
-{-
-We have a list of world elements
-
-Transform all world coordinates to the reference frame of the camera
-This is the transformed world
-
-Boundaries of the camera
-Tile the transformed world elements to cover the expanse of the camera
-Clip the world elements that are outside the boundaries of the camera
-This is the visible world
-
-Boundaries of the canvas
-transform the camera coordinates to screen coordinates
-  -}
-
 tau = turns 1
 
 type alias CameraPosition = WorldPoint
@@ -33,7 +18,9 @@ type alias ScreenPoint = (Float, Float)
 type alias Entity = (List WorldPoint, Color)
 type alias Image = (List ScreenPoint, Color)
 
-entities = [
+type alias Layer = List Image
+
+grid = [
     (parallel 0, Color.blue),
     (parallel 23.5, Color.red),
     (parallel -23.5, Color.red),
@@ -42,11 +29,18 @@ entities = [
     (meridian 0, Color.blue),
     (meridian 12, Color.blue),
     (meridian 6, Color.red),
-    (meridian 18, Color.red),
-    ([skyPoint 1 15, skyPoint 3 30, skyPoint 7 50], Color.black)
+    (meridian 18, Color.red)
   ]
 
-main = graphics <~ cameraPosition
+stars = [
+    (star 12.43 -63.08, Color.grey),
+    (star 12.78 -59.68, Color.grey),
+    (star 12.52 -57.10, Color.grey),
+    (star 12.25 -58.75, Color.grey),
+    (star 12.35 -60.40, Color.grey)
+  ]
+
+main = graphics [ grid, stars ] <~ cameraPosition
 
 cameraPosition =
   let
@@ -56,10 +50,13 @@ cameraPosition =
     keyboardSignal = Signal.sampleOn (Time.every (10 * Time.millisecond)) Keyboard.wasd
   in Signal.foldp nudgeCamera startPosition keyboardSignal
 
-graphics : CameraPosition -> Element
-graphics center = 
-  let grid dim = project center entities |> split |> plot dim
-  in render (600, 400) [ grid ] |> frame (900, 450)
+graphics : List Layer -> CameraPosition -> Element
+graphics layers center = 
+  let 
+    screenDim = (600, 400)
+    frameDim = (900, 450)
+    entitiesToForms = project center >> split >> plot screenDim
+  in L.map entitiesToForms layers |> render screenDim |> frame frameDim
 
 frame : Dimensions -> Element -> Element
 frame (width, height) = 
@@ -68,8 +65,8 @@ frame (width, height) =
     >> Element.color Color.black
     >> Element.container (width + padding) (height + padding) Element.middle
 
-render : Dimensions -> List (Dimensions -> Form) -> Element
-render (width, height) layers = L.map (flip identity (width, height)) layers |> Graphics.collage width height |> Element.color Color.white
+render : Dimensions -> List Form -> Element
+render (width, height) layers = Graphics.collage width height layers |> Element.color Color.white
 
 plot : Dimensions -> List Image -> Form
 plot dim = L.map (scale dim >> toForm) >> Graphics.group
@@ -131,6 +128,9 @@ toCamera (lon, lat) (ra, dec) =
 skyPoint : Float -> Float -> WorldPoint
 skyPoint ra dec =
   (turns ra / 24, degrees dec)
+
+star : Float -> Float -> List WorldPoint
+star ra dec = [skyPoint ra (dec+0.5), skyPoint (ra+0.1) dec, skyPoint ra (dec-0.5), skyPoint (ra-0.1) dec, skyPoint ra (dec+0.5)]
 
 parallel : Float -> List WorldPoint
 parallel declination = A.initialize 500 (\i -> skyPoint (0.05 * toFloat i) declination) |> A.toList
