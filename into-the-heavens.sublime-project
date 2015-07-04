@@ -2,7 +2,9 @@
 	"folders":
 	[
 		{
-			"path": "."
+			"path": ".",
+      "folder_exclude_patterns": ["elm-stuff"],
+      "file_exclude_patterns": ["elm.js"]
 		}
 	]
 }

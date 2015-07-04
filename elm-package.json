@@ -1,10 +1,10 @@
 {
     "version": "1.0.0",
     "summary": "Map projections & rotatable globe",
-    "repository": "https://github.com/USER/PROJECT.git",
+    "repository": "https://github.com/nphollon/into-the-heavens.git",
     "license": "GPLv3",
     "source-directories": [
-        "."
+        "src/"
     ],
     "exposed-modules": [],
     "dependencies": {
