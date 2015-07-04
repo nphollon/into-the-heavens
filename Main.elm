@@ -66,7 +66,9 @@ frame (width, height) =
     >> Element.container (width + padding) (height + padding) Element.middle
 
 render : Dimensions -> List Form -> Element
-render (width, height) layers = Graphics.collage width height layers |> Element.color Color.white
+render (width, height) layers =
+  let midnight = Color.hsl (degrees 240) 1 0.1
+  in Graphics.collage width height layers |> Element.color midnight
 
 plot : Dimensions -> List Image -> Form
 plot dim = L.map (scale dim >> toForm) >> Graphics.group
