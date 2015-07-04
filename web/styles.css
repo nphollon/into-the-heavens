@@ -1,10 +1,26 @@
+@font-face {
+    font-family: 'Coelacanth';
+    src: url('Coelac.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Coelacanth';
+    src: url('CoelacBold.otf') format('opentype');
+    font-weight: bold;
+    font-style: normal;
+}
+
 body {
   background-color: #000044;
-  font-family: 'Raleway', serif;
+  font-family: 'Coelacanth';
+  font-weight: normal;
   color: #CCFFEE;
 }
 
 h1 {
+  font-weight: bold;
+  letter-spacing: 0.3em;
   font-size: 2em;
   padding-left: 1em;
 }
