@@ -1,0 +1,19 @@
+body {
+  background-color: #000044;
+  font-family: 'Raleway', serif;
+  color: #CCFFEE;
+}
+
+h1 {
+  font-size: 2em;
+  padding-left: 1em;
+}
+
+p {
+  font-size: 1em;
+  padding-left: 2em;
+}
+
+#app {
+  padding-left: 1em;
+}

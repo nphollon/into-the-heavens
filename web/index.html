@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Into the Heavens</title>
-  <link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
-</head>
-<body>
-<style scoped="true">
-body {
-  background-color: #000044;
-  color: #CCFFEE;
-  font-family: 'Raleway', serif;
-  font-size: 4em;
-}
-</style>
-Into the Heavens
-</body>
+
+  <head>
+    <meta charset="UTF-8" />
+    <link href="http://fonts.googleapis.com/css?family=Raleway:300" rel="stylesheet" type="text/css">
+    <link href="styles.css" rel="stylesheet" type="text/css">
+    <title>Into the Heavens</title>
+  </head>
+
+  <body>
+    <h1>Into the Heavens</h1>
+    <p>Use the A-S-D-F keys to change your point of view.</p>
+    <div id="app"></div>
+  </body>
+
+  <script type="text/javascript" src="heavens.js"></script>
+  <script type="text/javascript">
+    Elm.embed(Elm.Main, document.getElementById("app"));
+  </script>
+
 </html>

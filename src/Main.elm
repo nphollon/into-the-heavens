@@ -1,3 +1,5 @@
+module Main where
+
 import Graphics.Element as Element exposing (Element)
 import Graphics.Collage as Graphics exposing (Form)
 import Array as A
