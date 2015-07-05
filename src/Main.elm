@@ -2,6 +2,7 @@ module Main where
 
 import Graphics.Element as Element exposing (Element)
 import Graphics.Collage as Graphics exposing (Form)
+import Html exposing (Html)
 import Array as A
 import Dict as D
 import List as L
@@ -42,15 +43,29 @@ stars = [
     (star 12.35 -60.40, Color.grey)
   ]
 
-main = graphics [ grid, stars ] <~ cameraPosition
-
-cameraPosition =
+main =
   let
-    startPosition = skyPoint 0 90
-    (dRa, dDec) = skyPoint 0.3 5
-    nudgeCamera { x, y } (ra, dec) = (ra + toFloat x * dRa, dec + toFloat y * dDec)
-    keyboardSignal = Signal.sampleOn (Time.every (10 * Time.millisecond)) Keyboard.wasd
-  in Signal.foldp nudgeCamera startPosition keyboardSignal
+    model = Signal.foldp update (skyPoint 0 90) keyboardSignal
+    dummy = (Signal.mailbox ()).address
+  in
+    view dummy <~ model
+
+type alias Action = { x : Int, y : Int }
+
+update : Action -> CameraPosition -> CameraPosition
+update action (ra, dec) = 
+  let
+    delta = skyPoint 0.3 5
+    dRa = toFloat action.x * fst delta
+    dDec = toFloat action.y * snd delta
+  in (ra + dRa, dec + dDec)
+
+keyboardSignal : Signal Action
+keyboardSignal = Signal.sampleOn (Time.every (10 * Time.millisecond)) Keyboard.wasd
+
+view : Signal.Address a-> WorldPoint -> Html
+view address model =
+  graphics [ grid, stars ] model |> Html.fromElement
 
 graphics : List Layer -> CameraPosition -> Element
 graphics layers center = 
