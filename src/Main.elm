@@ -42,30 +42,6 @@ tau =
   turns 1
 
 
-grid : List Entity
-grid =
-  [ (parallel 0, Color.blue)
-  , (parallel 23.5, Color.red)
-  , (parallel -23.5, Color.red)
-  , (parallel 66.5, Color.red)
-  , (parallel -66.5, Color.red)
-  , (meridian 0, Color.blue)
-  , (meridian 12, Color.blue)
-  , (meridian 6, Color.red)
-  , (meridian 18, Color.red)
-  ]
-
-
-stars : List Entity
-stars =
-  [ (star 12.43 -63.08, Color.grey)
-  , (star 12.78 -59.68, Color.grey)
-  , (star 12.52 -57.10, Color.grey)
-  , (star 12.25 -58.75, Color.grey)
-  , (star 12.35 -60.40, Color.grey)
-  ]
-
-
 main : Signal Html
 main =
   let
