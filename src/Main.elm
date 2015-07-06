@@ -47,11 +47,8 @@ main =
   let
     model =
       Signal.foldp update (skyPoint 0 90) keyboardSignal
-
-    dummy =
-      (Signal.mailbox ()).address
   in
-    view dummy <~ model
+    view <~ model
 
 
 update : Action -> CameraPosition -> CameraPosition
@@ -74,8 +71,8 @@ keyboardSignal =
   Signal.sampleOn (Time.every (10 * Time.millisecond)) Keyboard.wasd
 
 
-view : Signal.Address a -> CameraPosition -> Html
-view address center =
+view : CameraPosition -> Html
+view center =
   let
     screenDims = 
       (600, 400)
@@ -84,7 +81,7 @@ view address center =
       (900, 450)
   in
     L.map 
-      (project center >> split >> plot screenDims)
+      (project center >> split >> plot screenDims >> Graphics.group)
       [ 
         [ (parallel 0, Color.blue)
         , (parallel 23.5, Color.red)
@@ -110,20 +107,12 @@ view address center =
     |> Html.fromElement
 
 
-plot : Dimensions -> List Image -> Form
+plot : Dimensions -> List Image -> List Form
 plot dim =
-  L.map (scale dim >> toForm) 
-  >> Graphics.group
-
-
-toForm : Image -> Form
-toForm (pts, color) =
-  Graphics.traced (Graphics.solid color) pts
-
-
-scale : Dimensions -> Image -> Image
-scale dim (pts, color) = 
-  (L.map (toScreen dim) pts, color)
+  L.map
+    (\(pts, color) ->
+      Graphics.traced (Graphics.solid color) (L.map (toScreen dim) pts)
+    )
 
 
 toScreen : Dimensions -> ScreenPoint -> ScreenPoint
@@ -140,13 +129,10 @@ toScreen (width, height) (lon, lat) =
 
 split : List Image -> List Image
 split =
-  L.concatMap splitImage
-
-
-splitImage : Image -> List Image
-splitImage (path, color) =
-  splitPath path 
-  |> L.map (\p -> (p, color))
+  L.concatMap
+    (\(path, color) ->
+      L.map (\p -> (p, color)) (splitPath path)
+    )
 
 
 splitPath : List ScreenPoint -> List (List ScreenPoint)
