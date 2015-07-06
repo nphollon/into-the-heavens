@@ -98,47 +98,40 @@ keyboardSignal =
   Signal.sampleOn (Time.every (10 * Time.millisecond)) Keyboard.wasd
 
 
-view : Signal.Address a-> WorldPoint -> Html
-view address model =
-  graphics [ grid, stars ] model 
-  |> Html.fromElement
-
-
-graphics : List Layer -> CameraPosition -> Element
-graphics layers center = 
-  let 
-    screenDim = 
+view : Signal.Address a -> CameraPosition -> Html
+view address center =
+  let
+    screenDims = 
       (600, 400)
 
-    frameDim = 
+    frameDims =
       (900, 450)
-
-    entitiesToForms =
-      project center >> split >> plot screenDim
-  in 
-    L.map entitiesToForms layers 
-    |> render screenDim 
-    |> frame frameDim
-
-
-frame : Dimensions -> Element -> Element
-frame (width, height) = 
-  let
-    padding = 20
   in
-    Element.container width height Element.middle
-    >> Element.color Color.black
-    >> Element.container (width + padding) (height + padding) Element.middle
-
-
-render : Dimensions -> List Form -> Element
-render (width, height) layers =
-  let
-    midnight =
-      Color.hsl (degrees 240) 1 0.1
-  in
-    Graphics.collage width height layers 
-    |> Element.color midnight
+    L.map 
+      (project center >> split >> plot screenDims)
+      [ 
+        [ (parallel 0, Color.blue)
+        , (parallel 23.5, Color.red)
+        , (parallel -23.5, Color.red)
+        , (parallel 66.5, Color.red)
+        , (parallel -66.5, Color.red)
+        , (meridian 0, Color.blue)
+        , (meridian 12, Color.blue)
+        , (meridian 6, Color.red)
+        , (meridian 18, Color.red)
+        ],
+        [ (star 12.43 -63.08, Color.grey)
+        , (star 12.78 -59.68, Color.grey)
+        , (star 12.52 -57.10, Color.grey)
+        , (star 12.25 -58.75, Color.grey)
+        , (star 12.35 -60.40, Color.grey)
+        ]
+      ]
+    |> uncurry Graphics.collage screenDims
+    |> Element.color (Color.hsl (degrees 240) 1 0.1)
+    |> uncurry Element.container frameDims Element.middle
+    |> Element.color Color.black
+    |> Html.fromElement
 
 
 plot : Dimensions -> List Image -> Form
