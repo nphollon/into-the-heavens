@@ -1,15 +1,14 @@
 module Main where
 
-import Graphics.Element as Element exposing (Element)
-import Graphics.Collage as Graphics exposing (Form)
-import Html exposing (Html)
-import Array as A
-import Dict as D
-import List as L
+import Graphics.Element as Layout
+import Graphics.Collage as Graphics
+import Html
+import Color
+import Signal
 import Time
-import Signal exposing ((<~))
-import Color exposing (Color)
 import Keyboard
+import List as L
+import Grid
 
 type alias CameraPosition = 
   Point
@@ -22,11 +21,8 @@ type alias Point =
 
 type alias Image = 
   { points : List Point
-  , draw : List Point -> Form
+  , draw : List Point -> Graphics.Form
   }
-
-type alias Layer = 
-  List Image
 
 type alias Action = 
   { x : Int
@@ -35,7 +31,7 @@ type alias Action =
 
 type alias Model =
   { camera : CameraPosition
-  , entities : Layer
+  , entities : List Image
   }
 
 
@@ -44,21 +40,21 @@ tau =
   turns 1
 
 
-main : Signal Html
+main : Signal Html.Html
 main =
   let
     startState =
       { camera = (skyPoint 0 90)
       , entities =
-        [ parallel 0
-        , parallel 23.5
-        , parallel -23.5
-        , parallel 66.5
-        , parallel -66.5
-        , meridian 0
-        , meridian 12
-        , meridian 6
-        , meridian 18
+        [ Grid.parallel 0
+        , Grid.parallel 23.5
+        , Grid.parallel -23.5
+        , Grid.parallel 66.5
+        , Grid.parallel -66.5
+        , Grid.meridian 0
+        , Grid.meridian 12
+        , Grid.meridian 6
+        , Grid.meridian 18
         , crux
         ]
       }
@@ -66,7 +62,7 @@ main =
     model =
       Signal.foldp update startState keyboardSignal
   in
-    view <~ model
+    Signal.map view model
 
 
 update : Action -> Model -> Model
@@ -89,7 +85,7 @@ keyboardSignal =
   Signal.sampleOn (Time.every (10 * Time.millisecond)) Keyboard.wasd
 
 
-view : Model -> Html
+view : Model -> Html.Html
 view model =
   let
     screenDims = 
@@ -101,13 +97,13 @@ view model =
     project model.camera model.entities
     |> plot screenDims
     |> uncurry Graphics.collage screenDims
-    |> Element.color (Color.hsl (degrees 240) 1 0.1)
-    |> uncurry Element.container frameDims Element.middle
-    |> Element.color Color.black
+    |> Layout.color (Color.hsl (degrees 240) 1 0.1)
+    |> uncurry Layout.container frameDims Layout.middle
+    |> Layout.color Color.black
     |> Html.fromElement
 
 
-plot : Dimensions -> List Image -> List Form
+plot : Dimensions -> List Image -> List Graphics.Form
 plot dim =
   L.map
     (\image -> L.map (toScreen dim) image.points |> image.draw )
@@ -145,83 +141,10 @@ toCamera (lon, lat) (ra, dec) =
     (az, alt)
 
 
+
 skyPoint : Float -> Float -> Point
 skyPoint ra dec =
   (turns ra / 24, degrees dec)
-
-
-parallel : Float -> Image
-parallel declination =
-  let
-    init i =
-      skyPoint (0.05 * toFloat i) declination
-  in
-    { points = A.initialize 500 init |> A.toList
-    , draw = drawLine Color.red
-    }
-
-
-meridian : Float -> Image
-meridian rightAscension =
-  let
-    init i =
-      skyPoint rightAscension (toFloat i * 0.36 - 90)
-  in
-    { points = A.initialize 500 init |> A.toList
-    , draw = drawLine Color.blue
-    }
-
-
-drawLine : Color -> List Point -> Form
-drawLine color path =
-  L.map
-    (Graphics.traced (Graphics.solid color))
-    (splitPath path)
-  |> Graphics.group
-
-
-splitPath : List Point -> List (List Point)
-splitPath points = 
-  let
-    prevPoints = 
-      (L.take 1 points) ++ points
-
-    jumps = 
-      L.map2 markJumps prevPoints points
-  in 
-    splitAtJumps jumps
-
-
-splitAtJumps : List (a, Bool) -> List (List a)
-splitAtJumps = 
-  let
-    addElement (x, mark) (inProgress, finished) =
-      case mark of
-        True ->
-          ([], (x :: inProgress) :: finished)
-        False ->
-          (x :: inProgress, finished)
-
-    finalize (inProgress, finished) =
-      inProgress :: finished
-  in
-    L.foldr addElement ([], [])
-    >> finalize
-
-
-addElement : (a, Bool) -> (List a, List (List a)) -> (List a, List (List a))
-addElement (x, mark) (inProgress, finished) =
-  case mark of
-    True ->
-      ([], (x :: inProgress) :: finished)
-
-    False -> 
-      (x :: inProgress, finished)
-
-
-markJumps : Point -> Point -> (Point, Bool)
-markJumps a b = 
-  (b, round ((fst a - fst b) / 300.0) /= 0)
 
 
 crux : Image
