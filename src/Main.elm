@@ -99,7 +99,6 @@ view model =
       (900, 450)
   in
     project model.camera model.entities
-    |> split
     |> plot screenDims
     |> uncurry Graphics.collage screenDims
     |> Element.color (Color.hsl (degrees 240) 1 0.1)
@@ -126,15 +125,59 @@ toScreen (width, height) (lon, lat) =
     (x, y)
 
 
-split : List Image -> List Image
-split =
+project : CameraPosition -> List Image -> List Image
+project center =
+  L.map (\image -> { image | points <- L.map (toCamera center) image.points } )
+
+
+toCamera : CameraPosition -> Point -> Point
+toCamera (lon, lat) (ra, dec) = 
   let
-    splitImage image =
-      L.map
-        (\p -> { image | points <- p })
-        (splitPath image.points)
+    hour = 
+      lon - ra
+
+    alt = 
+      asin ((sin lat) * (sin dec) + (cos lat) * (cos dec) * (cos hour))
+
+    az =
+      atan2 (sin hour) ((cos hour) * (sin lat) - (tan dec) * (cos lat))
+  in 
+    (az, alt)
+
+
+skyPoint : Float -> Float -> Point
+skyPoint ra dec =
+  (turns ra / 24, degrees dec)
+
+
+parallel : Float -> Image
+parallel declination =
+  let
+    init i =
+      skyPoint (0.05 * toFloat i) declination
   in
-    L.concatMap splitImage
+    { points = A.initialize 500 init |> A.toList
+    , draw = drawLine Color.red
+    }
+
+
+meridian : Float -> Image
+meridian rightAscension =
+  let
+    init i =
+      skyPoint rightAscension (toFloat i * 0.36 - 90)
+  in
+    { points = A.initialize 500 init |> A.toList
+    , draw = drawLine Color.blue
+    }
+
+
+drawLine : Color -> List Point -> Form
+drawLine color path =
+  L.map
+    (Graphics.traced (Graphics.solid color))
+    (splitPath path)
+  |> Graphics.group
 
 
 splitPath : List Point -> List (List Point)
@@ -178,54 +221,7 @@ addElement (x, mark) (inProgress, finished) =
 
 markJumps : Point -> Point -> (Point, Bool)
 markJumps a b = 
-  (b, round ((fst a - fst b) / tau) /= 0)
-
-
-project : CameraPosition -> List Image -> List Image
-project center =
-  L.map (\image -> { image | points <- L.map (toCamera center) image.points } )
-
-
-toCamera : CameraPosition -> Point -> Point
-toCamera (lon, lat) (ra, dec) = 
-  let
-    hour = 
-      lon - ra
-
-    alt = 
-      asin ((sin lat) * (sin dec) + (cos lat) * (cos dec) * (cos hour))
-
-    az =
-      atan2 (sin hour) ((cos hour) * (sin lat) - (tan dec) * (cos lat))
-  in 
-    (az, alt)
-
-
-skyPoint : Float -> Float -> Point
-skyPoint ra dec =
-  (turns ra / 24, degrees dec)
-
-
-parallel : Float -> Image
-parallel declination =
-  let
-    init i =
-      skyPoint (0.05 * toFloat i) declination
-  in
-    { points = A.initialize 500 init |> A.toList
-    , draw = Graphics.traced (Graphics.solid Color.red)
-    }
-
-
-meridian : Float -> Image
-meridian rightAscension =
-  let
-    init i =
-      skyPoint rightAscension (toFloat i * 0.36 - 90)
-  in
-    { points = A.initialize 500 init |> A.toList
-    , draw = Graphics.traced (Graphics.solid Color.blue)
-    }
+  (b, round ((fst a - fst b) / 300.0) /= 0)
 
 
 crux : Image
