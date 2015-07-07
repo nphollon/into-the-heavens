@@ -8,8 +8,10 @@ import Signal
 import Time
 import Keyboard
 import List
+
 import Grid
 import Constellation
+import Scatter
 
 type alias CameraPosition = 
   Point
@@ -56,6 +58,7 @@ main =
         , Grid.meridian 12
         , Grid.meridian 6
         , Grid.meridian 18
+        , Scatter.scatter 200
         , Constellation.crux
         , Constellation.ursaMajor
         , Constellation.aquarius
