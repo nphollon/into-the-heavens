@@ -7,8 +7,9 @@ import Color
 import Signal
 import Time
 import Keyboard
-import List as L
+import List
 import Grid
+import Constellation
 
 type alias CameraPosition = 
   Point
@@ -44,7 +45,7 @@ main : Signal Html.Html
 main =
   let
     startState =
-      { camera = (skyPoint 0 90)
+      { camera = (0, degrees 90)
       , entities =
         [ Grid.parallel 0
         , Grid.parallel 23.5
@@ -55,7 +56,9 @@ main =
         , Grid.meridian 12
         , Grid.meridian 6
         , Grid.meridian 18
-        , crux
+        , Constellation.crux
+        , Constellation.ursaMajor
+        , Constellation.aquarius
         ]
       }
 
@@ -69,7 +72,7 @@ update : Action -> Model -> Model
 update action model = 
   let
     delta =
-      skyPoint 0.3 5
+      (degrees 5, degrees 5)
 
     newRa =
       toFloat action.x * fst delta + fst model.camera
@@ -105,8 +108,8 @@ view model =
 
 plot : Dimensions -> List Image -> List Graphics.Form
 plot dim =
-  L.map
-    (\image -> L.map (toScreen dim) image.points |> image.draw )
+  List.map
+    (\image -> List.map (toScreen dim) image.points |> image.draw )
 
 
 toScreen : Dimensions -> Point -> Point
@@ -123,7 +126,7 @@ toScreen (width, height) (lon, lat) =
 
 project : CameraPosition -> List Image -> List Image
 project center =
-  L.map (\image -> { image | points <- L.map (toCamera center) image.points } )
+  List.map (\image -> { image | points <- List.map (toCamera center) image.points } )
 
 
 toCamera : CameraPosition -> Point -> Point
@@ -139,29 +142,3 @@ toCamera (lon, lat) (ra, dec) =
       atan2 (sin hour) ((cos hour) * (sin lat) - (tan dec) * (cos lat))
   in 
     (az, alt)
-
-
-
-skyPoint : Float -> Float -> Point
-skyPoint ra dec =
-  (turns ra / 24, degrees dec)
-
-
-crux : Image
-crux =
-  let
-    star position =
-      Graphics.circle 1
-      |> Graphics.filled Color.yellow 
-      |> Graphics.move position
-  in    
-    { points = 
-      [ skyPoint 12.43 -63.08
-      , skyPoint 12.78 -59.68
-      , skyPoint 12.52 -57.10
-      , skyPoint 12.25 -58.75
-      , skyPoint 12.35 -60.40
-      ]
-    , draw =
-      Graphics.group << L.map star
-    }
