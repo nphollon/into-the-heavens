@@ -12,22 +12,18 @@ import Color exposing (Color)
 import Keyboard
 
 type alias CameraPosition = 
-  WorldPoint
+  Point
 
 type alias Dimensions = 
   (Int, Int)
 
-type alias WorldPoint = 
+type alias Point = 
   (Float, Float)
-
-type alias ScreenPoint = 
-  (Float, Float)
-
-type alias Entity = 
-  (List WorldPoint, Color)
 
 type alias Image = 
-  (List ScreenPoint, Color)
+  { points : List Point
+  , draw : List Point -> Form
+  }
 
 type alias Layer = 
   List Image
@@ -37,6 +33,12 @@ type alias Action =
   , y : Int 
   }
 
+type alias Model =
+  { camera : CameraPosition
+  , entities : Layer
+  }
+
+
 tau : Float
 tau =
   turns 1
@@ -45,25 +47,41 @@ tau =
 main : Signal Html
 main =
   let
+    startState =
+      { camera = (skyPoint 0 90)
+      , entities =
+        [ parallel 0
+        , parallel 23.5
+        , parallel -23.5
+        , parallel 66.5
+        , parallel -66.5
+        , meridian 0
+        , meridian 12
+        , meridian 6
+        , meridian 18
+        , crux
+        ]
+      }
+
     model =
-      Signal.foldp update (skyPoint 0 90) keyboardSignal
+      Signal.foldp update startState keyboardSignal
   in
     view <~ model
 
 
-update : Action -> CameraPosition -> CameraPosition
-update action (ra, dec) = 
+update : Action -> Model -> Model
+update action model = 
   let
     delta =
       skyPoint 0.3 5
 
     newRa =
-      toFloat action.x * fst delta + ra
+      toFloat action.x * fst delta + fst model.camera
 
     newDec =
-      toFloat action.y * snd delta + dec
+      toFloat action.y * snd delta + snd model.camera
   in
-    (newRa, newDec)
+    { model | camera <- (newRa, newDec) }
 
 
 keyboardSignal : Signal Action
@@ -71,8 +89,8 @@ keyboardSignal =
   Signal.sampleOn (Time.every (10 * Time.millisecond)) Keyboard.wasd
 
 
-view : CameraPosition -> Html
-view center =
+view : Model -> Html
+view model =
   let
     screenDims = 
       (600, 400)
@@ -80,26 +98,9 @@ view center =
     frameDims =
       (900, 450)
   in
-    L.map 
-      (project center >> split >> plot screenDims >> Graphics.group)
-      [ 
-        [ (parallel 0, Color.blue)
-        , (parallel 23.5, Color.red)
-        , (parallel -23.5, Color.red)
-        , (parallel 66.5, Color.red)
-        , (parallel -66.5, Color.red)
-        , (meridian 0, Color.blue)
-        , (meridian 12, Color.blue)
-        , (meridian 6, Color.red)
-        , (meridian 18, Color.red)
-        ],
-        [ (star 12.43 -63.08, Color.grey)
-        , (star 12.78 -59.68, Color.grey)
-        , (star 12.52 -57.10, Color.grey)
-        , (star 12.25 -58.75, Color.grey)
-        , (star 12.35 -60.40, Color.grey)
-        ]
-      ]
+    project model.camera model.entities
+    |> split
+    |> plot screenDims
     |> uncurry Graphics.collage screenDims
     |> Element.color (Color.hsl (degrees 240) 1 0.1)
     |> uncurry Element.container frameDims Element.middle
@@ -110,12 +111,10 @@ view center =
 plot : Dimensions -> List Image -> List Form
 plot dim =
   L.map
-    (\(pts, color) ->
-      Graphics.traced (Graphics.solid color) (L.map (toScreen dim) pts)
-    )
+    (\image -> L.map (toScreen dim) image.points |> image.draw )
 
 
-toScreen : Dimensions -> ScreenPoint -> ScreenPoint
+toScreen : Dimensions -> Point -> Point
 toScreen (width, height) (lon, lat) =
   let
     x = 
@@ -129,17 +128,21 @@ toScreen (width, height) (lon, lat) =
 
 split : List Image -> List Image
 split =
-  L.concatMap
-    (\(path, color) ->
-      L.map (\p -> (p, color)) (splitPath path)
-    )
+  let
+    splitImage image =
+      L.map
+        (\p -> { image | points <- p })
+        (splitPath image.points)
+  in
+    L.concatMap splitImage
 
 
-splitPath : List ScreenPoint -> List (List ScreenPoint)
+splitPath : List Point -> List (List Point)
 splitPath points = 
   let
     prevPoints = 
       (L.take 1 points) ++ points
+
     jumps = 
       L.map2 markJumps prevPoints points
   in 
@@ -173,17 +176,17 @@ addElement (x, mark) (inProgress, finished) =
       (x :: inProgress, finished)
 
 
-markJumps : ScreenPoint -> ScreenPoint -> (ScreenPoint, Bool)
+markJumps : Point -> Point -> (Point, Bool)
 markJumps a b = 
   (b, round ((fst a - fst b) / tau) /= 0)
 
 
-project : CameraPosition -> List Entity -> List Image
+project : CameraPosition -> List Image -> List Image
 project center =
-  L.map (\(pts, color) -> (L.map (toCamera center) pts, color))
+  L.map (\image -> { image | points <- L.map (toCamera center) image.points } )
 
 
-toCamera : CameraPosition -> WorldPoint -> ScreenPoint
+toCamera : CameraPosition -> Point -> Point
 toCamera (lon, lat) (ra, dec) = 
   let
     hour = 
@@ -198,28 +201,48 @@ toCamera (lon, lat) (ra, dec) =
     (az, alt)
 
 
-skyPoint : Float -> Float -> WorldPoint
+skyPoint : Float -> Float -> Point
 skyPoint ra dec =
   (turns ra / 24, degrees dec)
 
 
-star : Float -> Float -> List WorldPoint
-star ra dec = 
-  [ skyPoint ra (dec+0.5)
-  , skyPoint (ra+0.1) dec
-  , skyPoint ra (dec-0.5)
-  , skyPoint (ra-0.1) dec
-  , skyPoint ra (dec+0.5)
-  ]
-
-
-parallel : Float -> List WorldPoint
+parallel : Float -> Image
 parallel declination =
-  A.initialize 500 (\i -> skyPoint (0.05 * toFloat i) declination)
-  |> A.toList
+  let
+    init i =
+      skyPoint (0.05 * toFloat i) declination
+  in
+    { points = A.initialize 500 init |> A.toList
+    , draw = Graphics.traced (Graphics.solid Color.red)
+    }
 
 
-meridian : Float -> List WorldPoint
+meridian : Float -> Image
 meridian rightAscension =
-  A.initialize 500 (\i -> skyPoint rightAscension (toFloat i * 0.36 - 90)) 
-  |> A.toList
+  let
+    init i =
+      skyPoint rightAscension (toFloat i * 0.36 - 90)
+  in
+    { points = A.initialize 500 init |> A.toList
+    , draw = Graphics.traced (Graphics.solid Color.blue)
+    }
+
+
+crux : Image
+crux =
+  let
+    star position =
+      Graphics.circle 1
+      |> Graphics.filled Color.yellow 
+      |> Graphics.move position
+  in    
+    { points = 
+      [ skyPoint 12.43 -63.08
+      , skyPoint 12.78 -59.68
+      , skyPoint 12.52 -57.10
+      , skyPoint 12.25 -58.75
+      , skyPoint 12.35 -60.40
+      ]
+    , draw =
+      Graphics.group << L.map star
+    }
