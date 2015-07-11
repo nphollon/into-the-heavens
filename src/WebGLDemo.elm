@@ -52,7 +52,7 @@ view yaw =
   let
     x = 300
     y = 200
-  in WebGL.webgl (x, y) [ tringle yaw ]
+  in WebGL.webgl (x, y) [ compass yaw ]
     |> Layout.container x y Layout.middle
     |> Layout.color Color.black
 
@@ -70,35 +70,53 @@ type alias Varying = {
   rg : V3.Vec3
   }
 
+type Orientation =
+  LatitudeWall |
+  LongitudeWall |
+  Floor
 
-tringle : Model -> WebGL.Entity
-tringle yaw =
+
+compass : Model -> WebGL.Entity
+compass yaw =
   let
-    apex = vert 0 0.6 0
-    base1 = vert 0.6 -0.3 0
-    base2 = vert -0.3 -0.3 0.5
-    base3 = vert -0.3 -0.3 -0.5
-
     mesh =
-      [ (apex, base1, base2)
-      , (base1, base2, base3)
-      , (base2, base3, apex)
-      , (base3, apex, base1)
+      [ triangle LatitudeWall 0 0 1
+      , triangle LatitudeWall 0 0 -1
+      , triangle LongitudeWall 1 0 0
+      , triangle LongitudeWall -1 0 0
+      , triangle Floor 0 1 0
+      , triangle Floor 0 -1 0
       ]
 
     rotation = M4.makeRotate yaw (V3.vec3 0 1 0)
-    translation = M4.makeTranslate (V3.vec3 0 0 -1)
 
     uniform =
       { perspective = M4.makePerspective 90 1.5 0.1 10
-      , placement = M4.mul translation rotation
+      , placement = rotation
       }
   in
     WebGL.entity vertexShader fragmentShader mesh uniform
 
-vert : Float -> Float -> Float -> Attribute
-vert x y z =
-  { position = V3.vec3 x y z }
+
+triangle : Orientation -> Float -> Float -> Float -> WebGL.Triangle Attribute
+triangle dir x y z =
+  case dir of
+    LatitudeWall ->
+      ( { position = V3.vec3 (x + 1) (y - 0.5) z }
+      , { position = V3.vec3 (x - 1) (y - 0.5) z }
+      , { position = V3.vec3 x (y + 1) z }
+      )
+    LongitudeWall ->
+      ( { position = V3.vec3 x (y - 0.5) (z - 1) }
+      , { position = V3.vec3 x (y - 0.5) (z + 1) }
+      , { position = V3.vec3 x (y + 1) z }
+      )
+    Floor ->
+      ( { position = V3.vec3 (x + 1) y (z - 0.5) }
+      , { position = V3.vec3 (x - 1) y (z - 0.5) }
+      , { position = V3.vec3 x y (z + 1) }
+      )
+
 
 vertexShader : WebGL.Shader Attribute Uniform Varying
 vertexShader =
@@ -111,7 +129,7 @@ vertexShader =
   void main() {
     gl_Position =
       perspective * (placement * vec4(position, 1.0));
-    rg = vec3(gl_Position.xz, 1.0);
+    rg = vec3(position + vec3(0.4, 0.4, 0.4));
   }
   |]
 
