@@ -57,14 +57,33 @@ view yaw =
     |> Layout.color Color.black
 
 
+type alias Attribute =
+  { position : V3.Vec3
+  }
+
+type alias Uniform =
+  { perspective : M4.Mat4
+  , placement : M4.Mat4
+  }
+
+type alias Varying = {
+  rg : V3.Vec3
+  }
+
+
 tringle : Model -> WebGL.Entity
 tringle yaw =
   let
+    apex = vert 0 0.6 0
+    base1 = vert 0.6 -0.3 0
+    base2 = vert -0.3 -0.3 0.5
+    base3 = vert -0.3 -0.3 -0.5
+
     mesh =
-      [
-        ({ position = V3.vec3 0 0.3 0 }
-        ,{ position = V3.vec3 0.5 0.3 0 }
-        ,{ position = V3.vec3 0.5 -0.3 0 })
+      [ (apex, base1, base2)
+      , (base1, base2, base3)
+      , (base2, base3, apex)
+      , (base3, apex, base1)
       ]
 
     rotation = M4.makeRotate yaw (V3.vec3 0 1 0)
@@ -77,9 +96,9 @@ tringle yaw =
   in
     WebGL.entity vertexShader fragmentShader mesh uniform
 
-type alias Attribute = { position : V3.Vec3 }
-type alias Uniform = { perspective : M4.Mat4, placement : M4.Mat4 }
-type alias Varying = { rg : V3.Vec3 }
+vert : Float -> Float -> Float -> Attribute
+vert x y z =
+  { position = V3.vec3 x y z }
 
 vertexShader : WebGL.Shader Attribute Uniform Varying
 vertexShader =
@@ -92,7 +111,7 @@ vertexShader =
   void main() {
     gl_Position =
       perspective * (placement * vec4(position, 1.0));
-    rg = vec3(1.0, position.xy);
+    rg = vec3(gl_Position.xz, 1.0);
   }
   |]
 
