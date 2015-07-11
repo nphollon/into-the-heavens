@@ -7,6 +7,7 @@ import Graphics.Element as Layout
 import Color
 import Signal
 import Time
+import Keyboard
 
 {-
   optimization questions:
@@ -19,7 +20,8 @@ main : Signal Layout.Element
 main =
   let
     startState =
-      0.0
+      { yaw = 0.0
+      }
 
     model =
       Signal.foldp update startState signal
@@ -28,32 +30,56 @@ main =
 
 
 type alias Model =
-  Float
+  { yaw : Float
+  }
 
 
-type Action =
-  Rotate
+type alias Action =
+  { x : Int
+  , y : Int
+  }
 
 
 signal : Signal Action
 signal =
-  Signal.map (always Rotate) (Time.every (50 * Time.millisecond))
+  Signal.sampleOn (Time.every (10 * Time.millisecond)) Keyboard.wasd
 
 
 update : Action -> Model -> Model
-update action yaw =
-  case action of
-    Rotate ->
-      yaw + degrees 5
+update action model =
+  { model
+    | yaw <- model.yaw + (action.x .* degrees 2)
+    }
 
 
 view : Model -> Layout.Element
-view yaw =
+view model =
   let
-    x = 300
-    y = 200
-  in WebGL.webgl (x, y) [ compass yaw ]
-    |> Layout.container x y Layout.middle
+    dimensions =
+      (400, 400)
+
+    aspect =
+      uncurry (./.) dimensions
+
+    mesh = 
+      [ triangle LatitudeWall 0 0 1
+      , triangle LatitudeWall 0 0 -1
+      , triangle LongitudeWall 1 0 0
+      , triangle LongitudeWall -1 0 0
+      , triangle Floor 0 1 0
+      , triangle Floor 0 -1 0
+      ]
+
+    rotation = M4.makeRotate model.yaw (V3.vec3 0 1 0)
+
+    uniform =
+      { perspective = M4.makePerspective 90 1.0 0.1 10
+      , placement = rotation
+      }
+  in
+    [ WebGL.entity vertexShader fragmentShader mesh uniform ]
+    |> WebGL.webgl dimensions
+    |> uncurry Layout.container dimensions Layout.middle
     |> Layout.color Color.black
 
 
@@ -74,28 +100,6 @@ type Orientation =
   LatitudeWall |
   LongitudeWall |
   Floor
-
-
-compass : Model -> WebGL.Entity
-compass yaw =
-  let
-    mesh =
-      [ triangle LatitudeWall 0 0 1
-      , triangle LatitudeWall 0 0 -1
-      , triangle LongitudeWall 1 0 0
-      , triangle LongitudeWall -1 0 0
-      , triangle Floor 0 1 0
-      , triangle Floor 0 -1 0
-      ]
-
-    rotation = M4.makeRotate yaw (V3.vec3 0 1 0)
-
-    uniform =
-      { perspective = M4.makePerspective 90 1.5 0.1 10
-      , placement = rotation
-      }
-  in
-    WebGL.entity vertexShader fragmentShader mesh uniform
 
 
 triangle : Orientation -> Float -> Float -> Float -> WebGL.Triangle Attribute
@@ -143,3 +147,13 @@ fragmentShader =
     gl_FragColor = vec4(rg, 1.0);
   }
   |]
+
+-- Type-converting arithmetic operators
+
+(./.) : Int -> Int -> Float
+(./.) a b =
+  toFloat a / toFloat b
+
+(.*) : Int -> Float -> Float
+(.*) a b =
+  toFloat a * b
