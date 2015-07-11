@@ -21,6 +21,7 @@ main =
   let
     startState =
       { yaw = 0.0
+      , pitch = 0.0
       }
 
     model =
@@ -31,6 +32,7 @@ main =
 
 type alias Model =
   { yaw : Float
+  , pitch : Float
   }
 
 
@@ -47,9 +49,14 @@ signal =
 
 update : Action -> Model -> Model
 update action model =
-  { model
-    | yaw <- model.yaw + (action.x .* degrees 2)
-    }
+  let
+    delta =
+      degrees 2
+  in
+    { model
+      | yaw <- model.yaw + (action.x .* degrees 2)
+      , pitch <- model.pitch - (action.y .* degrees 2)
+      }
 
 
 view : Model -> Layout.Element
@@ -70,11 +77,12 @@ view model =
       , triangle Floor 0 -1 0
       ]
 
-    rotation = M4.makeRotate model.yaw (V3.vec3 0 1 0)
+    yawRotation = M4.makeRotate model.yaw (V3.vec3 0 1 0)
+    pitchRotation = M4.makeRotate model.pitch (V3.vec3 1 0 0)
 
     uniform =
       { perspective = M4.makePerspective 90 1.0 0.1 10
-      , placement = rotation
+      , placement = M4.mul pitchRotation yawRotation
       }
   in
     [ WebGL.entity vertexShader fragmentShader mesh uniform ]
