@@ -8,6 +8,7 @@ import Color
 import Signal
 import Time
 import Keyboard
+import List
 
 {-
   optimization questions:
@@ -20,8 +21,7 @@ main : Signal Layout.Element
 main =
   let
     startState =
-      { yaw = 0.0
-      , pitch = 0.0
+      { orientation = M4.identity
       }
 
     model =
@@ -31,8 +31,7 @@ main =
 
 
 type alias Model =
-  { yaw : Float
-  , pitch : Float
+  { orientation : M4.Mat4
   }
 
 
@@ -51,12 +50,14 @@ update : Action -> Model -> Model
 update action model =
   let
     delta =
-      degrees 2
+      degrees 1
+
+    newOrientation =
+      model.orientation
+      |> M4.rotate (action.y .* delta) (V3.vec3 1 0 0)
+      |> M4.rotate (action.x .* delta) (V3.vec3 0 1 0)
   in
-    { model
-      | yaw <- model.yaw + (action.x .* degrees 2)
-      , pitch <- model.pitch - (action.y .* degrees 2)
-      }
+    { model | orientation <- newOrientation }
 
 
 view : Model -> Layout.Element
@@ -77,12 +78,9 @@ view model =
       , triangle Floor 0 -1 0
       ]
 
-    yawRotation = M4.makeRotate model.yaw (V3.vec3 0 1 0)
-    pitchRotation = M4.makeRotate model.pitch (V3.vec3 1 0 0)
-
     uniform =
       { perspective = M4.makePerspective 90 1.0 0.1 10
-      , placement = M4.mul pitchRotation yawRotation
+      , placement = M4.transpose model.orientation
       }
   in
     [ WebGL.entity vertexShader fragmentShader mesh uniform ]
@@ -140,7 +138,7 @@ vertexShader =
 
   void main() {
     gl_Position =
-      perspective * (placement * vec4(position, 1.0));
+      perspective * placement * vec4(position, 1.0);
     rg = vec3(position + vec3(0.4, 0.4, 0.4));
   }
   |]
