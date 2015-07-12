@@ -55,7 +55,7 @@ update action model =
     newOrientation =
       model.orientation
       |> M4.rotate (action.y .* delta) (V3.vec3 1 0 0)
-      |> M4.rotate (action.x .* delta) (V3.vec3 0 1 0)
+      |> M4.rotate (action.x .* delta) (V3.vec3 0 -1 0)
   in
     { model | orientation <- newOrientation }
 
@@ -70,12 +70,12 @@ view model =
       uncurry (./.) dimensions
 
     mesh = 
-      [ triangle LatitudeWall 0 0 1
-      , triangle LatitudeWall 0 0 -1
-      , triangle LongitudeWall 1 0 0
-      , triangle LongitudeWall -1 0 0
-      , triangle Floor 0 1 0
-      , triangle Floor 0 -1 0
+      [ triangle LatitudeWall 0 0 3
+      , triangle LatitudeWall 0 0 -3
+      , triangle LongitudeWall 3 0 0
+      , triangle LongitudeWall -3 0 0
+      , triangle Floor 0 3 0
+      , triangle Floor 0 -3 0
       ]
 
     uniform =
