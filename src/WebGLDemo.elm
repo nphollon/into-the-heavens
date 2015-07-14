@@ -69,21 +69,13 @@ view model =
     aspect =
       uncurry (./.) dimensions
 
-    mesh = 
-      [ triangle LatitudeWall 0 0 3
-      , triangle LatitudeWall 0 0 -3
-      , triangle LongitudeWall 3 0 0
-      , triangle LongitudeWall -3 0 0
-      , triangle Floor 0 3 0
-      , triangle Floor 0 -3 0
-      ]
-
     uniform =
-      { perspective = M4.makePerspective 90 1.0 0.1 10
+      { perspective = M4.makePerspective 90 1.0 0.1 3.3
       , placement = M4.transpose model.orientation
       }
   in
-    [ WebGL.entity vertexShader fragmentShader mesh uniform ]
+    [ compass uniform
+    ]--, meridian 1 0 ]
     |> WebGL.webgl dimensions
     |> uncurry Layout.container dimensions Layout.middle
     |> Layout.color Color.black
@@ -108,24 +100,50 @@ type Orientation =
   Floor
 
 
-triangle : Orientation -> Float -> Float -> Float -> WebGL.Triangle Attribute
-triangle dir x y z =
+compass : Uniform -> WebGL.Entity
+compass uniform =
+  let
+    mesh = 
+      [ compassPoint LatitudeWall 0 0 3
+      , compassPoint LatitudeWall 0 0 -3
+      , compassPoint LongitudeWall 3 0 0
+      , compassPoint LongitudeWall -3 0 0
+      , compassPoint Floor 0 3 0
+      , compassPoint Floor 0 -3 0
+      ]
+  in
+    WebGL.entity vertexShader fragmentShader mesh uniform
+
+
+compassPoint : Orientation -> Float -> Float -> Float -> WebGL.Triangle Attribute
+compassPoint dir x y z =
   case dir of
     LatitudeWall ->
-      ( { position = V3.vec3 (x + 1) (y - 0.5) z }
-      , { position = V3.vec3 (x - 1) (y - 0.5) z }
-      , { position = V3.vec3 x (y + 1) z }
+      ( vertex (x + 1) (y - 0.5) z
+      , vertex (x - 1) (y - 0.5) z
+      , vertex x (y + 1) z
       )
     LongitudeWall ->
-      ( { position = V3.vec3 x (y - 0.5) (z - 1) }
-      , { position = V3.vec3 x (y - 0.5) (z + 1) }
-      , { position = V3.vec3 x (y + 1) z }
+      ( vertex x (y - 0.5) (z - 1)
+      , vertex x (y - 0.5) (z + 1)
+      , vertex x (y + 1) z
       )
     Floor ->
-      ( { position = V3.vec3 (x + 1) y (z - 0.5) }
-      , { position = V3.vec3 (x - 1) y (z - 0.5) }
-      , { position = V3.vec3 x y (z + 1) }
+      ( vertex (x + 1) y (z - 0.5)
+      , vertex (x - 1) y (z - 0.5)
+      , vertex x y (z + 1)
       )
+
+{--
+meridian : Float -> Float -> WebGL.Entity
+meridian radius azimuth = 
+  let
+    mesh = [ ]
+--}
+
+vertex : Float -> Float -> Float -> Attribute
+vertex x y z =
+  { position = V3.vec3 x y z }
 
 
 vertexShader : WebGL.Shader Attribute Uniform Varying
