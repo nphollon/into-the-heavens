@@ -1,8 +1,8 @@
 module WebGLDemo where
 
 import WebGL
-import Math.Vector3 as V3
-import Math.Matrix4 as M4
+import Math.Vector3 as Vec3
+import Math.Matrix4 as Mat4
 import Graphics.Element as Layout
 import Color
 import Signal
@@ -22,7 +22,7 @@ main : Signal Layout.Element
 main =
   let
     startState =
-      { orientation = M4.identity
+      { orientation = Mat4.identity
       }
 
     model =
@@ -32,7 +32,7 @@ main =
 
 
 type alias Model =
-  { orientation : M4.Mat4
+  { orientation : Mat4.Mat4
   }
 
 
@@ -55,8 +55,8 @@ update action model =
 
     newOrientation =
       model.orientation
-      |> M4.rotate (action.y .* delta) (V3.vec3 1 0 0)
-      |> M4.rotate (action.x .* delta) (V3.vec3 0 -1 0)
+      |> Mat4.rotate (action.y .* delta) xAxis
+      |> Mat4.rotate (negate action.x .* delta) yAxis
   in
     { model | orientation <- newOrientation }
 
@@ -71,28 +71,29 @@ view model =
       uncurry (./.) dimensions
 
     uniform =
-      { perspective = M4.makePerspective 90 1.0 0.1 3.3
-      , placement = M4.transpose model.orientation
+      { perspective = Mat4.makePerspective 90 1.0 0.1 3.3
+      , placement = Mat4.transpose model.orientation
       }
   in
     [ compass uniform
-    , meridian 1 0 uniform ]
+    , meridian 3 0 uniform
+    , meridian 3 (degrees 90) uniform ]
     |> WebGL.webgl dimensions
     |> uncurry Layout.container dimensions Layout.middle
     |> Layout.color Color.black
 
 
 type alias Attribute =
-  { position : V3.Vec3
+  { position : Vec3.Vec3
   }
 
 type alias Uniform =
-  { perspective : M4.Mat4
-  , placement : M4.Mat4
+  { perspective : Mat4.Mat4
+  , placement : Mat4.Mat4
   }
 
 type alias Varying = {
-  rg : V3.Vec3
+  rg : Vec3.Vec3
   }
 
 type Orientation =
@@ -139,18 +140,21 @@ compassPoint dir x y z =
 meridian : Float -> Float -> Uniform -> WebGL.Entity
 meridian radius azimuth uniform = 
   let
+    baseRing =
+      vertexRing 20 0.005
+
+    rotation =
+      Mat4.makeRotate azimuth yAxis
+      |> Mat4.rotate (degrees 90) zAxis
+
+    rotate vertex =
+      { vertex | position <- Mat4.transform rotation vertex.position }
+
+    enlarge vertex =
+      { vertex | position <- Vec3.scale radius vertex.position }
+
     ring =
-      Array.toList <| Array.initialize 30 (\i ->
-        let
-          side =
-            if (i % 2 == 0) then 1 else -1
-
-          phi =
-            turns (i ./. 28)
-
-        in
-          sphVertex 1 phi (degrees 90 + side .* 0.01)
-        )
+      List.map (rotate >> enlarge) baseRing
 
     mesh =
       List.map3 (\a b c -> (a,b,c))
@@ -159,6 +163,26 @@ meridian radius azimuth uniform =
         (List.drop 2 ring)
   in
     WebGL.entity vertexShader fragmentShader mesh uniform
+
+
+vertexRing : Int -> Float -> List Attribute
+vertexRing resolution width =
+  let
+    grate =
+      2 * resolution
+
+    indexedVertex i =
+      let
+        side =
+          if (i % 2 == 0) then 1 else -1
+
+        phi =
+          turns (i ./. grate)
+      in
+        sphVertex 1 phi (degrees 90 + side .* width)
+  in
+    Array.initialize (grate + 2) indexedVertex |> Array.toList
+
 
 sphVertex : Float -> Float -> Float -> Attribute
 sphVertex r phi theta =
@@ -170,7 +194,7 @@ sphVertex r phi theta =
 
 vertex : Float -> Float -> Float -> Attribute
 vertex x y z =
-  { position = V3.vec3 x y z }
+  { position = Vec3.vec3 x y z }
 
 
 vertexShader : WebGL.Shader Attribute Uniform Varying
@@ -198,6 +222,22 @@ fragmentShader =
     gl_FragColor = vec4(rg, 1.0);
   }
   |]
+
+-- Geometric constants
+
+xAxis : Vec3.Vec3
+xAxis =
+  Vec3.vec3 1 0 0
+
+
+yAxis : Vec3.Vec3
+yAxis =
+  Vec3.vec3 0 1 0
+
+
+zAxis : Vec3.Vec3
+zAxis =
+  Vec3.vec3 0 0 1
 
 -- Type-converting arithmetic operators
 
