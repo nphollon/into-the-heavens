@@ -9,6 +9,7 @@ import Signal
 import Time
 import Keyboard
 import List
+import Array
 
 {-
   optimization questions:
@@ -75,7 +76,7 @@ view model =
       }
   in
     [ compass uniform
-    ]--, meridian 1 0 ]
+    , meridian 1 0 uniform ]
     |> WebGL.webgl dimensions
     |> uncurry Layout.container dimensions Layout.middle
     |> Layout.color Color.black
@@ -134,12 +135,38 @@ compassPoint dir x y z =
       , vertex x y (z + 1)
       )
 
-{--
-meridian : Float -> Float -> WebGL.Entity
-meridian radius azimuth = 
+
+meridian : Float -> Float -> Uniform -> WebGL.Entity
+meridian radius azimuth uniform = 
   let
-    mesh = [ ]
---}
+    ring =
+      Array.toList <| Array.initialize 30 (\i ->
+        let
+          side =
+            if (i % 2 == 0) then 1 else -1
+
+          phi =
+            turns (i ./. 28)
+
+        in
+          sphVertex 1 phi (degrees 90 + side .* 0.01)
+        )
+
+    mesh =
+      List.map3 (\a b c -> (a,b,c))
+        ring
+        (List.drop 1 ring)
+        (List.drop 2 ring)
+  in
+    WebGL.entity vertexShader fragmentShader mesh uniform
+
+sphVertex : Float -> Float -> Float -> Attribute
+sphVertex r phi theta =
+  vertex
+      (r * sin theta * sin phi)
+      (r * cos theta)
+      (r * sin theta * cos phi)
+
 
 vertex : Float -> Float -> Float -> Attribute
 vertex x y z =
