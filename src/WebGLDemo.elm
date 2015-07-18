@@ -65,19 +65,20 @@ view : Model -> Layout.Element
 view model =
   let
     dimensions =
-      (400, 400)
+      (600, 600)
 
     aspect =
       uncurry (./.) dimensions
 
     uniform =
-      { perspective = Mat4.makePerspective 90 1.0 0.1 3.3
+      { perspective = Mat4.makePerspective 90 aspect 1 10
       , placement = Mat4.transpose model.orientation
       }
   in
     [ compass uniform
-    , meridian 3 0 uniform
-    , meridian 3 (degrees 90) uniform ]
+    , meridian 3 (degrees 45) uniform
+    , meridian 3 (degrees 135) uniform
+    ]
     |> WebGL.webgl dimensions
     |> uncurry Layout.container dimensions Layout.middle
     |> Layout.color Color.black
@@ -141,7 +142,7 @@ meridian : Float -> Float -> Uniform -> WebGL.Entity
 meridian radius azimuth uniform = 
   let
     baseRing =
-      vertexRing 20 0.005
+      vertexRing 50 0.005
 
     rotation =
       Mat4.makeRotate azimuth yAxis
@@ -187,9 +188,9 @@ vertexRing resolution width =
 sphVertex : Float -> Float -> Float -> Attribute
 sphVertex r phi theta =
   vertex
-      (r * sin theta * sin phi)
-      (r * cos theta)
-      (r * sin theta * cos phi)
+    (r * sin theta * sin phi)
+    (r * cos theta)
+    (r * sin theta * cos phi)
 
 
 vertex : Float -> Float -> Float -> Attribute
@@ -207,7 +208,7 @@ vertexShader =
 
   void main() {
     gl_Position =
-      perspective * placement * vec4(position, 1.0);
+      perspective * (vec4(0,0,-3,1) + placement * vec4(position, 1.0));
     rg = vec3(position + vec3(0.4, 0.4, 0.4));
   }
   |]
@@ -222,6 +223,7 @@ fragmentShader =
     gl_FragColor = vec4(rg, 1.0);
   }
   |]
+
 
 -- Geometric constants
 
@@ -238,6 +240,7 @@ yAxis =
 zAxis : Vec3.Vec3
 zAxis =
   Vec3.vec3 0 0 1
+
 
 -- Type-converting arithmetic operators
 
