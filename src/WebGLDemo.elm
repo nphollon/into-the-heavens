@@ -71,13 +71,13 @@ view model =
       uncurry (./.) dimensions
 
     uniform =
-      { perspective = Mat4.makePerspective 90 aspect 1 10
+      { perspective = Mat4.makePerspective 90 aspect 1 70
       , placement = Mat4.transpose model.orientation
       }
   in
     [ compass uniform
-    , meridian 3 (degrees 45) uniform
-    , meridian 3 (degrees 135) uniform
+    , meridian 30 (degrees 45) uniform
+    , meridian 30 (degrees 135) uniform
     ]
     |> WebGL.webgl dimensions
     |> uncurry Layout.container dimensions Layout.middle
@@ -207,9 +207,10 @@ vertexShader =
   varying vec3 rg;
 
   void main() {
+    vec4 offset = vec4 (0, 0, length(position), 0);
     gl_Position =
-      perspective * (vec4(0,0,-3,1) + placement * vec4(position, 1.0));
-    rg = vec3(position + vec3(0.4, 0.4, 0.4));
+      perspective * (placement * vec4(position, 1.0) - offset);
+    rg = normalize(position) + vec3(0.6, 0.6, 0.6);
   }
   |]
 
