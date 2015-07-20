@@ -12,13 +12,8 @@ import Keyboard
 import List
 import Array
 
-{-
-  questions:
-    triangle fans & strips
-    rendering faces in one direction only
-    referencing vertices by index
-    geometry shaders
-  -}
+import Graphics
+import Infix exposing (..)
 
 main : Signal Layout.Element
 main =
@@ -42,7 +37,6 @@ type alias Action =
   { x : Int
   , y : Int
   }
-
 
 type alias Attribute =
   { position : Vec3.Vec3
@@ -94,14 +88,12 @@ view model =
       , placement = Mat4.transpose model.orientation
       }
   in
-    [ compass uniform
-    , meridian 30 (degrees 45) uniform
-    , meridian 30 (degrees 135) uniform
-    ]
-    |> WebGL.webgl dimensions
-    |> uncurry Layout.container dimensions Layout.middle
-    |> Layout.color Color.black
-
+    Graphics.render dimensions
+      [ compass uniform
+      , meridian 30 (degrees 45) uniform
+      , meridian 30 (degrees 135) uniform
+      ]
+      
 
 compass : Uniform -> WebGL.Entity
 compass uniform =
@@ -116,7 +108,7 @@ compass uniform =
       , star 25 (degrees 270) (degrees 90)
       ]
   in
-    WebGL.entity vertexShader fragmentShader mesh uniform
+    Graphics.entity mesh uniform
 
 
 star : Float -> Float -> Float -> List (WebGL.Triangle Attribute)
@@ -126,14 +118,14 @@ star r phi theta =
       Mat4.makeRotate phi yAxis
       |> Mat4.rotate theta zAxis
       |> Mat4.translate (Vec3.vec3 0 r 0)
-      |> transform
+      |> Graphics.transform
 
-    down = move <| vertex Color.yellow 0 -1 0
-    up = move <| vertex Color.white 0 1 0
-    east = move <| vertex Color.yellow -1 0 0
-    west = move <| vertex Color.white 1 0 0
-    south = move <| vertex Color.yellow 0 0 -1
-    north = move <| vertex Color.white 0 0 1
+    down = move <| Graphics.vertex Color.yellow 0 -1 0
+    up = move <| Graphics.vertex Color.white 0 1 0
+    east = move <| Graphics.vertex Color.yellow -1 0 0
+    west = move <| Graphics.vertex Color.white 1 0 0
+    south = move <| Graphics.vertex Color.yellow 0 0 -1
+    north = move <| Graphics.vertex Color.white 0 0 1
 
   in
     [ (down, north, up)
@@ -156,7 +148,7 @@ meridian radius azimuth uniform =
       |> Mat4.rotate (degrees 90) zAxis
 
     ring =
-      List.map (transform rotation >> scale radius) baseRing
+      List.map (Graphics.transform rotation >> Graphics.scale radius) baseRing
 
     mesh =
       List.map3 (\a b c -> (a,b,c))
@@ -164,7 +156,7 @@ meridian radius azimuth uniform =
         (List.drop 1 ring)
         (List.drop 2 ring)
   in
-    WebGL.entity vertexShader fragmentShader mesh uniform
+    Graphics.entity mesh uniform
 
 
 vertexRing : Int -> Float -> List Attribute
@@ -186,69 +178,13 @@ vertexRing resolution width =
     Array.initialize (grate + 2) indexedVertex |> Array.toList
 
 
-transform : Mat4.Mat4 -> Attribute -> Attribute
-transform rotation vertex =
-  { vertex | position <- Mat4.transform rotation vertex.position }
-
-
-scale : Float -> Attribute -> Attribute
-scale factor vertex =
-  { vertex | position <- Vec3.scale factor vertex.position }
-
 sphVertex : Color.Color -> Float -> Float -> Float -> Attribute
 sphVertex color r phi theta =
-  vertex
+  Graphics.vertex
     color
     (r * sin theta * sin phi)
     (r * cos theta)
     (r * sin theta * cos phi)
-
-
-vertex : Color.Color -> Float -> Float -> Float -> Attribute
-vertex color x y z =
-  let
-    rgba =
-      Color.toRgb color
-
-    colorVector =
-      Vec4.vec4
-        (rgba.red ./. 255)
-        (rgba.green ./. 255)
-        (rgba.blue ./. 255)
-        rgba.alpha
-  in
-    { position = Vec3.vec3 x y z
-    , vertColor = colorVector }
-
-
-vertexShader : WebGL.Shader Attribute Uniform Varying
-vertexShader =
-  [glsl|
-  attribute vec3 position;
-  attribute vec4 vertColor;
-  uniform mat4 perspective;
-  uniform mat4 placement;
-  varying vec4 fragColor;
-
-  void main() {
-    vec4 offset = vec4 (0, 0, length(position), 0);
-    gl_Position =
-      perspective * (placement * vec4(position, 1.0) - offset);
-
-    fragColor = vertColor;
-  }
-  |]
-
-fragmentShader : WebGL.Shader { } Uniform Varying
-fragmentShader =
-  [glsl|
-  precision mediump float;
-  varying vec4 fragColor;
-
-  void main () {
-    gl_FragColor = fragColor;
-  }
-  |]
 
 
 -- Geometric constants
@@ -266,14 +202,3 @@ yAxis =
 zAxis : Vec3.Vec3
 zAxis =
   Vec3.vec3 0 0 1
-
-
--- Type-converting arithmetic operators
-
-(./.) : Int -> Int -> Float
-(./.) a b =
-  toFloat a / toFloat b
-
-(.*) : Int -> Float -> Float
-(.*) a b =
-  toFloat a * b
