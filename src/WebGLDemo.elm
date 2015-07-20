@@ -108,26 +108,33 @@ compass uniform =
   let
     mesh =
       List.concat
-      [ compassPoint 0 0 25
-      , compassPoint 0 0 -25
-      , compassPoint 25 0 0
-      , compassPoint -25 0 0
-      , compassPoint 0 25 0
-      , compassPoint 0 -25 0
+      [ star 25 0 0
+      , star 25 0 (degrees 180)
+      , star 25 0 (degrees 90)
+      , star 25 (degrees 90) (degrees 90)
+      , star 25 (degrees 180) (degrees 90)
+      , star 25 (degrees 270) (degrees 90)
       ]
   in
     WebGL.entity vertexShader fragmentShader mesh uniform
 
 
-compassPoint : Float -> Float -> Float -> List (WebGL.Triangle Attribute)
-compassPoint x y z =
+star : Float -> Float -> Float -> List (WebGL.Triangle Attribute)
+star r phi theta =
   let
-    down = vertex Color.yellow x (y - 1) z
-    up = vertex Color.white x (y + 1) z
-    east = vertex Color.yellow (x - 1) y z
-    west = vertex Color.white (x + 1) y z
-    south = vertex Color.yellow x y (z - 1)
-    north = vertex Color.white x y (z + 1)
+    move =
+      Mat4.makeRotate phi yAxis
+      |> Mat4.rotate theta zAxis
+      |> Mat4.translate (Vec3.vec3 0 r 0)
+      |> transform
+
+    down = move <| vertex Color.yellow 0 -1 0
+    up = move <| vertex Color.white 0 1 0
+    east = move <| vertex Color.yellow -1 0 0
+    west = move <| vertex Color.white 1 0 0
+    south = move <| vertex Color.yellow 0 0 -1
+    north = move <| vertex Color.white 0 0 1
+
   in
     [ (down, north, up)
     , (down, south, up)
