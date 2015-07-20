@@ -104,12 +104,12 @@ compass uniform =
   let
     mesh =
       List.concat
-      [ compassPoint 0 0 3
-      , compassPoint 0 0 -3
-      , compassPoint 3 0 0
-      , compassPoint -3 0 0
-      , compassPoint 0 3 0
-      , compassPoint 0 -3 0
+      [ compassPoint 0 0 25
+      , compassPoint 0 0 -25
+      , compassPoint 25 0 0
+      , compassPoint -25 0 0
+      , compassPoint 0 25 0
+      , compassPoint 0 -25 0
       ]
   in
     WebGL.entity vertexShader fragmentShader mesh uniform
