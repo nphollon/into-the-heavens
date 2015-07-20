@@ -98,48 +98,40 @@ type alias Varying = {
   rg : Vec3.Vec3
   }
 
-type Orientation =
-  LatitudeWall |
-  LongitudeWall |
-  Floor
-
 
 compass : Uniform -> WebGL.Entity
 compass uniform =
   let
-    mesh = 
-      [ compassPoint LatitudeWall 0 0 3
-      , compassPoint LatitudeWall 0 0 -3
-      , compassPoint LongitudeWall 3 0 0
-      , compassPoint LongitudeWall -3 0 0
-      , compassPoint Floor 0 3 0
-      , compassPoint Floor 0 -3 0
+    mesh =
+      List.concat
+      [ compassPoint 0 0 3
+      , compassPoint 0 0 -3
+      , compassPoint 3 0 0
+      , compassPoint -3 0 0
+      , compassPoint 0 3 0
+      , compassPoint 0 -3 0
       ]
   in
     WebGL.entity vertexShader fragmentShader mesh uniform
 
 
-compassPoint : Orientation -> Float -> Float -> Float -> WebGL.Triangle Attribute
-compassPoint dir x y z =
+compassPoint : Float -> Float -> Float -> List (WebGL.Triangle Attribute)
+compassPoint x y z =
   let
-    a = 1
+    down = vertex x (y - 1) z
+    up = vertex x (y + 1) z
+    east = vertex (x - 1) y z
+    west = vertex (x + 1) y z
+    south = vertex x y (z - 1)
+    north = vertex x y (z + 1)
   in
-    case dir of
-      LatitudeWall ->
-        ( vertex (x + 1) (y - 0.5) z
-        , vertex (x - 1) (y - 0.5) z
-        , vertex x (y + 1) z
-        )
-      LongitudeWall ->
-        ( vertex x (y - 0.5) (z - 1)
-        , vertex x (y - 0.5) (z + 1)
-        , vertex x (y + 1) z
-        )
-      Floor ->
-        ( vertex (x + 1) y (z - 0.5)
-        , vertex (x - 1) y (z - 0.5)
-        , vertex x y (z + 1)
-        )
+    [ (down, north, up)
+    , (down, south, up)
+    , (down, east, up)
+    , (down, west, up)
+    , (east, north, west)
+    , (east, south, west)
+    ]
 
 
 meridian : Float -> Float -> Uniform -> WebGL.Entity
@@ -151,9 +143,6 @@ meridian radius azimuth uniform =
     rotation =
       Mat4.makeRotate azimuth yAxis
       |> Mat4.rotate (degrees 90) zAxis
-
-    enlarge vertex =
-      { vertex | position <- Vec3.scale radius vertex.position }
 
     ring =
       List.map (transform rotation >> scale radius) baseRing
