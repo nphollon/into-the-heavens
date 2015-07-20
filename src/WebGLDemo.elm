@@ -2,6 +2,7 @@ module WebGLDemo where
 
 import WebGL
 import Math.Vector3 as Vec3
+import Math.Vector4 as Vec4
 import Math.Matrix4 as Mat4
 import Graphics.Element as Layout
 import Color
@@ -40,6 +41,23 @@ type alias Model =
 type alias Action =
   { x : Int
   , y : Int
+  }
+
+
+type alias Attribute =
+  { position : Vec3.Vec3
+  , vertColor : Vec4.Vec4
+  }
+
+
+type alias Uniform =
+  { perspective : Mat4.Mat4
+  , placement : Mat4.Mat4
+  }
+
+
+type alias Varying = {
+  fragColor : Vec4.Vec4
   }
 
 
@@ -85,20 +103,6 @@ view model =
     |> Layout.color Color.black
 
 
-type alias Attribute =
-  { position : Vec3.Vec3
-  }
-
-type alias Uniform =
-  { perspective : Mat4.Mat4
-  , placement : Mat4.Mat4
-  }
-
-type alias Varying = {
-  rg : Vec3.Vec3
-  }
-
-
 compass : Uniform -> WebGL.Entity
 compass uniform =
   let
@@ -118,12 +122,12 @@ compass uniform =
 compassPoint : Float -> Float -> Float -> List (WebGL.Triangle Attribute)
 compassPoint x y z =
   let
-    down = vertex x (y - 1) z
-    up = vertex x (y + 1) z
-    east = vertex (x - 1) y z
-    west = vertex (x + 1) y z
-    south = vertex x y (z - 1)
-    north = vertex x y (z + 1)
+    down = vertex Color.yellow x (y - 1) z
+    up = vertex Color.white x (y + 1) z
+    east = vertex Color.yellow (x - 1) y z
+    west = vertex Color.white (x + 1) y z
+    south = vertex Color.yellow x y (z - 1)
+    north = vertex Color.white x y (z + 1)
   in
     [ (down, north, up)
     , (down, south, up)
@@ -170,7 +174,7 @@ vertexRing resolution width =
         phi =
           turns (i ./. grate)
       in
-        sphVertex 1 phi (degrees 90 + side .* width)
+        sphVertex Color.red 1 phi (degrees 90 + side .* width)
   in
     Array.initialize (grate + 2) indexedVertex |> Array.toList
 
@@ -184,32 +188,47 @@ scale : Float -> Attribute -> Attribute
 scale factor vertex =
   { vertex | position <- Vec3.scale factor vertex.position }
 
-sphVertex : Float -> Float -> Float -> Attribute
-sphVertex r phi theta =
+sphVertex : Color.Color -> Float -> Float -> Float -> Attribute
+sphVertex color r phi theta =
   vertex
+    color
     (r * sin theta * sin phi)
     (r * cos theta)
     (r * sin theta * cos phi)
 
 
-vertex : Float -> Float -> Float -> Attribute
-vertex x y z =
-  { position = Vec3.vec3 x y z }
+vertex : Color.Color -> Float -> Float -> Float -> Attribute
+vertex color x y z =
+  let
+    rgba =
+      Color.toRgb color
+
+    colorVector =
+      Vec4.vec4
+        (rgba.red ./. 255)
+        (rgba.green ./. 255)
+        (rgba.blue ./. 255)
+        rgba.alpha
+  in
+    { position = Vec3.vec3 x y z
+    , vertColor = colorVector }
 
 
 vertexShader : WebGL.Shader Attribute Uniform Varying
 vertexShader =
   [glsl|
   attribute vec3 position;
+  attribute vec4 vertColor;
   uniform mat4 perspective;
   uniform mat4 placement;
-  varying vec3 rg;
+  varying vec4 fragColor;
 
   void main() {
     vec4 offset = vec4 (0, 0, length(position), 0);
     gl_Position =
       perspective * (placement * vec4(position, 1.0) - offset);
-    rg = normalize(position) + vec3(0.6, 0.6, 0.6);
+
+    fragColor = vertColor;
   }
   |]
 
@@ -217,10 +236,10 @@ fragmentShader : WebGL.Shader { } Uniform Varying
 fragmentShader =
   [glsl|
   precision mediump float;
-  varying vec3 rg;
+  varying vec4 fragColor;
 
   void main () {
-    gl_FragColor = vec4(rg, 1.0);
+    gl_FragColor = fragColor;
   }
   |]
 
