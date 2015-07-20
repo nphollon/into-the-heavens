@@ -12,10 +12,11 @@ import List
 import Array
 
 {-
-  optimization questions:
+  questions:
     triangle fans & strips
     rendering faces in one direction only
     referencing vertices by index
+    geometry shaders
   -}
 
 main : Signal Layout.Element
@@ -120,22 +121,25 @@ compass uniform =
 
 compassPoint : Orientation -> Float -> Float -> Float -> WebGL.Triangle Attribute
 compassPoint dir x y z =
-  case dir of
-    LatitudeWall ->
-      ( vertex (x + 1) (y - 0.5) z
-      , vertex (x - 1) (y - 0.5) z
-      , vertex x (y + 1) z
-      )
-    LongitudeWall ->
-      ( vertex x (y - 0.5) (z - 1)
-      , vertex x (y - 0.5) (z + 1)
-      , vertex x (y + 1) z
-      )
-    Floor ->
-      ( vertex (x + 1) y (z - 0.5)
-      , vertex (x - 1) y (z - 0.5)
-      , vertex x y (z + 1)
-      )
+  let
+    a = 1
+  in
+    case dir of
+      LatitudeWall ->
+        ( vertex (x + 1) (y - 0.5) z
+        , vertex (x - 1) (y - 0.5) z
+        , vertex x (y + 1) z
+        )
+      LongitudeWall ->
+        ( vertex x (y - 0.5) (z - 1)
+        , vertex x (y - 0.5) (z + 1)
+        , vertex x (y + 1) z
+        )
+      Floor ->
+        ( vertex (x + 1) y (z - 0.5)
+        , vertex (x - 1) y (z - 0.5)
+        , vertex x y (z + 1)
+        )
 
 
 meridian : Float -> Float -> Uniform -> WebGL.Entity
@@ -148,14 +152,11 @@ meridian radius azimuth uniform =
       Mat4.makeRotate azimuth yAxis
       |> Mat4.rotate (degrees 90) zAxis
 
-    rotate vertex =
-      { vertex | position <- Mat4.transform rotation vertex.position }
-
     enlarge vertex =
       { vertex | position <- Vec3.scale radius vertex.position }
 
     ring =
-      List.map (rotate >> enlarge) baseRing
+      List.map (transform rotation >> scale radius) baseRing
 
     mesh =
       List.map3 (\a b c -> (a,b,c))
@@ -184,6 +185,15 @@ vertexRing resolution width =
   in
     Array.initialize (grate + 2) indexedVertex |> Array.toList
 
+
+transform : Mat4.Mat4 -> Attribute -> Attribute
+transform rotation vertex =
+  { vertex | position <- Mat4.transform rotation vertex.position }
+
+
+scale : Float -> Attribute -> Attribute
+scale factor vertex =
+  { vertex | position <- Vec3.scale factor vertex.position }
 
 sphVertex : Float -> Float -> Float -> Attribute
 sphVertex r phi theta =
