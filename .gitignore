@@ -1,4 +1,5 @@
 elm-stuff
 elm.js
+*.jar
 *.sublime-workspace
 public_html/heavens.js

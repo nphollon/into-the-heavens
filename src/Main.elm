@@ -40,14 +40,14 @@ type alias Action =
 
 signal : Signal Action
 signal =
-  Signal.sampleOn (Time.every (10 * Time.millisecond)) Keyboard.wasd
+  Signal.sampleOn (Time.every (20 * Time.millisecond)) Keyboard.wasd
 
 
 update : Action -> Model -> Model
 update action model =
   let
     delta =
-      degrees 1
+      degrees 3
 
     xAxis =
       Vec3.vec3 1 0 0
