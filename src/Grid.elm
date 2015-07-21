@@ -21,28 +21,14 @@ type alias Image =
   }
   
 
-parallel : Float -> Image
-parallel declination =
+parallel : Float -> Float -> Graphics.Uniform -> Graphics.Entity
+parallel radius declination uniform =
   let
-    init i =
-      skyPoint (0.05 * toFloat i) declination
-  in
-    { points = Array.initialize 500 init |> Array.toList
-    , draw = drawLine Color.red
-    }
-
-
-meridian : Float -> Float -> Graphics.Uniform -> Graphics.Entity
-meridian radius azimuth uniform = 
-  let
-    baseRing =
-      vertexRing 50 0.005
-
     transform =
-      Graphics.rotate (degrees 90) azimuth >> Graphics.scale radius
+      Graphics.scale (radius * cos declination)
 
     ring =
-      List.map transform baseRing
+      List.map transform (vertexRing 50 0.005 (degrees 90 + declination))
 
     mesh =
       List.map3 (\a b c -> (a,b,c))
@@ -53,8 +39,26 @@ meridian radius azimuth uniform =
     Graphics.entity mesh uniform
 
 
-vertexRing : Int -> Float -> List Graphics.Attribute
-vertexRing resolution width =
+meridian : Float -> Float -> Graphics.Uniform -> Graphics.Entity
+meridian radius azimuth uniform = 
+  let
+    transform =
+      Graphics.rotate (degrees 90) azimuth >> Graphics.scale radius
+
+    ring =
+      List.map transform (vertexRing 50 0.005 (degrees 90))
+
+    mesh =
+      List.map3 (\a b c -> (a,b,c))
+        ring
+        (List.drop 1 ring)
+        (List.drop 2 ring)
+  in
+    Graphics.entity mesh uniform
+
+
+vertexRing : Int -> Float -> Float -> List Graphics.Attribute
+vertexRing resolution width zenithAngle =
   let
     grate =
       2 * resolution
@@ -67,7 +71,7 @@ vertexRing resolution width =
         phi =
           turns (i ./. grate)
       in
-        sphVertex Color.red 1 phi (degrees 90 + side .* width)
+        sphVertex Color.blue 1 phi (zenithAngle + side .* width)
   in
     Array.initialize (grate + 2) indexedVertex |> Array.toList
 

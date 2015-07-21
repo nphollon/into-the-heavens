@@ -93,6 +93,11 @@ view model =
       [ compass uniform
       , Grid.meridian 30 (degrees 45) uniform
       , Grid.meridian 30 (degrees 135) uniform
+      , Grid.parallel 30 0 uniform
+      , Grid.parallel 30 (degrees 23) uniform
+      , Grid.parallel 30 (degrees -23) uniform
+      , Grid.parallel 30 (degrees 67) uniform
+      , Grid.parallel 30 (degrees -67) uniform
       ]
       
 
@@ -116,7 +121,7 @@ star : Float -> Float -> Float -> List (WebGL.Triangle Attribute)
 star r phi theta =
   let
     move =
-      Graphics.transform (Mat4.makeTranslate (Vec3.vec3 0 r 0))
+      Graphics.translate 0 r 0
       >> Graphics.rotate theta phi
 
     down = move <| Graphics.vertex Color.yellow 0 -1 0

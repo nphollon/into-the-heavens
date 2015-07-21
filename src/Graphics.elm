@@ -64,15 +64,18 @@ vertex color x y z =
 
 
 rotate : Float -> Float -> Attribute -> Attribute
-rotate pitch yaw =
-  Mat4.makeRotate yaw yAxis
-  |> Mat4.rotate pitch zAxis
-  |> transform
+rotate pitch yaw vertex =
+  let
+    rotation =
+      Mat4.makeRotate yaw yAxis
+      |> Mat4.rotate pitch zAxis
+  in
+    { vertex | position <- Mat4.transform rotation vertex.position }
 
 
-transform : Mat4.Mat4 -> Attribute -> Attribute
-transform matrix vertex =
-  { vertex | position <- Mat4.transform matrix vertex.position }
+translate : Float -> Float -> Float -> Attribute -> Attribute
+translate x y z vertex =
+  { vertex | position <- Vec3.add vertex.position (Vec3.vec3 x y z) }
 
 
 scale : Float -> Attribute -> Attribute
