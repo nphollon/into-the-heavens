@@ -1,24 +1,14 @@
 module Grid (parallel, meridian) where
 
+import Color
+import Array
+import List
+
 import Math.Vector3 as Vec3
 import Math.Matrix4 as Mat4
 
 import Graphics
 import Infix exposing (..)
-
-import Graphics.Collage as Collage exposing (Form)
-import Color
-import Array
-import List
-
-type alias Point = 
-  (Float, Float)
-
-
-type alias Image = 
-  { points : List Point
-  , draw : List Point -> Form
-  }
   
 
 parallel : Float -> Float -> Graphics.Uniform -> Graphics.Entity

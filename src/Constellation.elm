@@ -1,6 +1,5 @@
 module Constellation (crux, ursaMajor, aquarius) where
 
-import Graphics.Collage as Collage
 import Color
 import List
 

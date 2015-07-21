@@ -1,16 +1,12 @@
 module Main where
 
-import WebGL
-import Math.Vector3 as Vec3
-import Math.Vector4 as Vec4
-import Math.Matrix4 as Mat4
 import Graphics.Element as Layout
-import Color
 import Signal
 import Time
 import Keyboard
-import List
-import Array
+
+import Math.Vector3 as Vec3
+import Math.Matrix4 as Mat4
 
 import Graphics
 import Grid
@@ -52,6 +48,12 @@ update action model =
     delta =
       degrees 1
 
+    xAxis =
+      Vec3.vec3 1 0 0
+
+    yAxis =
+      Vec3.vec3 0 1 0
+
     newOrientation =
       model.orientation
       |> Mat4.rotate (action.y .* delta) xAxis
@@ -87,13 +89,3 @@ view model =
       , Grid.parallel 30 (degrees -67) uniform
       ]
       
--- Geometric constants
-
-xAxis : Vec3.Vec3
-xAxis =
-  Vec3.vec3 1 0 0
-
-
-yAxis : Vec3.Vec3
-yAxis =
-  Vec3.vec3 0 1 0
