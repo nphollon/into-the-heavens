@@ -1,6 +1,12 @@
 module Grid (parallel, meridian) where
 
-import Graphics.Collage as Graphics exposing (Form)
+import Math.Vector3 as Vec3
+import Math.Matrix4 as Mat4
+
+import Graphics
+import Infix exposing (..)
+
+import Graphics.Collage as Collage exposing (Form)
 import Color
 import Array
 import List
@@ -26,15 +32,53 @@ parallel declination =
     }
 
 
-meridian : Float -> Image
-meridian rightAscension =
+meridian : Float -> Float -> Graphics.Uniform -> Graphics.Entity
+meridian radius azimuth uniform = 
   let
-    init i =
-      skyPoint rightAscension (toFloat i * 0.36 - 90)
+    baseRing =
+      vertexRing 50 0.005
+
+    transform =
+      Graphics.rotate (degrees 90) azimuth >> Graphics.scale radius
+
+    ring =
+      List.map transform baseRing
+
+    mesh =
+      List.map3 (\a b c -> (a,b,c))
+        ring
+        (List.drop 1 ring)
+        (List.drop 2 ring)
   in
-    { points = Array.initialize 500 init |> Array.toList
-    , draw = drawLine Color.blue
-    }
+    Graphics.entity mesh uniform
+
+
+vertexRing : Int -> Float -> List Graphics.Attribute
+vertexRing resolution width =
+  let
+    grate =
+      2 * resolution
+
+    indexedVertex i =
+      let
+        side =
+          if (i % 2 == 0) then 1 else -1
+
+        phi =
+          turns (i ./. grate)
+      in
+        sphVertex Color.red 1 phi (degrees 90 + side .* width)
+  in
+    Array.initialize (grate + 2) indexedVertex |> Array.toList
+
+
+sphVertex : Color.Color -> Float -> Float -> Float -> Graphics.Attribute
+sphVertex color r phi theta =
+  Graphics.vertex
+    color
+    (r * sin theta * sin phi)
+    (r * cos theta)
+    (r * sin theta * cos phi)
 
 
 skyPoint : Float -> Float -> Point
@@ -45,9 +89,9 @@ skyPoint ra dec =
 drawLine : Color.Color -> List Point -> Form
 drawLine color path =
   List.map
-    (Graphics.traced (Graphics.solid color))
+    (Collage.traced (Collage.solid color))
     (splitPath path)
-  |> Graphics.group
+  |> Collage.group
 
 
 splitPath : List Point -> List (List Point)

@@ -13,6 +13,7 @@ import List
 import Array
 
 import Graphics
+import Grid
 import Infix exposing (..)
 
 main : Signal Layout.Element
@@ -90,8 +91,8 @@ view model =
   in
     Graphics.render dimensions
       [ compass uniform
-      , meridian 30 (degrees 45) uniform
-      , meridian 30 (degrees 135) uniform
+      , Grid.meridian 30 (degrees 45) uniform
+      , Grid.meridian 30 (degrees 135) uniform
       ]
       
 
@@ -115,10 +116,8 @@ star : Float -> Float -> Float -> List (WebGL.Triangle Attribute)
 star r phi theta =
   let
     move =
-      Mat4.makeRotate phi yAxis
-      |> Mat4.rotate theta zAxis
-      |> Mat4.translate (Vec3.vec3 0 r 0)
-      |> Graphics.transform
+      Graphics.transform (Mat4.makeTranslate (Vec3.vec3 0 r 0))
+      >> Graphics.rotate theta phi
 
     down = move <| Graphics.vertex Color.yellow 0 -1 0
     up = move <| Graphics.vertex Color.white 0 1 0
@@ -137,56 +136,6 @@ star r phi theta =
     ]
 
 
-meridian : Float -> Float -> Uniform -> WebGL.Entity
-meridian radius azimuth uniform = 
-  let
-    baseRing =
-      vertexRing 50 0.005
-
-    rotation =
-      Mat4.makeRotate azimuth yAxis
-      |> Mat4.rotate (degrees 90) zAxis
-
-    ring =
-      List.map (Graphics.transform rotation >> Graphics.scale radius) baseRing
-
-    mesh =
-      List.map3 (\a b c -> (a,b,c))
-        ring
-        (List.drop 1 ring)
-        (List.drop 2 ring)
-  in
-    Graphics.entity mesh uniform
-
-
-vertexRing : Int -> Float -> List Attribute
-vertexRing resolution width =
-  let
-    grate =
-      2 * resolution
-
-    indexedVertex i =
-      let
-        side =
-          if (i % 2 == 0) then 1 else -1
-
-        phi =
-          turns (i ./. grate)
-      in
-        sphVertex Color.red 1 phi (degrees 90 + side .* width)
-  in
-    Array.initialize (grate + 2) indexedVertex |> Array.toList
-
-
-sphVertex : Color.Color -> Float -> Float -> Float -> Attribute
-sphVertex color r phi theta =
-  Graphics.vertex
-    color
-    (r * sin theta * sin phi)
-    (r * cos theta)
-    (r * sin theta * cos phi)
-
-
 -- Geometric constants
 
 xAxis : Vec3.Vec3
@@ -197,8 +146,3 @@ xAxis =
 yAxis : Vec3.Vec3
 yAxis =
   Vec3.vec3 0 1 0
-
-
-zAxis : Vec3.Vec3
-zAxis =
-  Vec3.vec3 0 0 1

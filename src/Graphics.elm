@@ -1,4 +1,4 @@
-module Graphics (vertex, entity, transform, scale, render) where
+module Graphics where
 
 import Color
 import Graphics.Element as Layout
@@ -42,6 +42,10 @@ type alias Varying = {
   }
 
 
+type alias Entity =
+  WebGL.Entity
+
+
 vertex : Color.Color -> Float -> Float -> Float -> Attribute
 vertex color x y z =
   let
@@ -59,9 +63,16 @@ vertex color x y z =
     , vertColor = colorVector }
 
 
+rotate : Float -> Float -> Attribute -> Attribute
+rotate pitch yaw =
+  Mat4.makeRotate yaw yAxis
+  |> Mat4.rotate pitch zAxis
+  |> transform
+
+
 transform : Mat4.Mat4 -> Attribute -> Attribute
-transform rotation vertex =
-  { vertex | position <- Mat4.transform rotation vertex.position }
+transform matrix vertex =
+  { vertex | position <- Mat4.transform matrix vertex.position }
 
 
 scale : Float -> Attribute -> Attribute
@@ -72,6 +83,21 @@ scale factor vertex =
 entity : List (WebGL.Triangle Attribute) -> Uniform -> WebGL.Entity
 entity mesh uniform =
   WebGL.entity vertexShader fragmentShader mesh uniform
+
+
+xAxis : Vec3.Vec3
+xAxis =
+  Vec3.vec3 1 0 0
+
+
+yAxis : Vec3.Vec3
+yAxis =
+  Vec3.vec3 0 1 0
+
+
+zAxis : Vec3.Vec3
+zAxis =
+  Vec3.vec3 0 0 1
 
 
 vertexShader : WebGL.Shader Attribute Uniform Varying
