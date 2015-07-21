@@ -11,6 +11,7 @@ import Math.Matrix4 as Mat4
 import Graphics
 import Grid
 import Constellation
+import Scatter
 import Infix exposing (..)
 
 main : Signal Layout.Element
@@ -80,6 +81,7 @@ view model =
       [ Constellation.crux uniform
       , Constellation.ursaMajor uniform
       , Constellation.aquarius uniform
+      , Scatter.scatter 100 uniform
       , Grid.meridian 30 (degrees 0) uniform
       , Grid.meridian 30 (degrees 90) uniform
       , Grid.parallel 30 0 uniform

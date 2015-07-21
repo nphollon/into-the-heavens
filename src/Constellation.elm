@@ -1,4 +1,4 @@
-module Constellation (crux, ursaMajor, aquarius) where
+module Constellation (crux, ursaMajor, aquarius, star) where
 
 import Color
 import List
@@ -17,7 +17,7 @@ skyPoint ra dec =
 
 crux : Graphics.Uniform -> WebGL.Entity
 crux =
-  constellation 
+  constellation
     [ skyPoint 12.43 -63.08
     , skyPoint 12.78 -59.68
     , skyPoint 12.52 -57.10
@@ -62,23 +62,23 @@ constellation : List Point -> Graphics.Uniform -> WebGL.Entity
 constellation stars uniform =
   let
     mesh =
-      List.concatMap (uncurry (star 0.01)) stars
+      List.concatMap (uncurry (star Color.yellow 0.01)) stars
   in
     Graphics.entity mesh uniform
 
-star : Float -> Float -> Float -> List (WebGL.Triangle Graphics.Attribute)
-star r phi theta =
+star : Color.Color -> Float -> Float -> Float -> List (WebGL.Triangle Graphics.Attribute)
+star color r phi theta =
   let
     move =
       Graphics.translate 0 1 0
       >> Graphics.rotate theta phi
 
-    down = move <| Graphics.vertex Color.yellow 0 -r 0
-    up = move <| Graphics.vertex Color.white 0 r 0
-    east = move <| Graphics.vertex Color.yellow -r 0 0
-    west = move <| Graphics.vertex Color.white r 0 0
-    south = move <| Graphics.vertex Color.yellow 0 0 -r
-    north = move <| Graphics.vertex Color.white 0 0 r
+    down = move <| Graphics.vertex color 0 -r 0
+    up = move <| Graphics.vertex color 0 r 0
+    east = move <| Graphics.vertex color -r 0 0
+    west = move <| Graphics.vertex color r 0 0
+    south = move <| Graphics.vertex color 0 0 -r
+    north = move <| Graphics.vertex color 0 0 r
 
   in
     [ (down, north, up)

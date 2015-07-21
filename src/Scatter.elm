@@ -2,20 +2,17 @@ module Scatter (scatter) where
 
 import Random
 import List
-import Graphics.Collage as Graphics
 import Color
+
+import Graphics
+import Constellation
+
 
 type alias Point = 
   (Float, Float)
 
 
-type alias Image = 
-  { points : List Point
-  , draw : List Point -> Graphics.Form
-  }
-
-
-scatter : Int -> Image
+scatter : Int -> Graphics.Uniform -> Graphics.Entity
 scatter n =
   let
     seed =
@@ -24,14 +21,10 @@ scatter n =
     (randomPoints, seed') =
       Random.generate (Random.list n starPoint) seed
 
-    drawStar position = 
-      Graphics.circle 2
-      |> Graphics.filled Color.darkBlue 
-      |> Graphics.move position
+    mesh =
+      List.concatMap (uncurry (Constellation.star Color.blue 0.01)) randomPoints
   in
-    { points = randomPoints
-    , draw = Graphics.group << List.map drawStar
-    }
+    Graphics.entity mesh
 
 starPoint : Random.Generator Point
 starPoint =
@@ -39,7 +32,7 @@ starPoint =
     randAz =
       Random.float 0 (turns 1)
 
-    randSinZen =
+    randCosTheta =
       Random.float -1 1
   in
     Random.customGenerator
@@ -48,10 +41,10 @@ starPoint =
           (az, seed') =
             Random.generate randAz seed
 
-          (sinZen, seed'') =
-            Random.generate randSinZen seed'
+          (cosTheta, seed'') =
+            Random.generate randCosTheta seed'
 
-          alt = asin sinZen
+          alt = acos cosTheta
         in
           ((az, alt), seed'')
       )
