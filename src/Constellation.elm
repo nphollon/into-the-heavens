@@ -1,26 +1,22 @@
 module Constellation (crux, ursaMajor, aquarius) where
 
-import Graphics.Collage as Graphics
+import Graphics.Collage as Collage
 import Color
 import List
 
+import Graphics
+import WebGL
 
 type alias Point = 
   (Float, Float)
-
-
-type alias Image = 
-  { points : List Point
-  , draw : List Point -> Graphics.Form
-  }
   
 
 skyPoint : Float -> Float -> Point
 skyPoint ra dec =
-  (turns ra / 24, degrees dec)
+  (turns ra / 24, degrees (90 - dec))
 
 
-crux : Image
+crux : Graphics.Uniform -> WebGL.Entity
 crux =
   constellation 
     [ skyPoint 12.43 -63.08
@@ -31,7 +27,7 @@ crux =
     ]
 
 
-ursaMajor : Image
+ursaMajor : Graphics.Uniform -> WebGL.Entity
 ursaMajor =
   constellation
     [ skyPoint 11.06 61.75
@@ -51,7 +47,7 @@ ursaMajor =
     ]
 
 
-aquarius : Image
+aquarius : Graphics.Uniform -> WebGL.Entity
 aquarius =
   constellation
     [ skyPoint 22.10 -0.32
@@ -63,14 +59,33 @@ aquarius =
     ]
 
 
-constellation : List Point -> Image
-constellation stars =
+constellation : List Point -> Graphics.Uniform -> WebGL.Entity
+constellation stars uniform =
   let
-    drawStar position =
-      Graphics.circle 1
-      |> Graphics.filled Color.yellow 
-      |> Graphics.move position
-  in    
-    { points = stars
-    , draw = Graphics.group << List.map drawStar
-    }
+    mesh =
+      List.concatMap (uncurry (star 0.01)) stars
+  in
+    Graphics.entity mesh uniform
+
+star : Float -> Float -> Float -> List (WebGL.Triangle Graphics.Attribute)
+star r phi theta =
+  let
+    move =
+      Graphics.translate 0 1 0
+      >> Graphics.rotate theta phi
+
+    down = move <| Graphics.vertex Color.yellow 0 -r 0
+    up = move <| Graphics.vertex Color.white 0 r 0
+    east = move <| Graphics.vertex Color.yellow -r 0 0
+    west = move <| Graphics.vertex Color.white r 0 0
+    south = move <| Graphics.vertex Color.yellow 0 0 -r
+    north = move <| Graphics.vertex Color.white 0 0 r
+
+  in
+    [ (down, north, up)
+    , (down, south, up)
+    , (down, east, up)
+    , (down, west, up)
+    , (east, north, west)
+    , (east, south, west)
+    ]
