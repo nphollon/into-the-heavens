@@ -30,6 +30,9 @@ type alias Attribute =
   , vertColor : Vec4.Vec4
   }
 
+type alias Mesh =
+  List (WebGL.Triangle Attribute)
+
 
 type alias Uniform =
   { perspective : Mat4.Mat4

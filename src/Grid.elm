@@ -1,4 +1,4 @@
-module Grid (parallel, meridian) where
+module Grid (grid) where
 
 import Color
 import Array
@@ -11,40 +11,50 @@ import Graphics
 import Infix exposing (..)
   
 
-parallel : Float -> Float -> Graphics.Uniform -> Graphics.Entity
-parallel radius declination uniform =
+grid : Int -> Int -> Graphics.Uniform -> Graphics.Entity
+grid xRes yRes uniform =
+  let
+    meridians =
+      Array.initialize xRes (\i ->
+          meridian (i ./. xRes * turns 0.5)
+        ) |> Array.toList |> List.concat
+
+    parallels =
+      Array.initialize yRes (\i ->
+          parallel (i ./. yRes * turns 0.5 - turns 0.25)
+        ) |> Array.toList |> List.concat
+  in
+    Graphics.entity (meridians ++ parallels) uniform
+    
+
+parallel : Float -> Graphics.Mesh
+parallel declination =
   let
     transform =
-      Graphics.scale (radius * cos declination)
-
-    ring =
-      List.map transform (vertexRing 50 0.005 (degrees 90 + declination))
-
-    mesh =
-      List.map3 (\a b c -> (a,b,c))
-        ring
-        (List.drop 1 ring)
-        (List.drop 2 ring)
+      Graphics.scale (cos declination)
   in
-    Graphics.entity mesh uniform
+    triangleRing transform declination
 
 
-meridian : Float -> Float -> Graphics.Uniform -> Graphics.Entity
-meridian radius azimuth uniform = 
+meridian : Float -> Graphics.Mesh
+meridian azimuth = 
   let
     transform =
-      Graphics.rotate (degrees 90) azimuth >> Graphics.scale radius
-
-    ring =
-      List.map transform (vertexRing 50 0.005 (degrees 90))
-
-    mesh =
-      List.map3 (\a b c -> (a,b,c))
-        ring
-        (List.drop 1 ring)
-        (List.drop 2 ring)
+      Graphics.rotate (degrees 90) azimuth
   in
-    Graphics.entity mesh uniform
+    triangleRing transform 0
+
+
+triangleRing : (Graphics.Attribute -> Graphics.Attribute) -> Float -> Graphics.Mesh
+triangleRing transform altitude =
+  let
+    ring =
+      List.map transform (vertexRing 50 0.005 (degrees 90 + altitude))
+  in
+    List.map3 (\a b c -> (a,b,c))
+      ring
+      (List.drop 1 ring)
+      (List.drop 2 ring)
 
 
 vertexRing : Int -> Float -> Float -> List Graphics.Attribute

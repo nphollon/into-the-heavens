@@ -4,7 +4,6 @@ import Color
 import List
 
 import Graphics
-import WebGL
 
 type alias Point = 
   (Float, Float)
@@ -15,7 +14,7 @@ skyPoint ra dec =
   (turns ra / 24, degrees (90 - dec))
 
 
-crux : Graphics.Uniform -> WebGL.Entity
+crux : Graphics.Uniform -> Graphics.Entity
 crux =
   constellation
     [ skyPoint 12.43 -63.08
@@ -26,7 +25,7 @@ crux =
     ]
 
 
-ursaMajor : Graphics.Uniform -> WebGL.Entity
+ursaMajor : Graphics.Uniform -> Graphics.Entity
 ursaMajor =
   constellation
     [ skyPoint 11.06 61.75
@@ -46,7 +45,7 @@ ursaMajor =
     ]
 
 
-aquarius : Graphics.Uniform -> WebGL.Entity
+aquarius : Graphics.Uniform -> Graphics.Entity
 aquarius =
   constellation
     [ skyPoint 22.10 -0.32
@@ -58,7 +57,7 @@ aquarius =
     ]
 
 
-constellation : List Point -> Graphics.Uniform -> WebGL.Entity
+constellation : List Point -> Graphics.Uniform -> Graphics.Entity
 constellation stars uniform =
   let
     mesh =
@@ -66,11 +65,11 @@ constellation stars uniform =
   in
     Graphics.entity mesh uniform
 
-star : Color.Color -> Float -> Float -> Float -> List (WebGL.Triangle Graphics.Attribute)
+star : Color.Color -> Float -> Float -> Float -> Graphics.Mesh
 star color r phi theta =
   let
     move =
-      Graphics.translate 0 1 0
+      Graphics.translate 0 0.9 0
       >> Graphics.rotate theta phi
 
     down = move <| Graphics.vertex color 0 -r 0

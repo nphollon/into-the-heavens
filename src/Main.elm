@@ -82,12 +82,6 @@ view model =
       , Constellation.ursaMajor uniform
       , Constellation.aquarius uniform
       , Scatter.scatter 100 uniform
-      , Grid.meridian 30 (degrees 0) uniform
-      , Grid.meridian 30 (degrees 90) uniform
-      , Grid.parallel 30 0 uniform
-      , Grid.parallel 30 (degrees 23) uniform
-      , Grid.parallel 30 (degrees -23) uniform
-      , Grid.parallel 30 (degrees 67) uniform
-      , Grid.parallel 30 (degrees -67) uniform
+      , Grid.grid 8 8 uniform
       ]
       
