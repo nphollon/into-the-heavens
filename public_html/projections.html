@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="UTF-8" />
+    <link href="styles.css" rel="stylesheet" type="text/css">
+    <title>Into the Heavens</title>
+  </head>
+
+  <body>
+    <h1>Projections</h1>
+  
+    <p>WebGL by default shows an orthographic projection.</p>
+
+    <p>For first-person games, orthographic projections don't cut it. In an
+    orthographic projection, things remain the same size as they move farther
+    away from the camera. So for programs where a perspective view is needed, we
+    use what cartographers call a gnomonic projection. The gnomonic projection
+    is unique in that it preserves straight lines. This gives a view of the
+    world that looks realistic, but unfortunately it is only useful for narrow
+    fields of view.</p>
+
+    <p>For fields of view larger than an octant, stereographic projections are
+    much better than gnomonic projections. An entire hemisphere can be shown
+    with bearable distortion. Unfortunately, straight lines in space no longer
+    look straight to the camera.</p>
+
+    <p>If you have a regular (gnomonic) projection matrix computed, you can
+    easily use it to create a stereographic projection. Before multiplying the
+    vertex position by the projection matrix, push the vertices away from the
+    camera.</p>
+
+    <p>position.z = position.z + length(position)</p>
+  </body>
+
+</html>
