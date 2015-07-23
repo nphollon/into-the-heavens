@@ -82,6 +82,6 @@ view model =
       , Constellation.ursaMajor uniform
       , Constellation.aquarius uniform
       , Scatter.scatter 100 uniform
-      , Grid.grid 8 8 uniform
+      , Grid.grid 2 4 uniform
       ]
       

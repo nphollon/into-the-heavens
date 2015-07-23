@@ -2,34 +2,34 @@
     font-family: 'Coelacanth';
     src: url('Coelac.otf') format('opentype');
     font-weight: normal;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'Coelacanth';
-    src: url('CoelacBold.otf') format('opentype');
-    font-weight: bold;
-    font-style: normal;
+    font-style: normal, italic;
 }
 
 body {
-  background-color: #000044;
+  background-color: #000033;
   font-family: 'Coelacanth';
   font-weight: normal;
+  font-size: 15pt;
+  line-height: 1.45;
   color: #CCFFEE;
+  padding-left: 25%
 }
 
 h1 {
-  font-weight: bold;
-  letter-spacing: 0.3em;
-  font-size: 2em;
-  padding-left: 1em;
+  font-style: italic;
+  font-weight: normal;
+  font-size: 1.5rem;
+  padding-left: 2rem;
 }
 
 p {
-  font-size: 1em;
-  padding-left: 2em;
+  padding-left: 2rem;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
 }
 
 #app {
-  padding-left: 1em;
 }
