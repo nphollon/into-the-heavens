@@ -12,6 +12,7 @@ import Graphics
 import Grid
 import Constellation
 import Scatter
+import Planet
 import Infix exposing (..)
 
 main : Signal Layout.Element
@@ -82,6 +83,7 @@ view model =
       , Constellation.ursaMajor uniform
       , Constellation.aquarius uniform
       , Scatter.scatter 100 uniform
+      , Planet.planet uniform
       , Grid.grid 2 4 uniform
       ]
       
