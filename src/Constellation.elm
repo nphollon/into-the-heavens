@@ -74,16 +74,18 @@ star color r phi theta =
 
     down = move <| Graphics.vertex color 0 -r 0
     up = move <| Graphics.vertex color 0 r 0
-    east = move <| Graphics.vertex color -r 0 0
-    west = move <| Graphics.vertex color r 0 0
+    west = move <| Graphics.vertex color -r 0 0
+    east = move <| Graphics.vertex color r 0 0
     south = move <| Graphics.vertex color 0 0 -r
     north = move <| Graphics.vertex color 0 0 r
 
   in
-    [ (down, north, up)
-    , (down, south, up)
-    , (down, east, up)
-    , (down, west, up)
-    , (east, north, west)
-    , (east, south, west)
+    [ (down, north, west)
+    , (down, east, north)
+    , (down, south, east)
+    , (down, west, south)
+    , (up, west, north)
+    , (up, north, east)
+    , (up, east, south)
+    , (up, south, west)
     ]
