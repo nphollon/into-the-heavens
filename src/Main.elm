@@ -44,7 +44,7 @@ type Update =
 
 
 type alias Action =
-  { forward : Bool
+  { thrust : Int
   , pitch : Int
   , yaw : Int
   , roll : Int
@@ -53,7 +53,7 @@ type alias Action =
 
 inaction : Action
 inaction =
-  { forward = False
+  { thrust = 0
   , pitch = 0
   , yaw = 0
   , roll = 0
@@ -88,7 +88,9 @@ keysDown =
         'E' ->
           { action | roll <- action.roll + 1 }
         ' ' ->
-          { action | forward <- True }
+          { action | thrust <- action.thrust + 1 }
+        'J' ->
+          { action | thrust <- action.thrust - 1 }
         otherwise ->
           action
 
@@ -120,12 +122,11 @@ move action model =
       |> Mat4.rotate (action.roll .* delta) (Vec3.vec3 0 0 1)
 
     thrust =
-      Mat4.transform newOrientation (Vec3.vec3 0 0 0.01)
+      Vec3.vec3 0 0 (action.thrust .* 0.01)
 
     newPosition =
-      if action.forward
-      then Vec3.add model.position thrust
-      else model.position
+      Mat4.transform newOrientation thrust
+      |> Vec3.add model.position 
   in
     { model
     | orientation <- newOrientation
