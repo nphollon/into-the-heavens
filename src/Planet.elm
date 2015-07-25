@@ -42,8 +42,9 @@ vertex (colatitude, longitude) =
     x = r * sin theta * cos phi
     y = r * sin theta * sin phi
     z = r * cos theta
+    color = Color.hsl phi (z/r) 0.5
   in
-    Graphics.vertex Color.red x y (z - 0.5)
+    Graphics.vertex color x y (z - 0.5)
 
 indexMesh =
   [ (0, 2, 1)
