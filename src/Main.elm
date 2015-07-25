@@ -142,21 +142,17 @@ view model =
     aspect =
       uncurry (./.) dimensions
 
-    skyUniform =
-      { perspective = Mat4.makePerspective 90 aspect 0.1 70
+    uniform =
+      { perspective = Mat4.makePerspective 90 aspect 0.01 70
       , placement = Mat4.transpose model.orientation
       }
-
-    planetUniform =
-      { skyUniform 
-      | placement <- Mat4.translate model.position skyUniform.placement }
   in
     Graphics.render dimensions
-      [ Constellation.crux skyUniform
-      , Constellation.ursaMajor skyUniform
-      , Constellation.aquarius skyUniform
-      , Scatter.scatter 100 skyUniform
-      , Planet.planet planetUniform
-      , Grid.grid 2 4 skyUniform
+      [ Constellation.crux uniform
+      , Constellation.ursaMajor uniform
+      , Constellation.aquarius uniform
+      , Scatter.scatter 100 uniform
+      , Planet.planet model.position uniform
+      , Grid.grid 2 4 uniform
       ]
       

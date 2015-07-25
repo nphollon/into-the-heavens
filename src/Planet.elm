@@ -5,13 +5,15 @@ import Array
 import List
 import Maybe
 
+import Math.Vector3 as Vec3
+
 import Graphics
 
-planet : Graphics.Uniform -> Graphics.Entity
-planet uniform =
+planet : Vec3.Vec3 -> Graphics.Uniform -> Graphics.Entity
+planet position uniform =
   let
     vertices =
-      List.map vertex vertexAngles |> Array.fromList
+      List.map (vertex position) vertexAngles |> Array.fromList
 
     mesh =
       List.map (triangle vertices) indexMesh
@@ -34,7 +36,8 @@ vertexAngles =
   , (180, 0)
   ]
 
-vertex (colatitude, longitude) =
+
+vertex position (colatitude, longitude) =
   let
     theta = degrees colatitude
     phi = degrees longitude
@@ -44,7 +47,10 @@ vertex (colatitude, longitude) =
     z = r * cos theta
     color = Color.hsl phi (z/r) 0.5
   in
-    Graphics.vertex color x y (z - 0.5)
+    Graphics.vertex color
+      (x + Vec3.getX position)
+      (y + Vec3.getY position)
+      (z + Vec3.getZ position - 0.5)
 
 indexMesh =
   [ (0, 2, 1)
