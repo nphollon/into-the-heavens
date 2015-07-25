@@ -20,19 +20,24 @@ import Infix exposing (..)
 main : Signal Layout.Element
 main =
   let
-    startState =
+    startModel =
       { orientation = Mat4.identity
+      , action = inaction
       }
-
     model =
-      Signal.foldp update startState signal
+      Signal.foldp update startModel signal
   in
     Signal.map view model
 
 
 type alias Model =
   { orientation : Mat4.Mat4
+  , action : Action
   }
+
+
+type Update =
+  KeyPress Action | TimeDelta Float
 
 
 type alias Action =
@@ -41,12 +46,22 @@ type alias Action =
   }
 
 
-signal : Signal Action
+inaction : Action
+inaction =
+  { x = 0, y = 0 }
+
+
+signal : Signal Update
 signal =
-  Signal.sampleOn (Time.every (20 * Time.millisecond)) keysDown
+  Signal.merge keysDown sample
 
 
-keysDown : Signal Action
+sample : Signal Update
+sample =
+  Signal.map TimeDelta (Time.every (20 * Time.millisecond))
+
+
+keysDown : Signal Update
 keysDown =
   let
     keyAct key action =
@@ -63,13 +78,22 @@ keysDown =
           action
 
     fullAction =
-      Set.foldl keyAct { x = 0, y = 0 }
+      Set.foldl keyAct inaction >> KeyPress
   in
     Signal.map fullAction Keyboard.keysDown
 
 
-update : Action -> Model -> Model
-update action model =
+update : Update -> Model -> Model
+update update model =
+  case update of
+    KeyPress newAction ->
+      { model | action <- newAction }
+    TimeDelta _ ->
+      move model.action model
+
+
+move : Action -> Model -> Model
+move action model =
   let
     delta =
       degrees 3
