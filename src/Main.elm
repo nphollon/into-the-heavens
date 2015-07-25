@@ -23,6 +23,7 @@ main =
   let
     startModel =
       { orientation = Mat4.identity
+      , placement = Mat4.identity
       , action = inaction
       }
     model =
@@ -33,6 +34,7 @@ main =
 
 type alias Model =
   { orientation : Mat4.Mat4
+  , placement : Mat4.Mat4
   , action : Action
   }
 
@@ -45,12 +47,21 @@ type alias Action =
   { x : Int
   , y : Int
   , z : Int
+  , pitch : Int
+  , yaw : Int
+  , roll : Int
   }
 
 
 inaction : Action
 inaction =
-  { x = 0, y = 0, z = 0 }
+  { x = 0
+  , y = 0
+  , z = 0
+  , pitch = 0
+  , yaw = 0
+  , roll = 0
+  }
 
 
 signal : Signal Update
@@ -68,18 +79,18 @@ keysDown =
   let
     keyAct key action =
       case (Char.fromCode key) of
-        'A' ->
-          { action | x <- action.x - 1 }
         'D' ->
-          { action | x <- action.x + 1 }
+          { action | yaw <- action.yaw - 1 }
+        'A' ->
+          { action | yaw <- action.yaw + 1 }
         'S' ->
-          { action | y <- action.y - 1 }
+          { action | pitch <- action.pitch - 1 }
         'W' ->
-          { action | y <- action.y + 1 }
+          { action | pitch <- action.pitch + 1 }
         'Q' ->
-          { action | z <- action.z - 1 }
+          { action | roll <- action.roll - 1 }
         'E' ->
-          { action | z <- action.z + 1 }
+          { action | roll <- action.roll + 1 }
         otherwise ->
           action
 
@@ -106,9 +117,9 @@ move action model =
 
     newOrientation =
       model.orientation
-      |> Mat4.rotate (action.y .* delta) (Vec3.vec3 1 0 0)
-      |> Mat4.rotate (negate action.x .* delta) (Vec3.vec3 0 1 0)
-      |> Mat4.rotate (action.z .* delta) (Vec3.vec3 0 0 1)
+      |> Mat4.rotate (action.pitch .* delta) (Vec3.vec3 1 0 0)
+      |> Mat4.rotate (action.yaw .* delta) (Vec3.vec3 0 1 0)
+      |> Mat4.rotate (action.roll .* delta) (Vec3.vec3 0 0 1)
   in
     { model | orientation <- newOrientation }
 
