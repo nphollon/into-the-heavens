@@ -7,6 +7,7 @@ import Keyboard
 import Set
 import Char
 
+import AnimationFrame
 import Math.Vector3 as Vec3
 import Math.Matrix4 as Mat4
 
@@ -58,7 +59,7 @@ signal =
 
 sample : Signal Update
 sample =
-  Signal.map TimeDelta (Time.every (20 * Time.millisecond))
+  Signal.map TimeDelta AnimationFrame.frame
 
 
 keysDown : Signal Update
