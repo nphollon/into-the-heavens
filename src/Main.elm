@@ -4,6 +4,8 @@ import Graphics.Element as Layout
 import Signal
 import Time
 import Keyboard
+import Set
+import Char
 
 import Math.Vector3 as Vec3
 import Math.Matrix4 as Mat4
@@ -41,7 +43,29 @@ type alias Action =
 
 signal : Signal Action
 signal =
-  Signal.sampleOn (Time.every (20 * Time.millisecond)) Keyboard.wasd
+  Signal.sampleOn (Time.every (20 * Time.millisecond)) keysDown
+
+
+keysDown : Signal Action
+keysDown =
+  let
+    keyAct key action =
+      case (Char.fromCode key) of
+        'A' ->
+          { action | x <- action.x - 1 }
+        'D' ->
+          { action | x <- action.x + 1 }
+        'S' ->
+          { action | y <- action.y - 1 }
+        'W' ->
+          { action | y <- action.y + 1 }
+        otherwise ->
+          action
+
+    fullAction =
+      Set.foldl keyAct { x = 0, y = 0 }
+  in
+    Signal.map fullAction Keyboard.keysDown
 
 
 update : Action -> Model -> Model
