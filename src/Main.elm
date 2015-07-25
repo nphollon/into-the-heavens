@@ -44,12 +44,13 @@ type Update =
 type alias Action =
   { x : Int
   , y : Int
+  , z : Int
   }
 
 
 inaction : Action
 inaction =
-  { x = 0, y = 0 }
+  { x = 0, y = 0, z = 0 }
 
 
 signal : Signal Update
@@ -75,6 +76,10 @@ keysDown =
           { action | y <- action.y - 1 }
         'W' ->
           { action | y <- action.y + 1 }
+        'Q' ->
+          { action | z <- action.z - 1 }
+        'E' ->
+          { action | z <- action.z + 1 }
         otherwise ->
           action
 
@@ -99,16 +104,11 @@ move action model =
     delta =
       degrees 3
 
-    xAxis =
-      Vec3.vec3 1 0 0
-
-    yAxis =
-      Vec3.vec3 0 1 0
-
     newOrientation =
       model.orientation
-      |> Mat4.rotate (action.y .* delta) xAxis
-      |> Mat4.rotate (negate action.x .* delta) yAxis
+      |> Mat4.rotate (action.y .* delta) (Vec3.vec3 1 0 0)
+      |> Mat4.rotate (negate action.x .* delta) (Vec3.vec3 0 1 0)
+      |> Mat4.rotate (action.z .* delta) (Vec3.vec3 0 0 1)
   in
     { model | orientation <- newOrientation }
 
