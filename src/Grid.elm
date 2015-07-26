@@ -49,15 +49,21 @@ triangleRing : (Graphics.Attribute -> Graphics.Attribute) -> Float -> Graphics.M
 triangleRing transform altitude =
   let
     ring =
-      List.map transform (vertexRing 50 0.005 (degrees 90 + altitude))
+      Array.map transform (vertexRing 50 0.005 (degrees 90 + altitude))
+      |> Array.toIndexedList
+
+    triangle (i, a) (_, b) (_, c) =
+      if (i % 2 == 0)
+        then (a, b, c)
+        else (a, c, b)
   in
-    List.map3 (\a b c -> (a,b,c))
+    List.map3 triangle
       ring
       (List.drop 1 ring)
       (List.drop 2 ring)
 
 
-vertexRing : Int -> Float -> Float -> List Graphics.Attribute
+vertexRing : Int -> Float -> Float -> Array.Array Graphics.Attribute
 vertexRing resolution width zenithAngle =
   let
     grate =
@@ -73,7 +79,7 @@ vertexRing resolution width zenithAngle =
       in
         sphVertex Color.blue 1 phi (zenithAngle + side .* width)
   in
-    Array.initialize (grate + 2) indexedVertex |> Array.toList
+    Array.initialize (grate + 2) indexedVertex
 
 
 sphVertex : Color.Color -> Float -> Float -> Float -> Graphics.Attribute

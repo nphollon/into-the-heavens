@@ -12,9 +12,7 @@ import Infix exposing (..)
 
 {-
   questions:
-    triangle fans & strips
-    rendering faces in one direction only
-    referencing vertices by index
+    triangle fans & strips -- Pull request
     geometry shaders
   -}
 
