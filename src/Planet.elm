@@ -8,51 +8,85 @@ import Maybe
 import Math.Vector3 as Vec3
 
 import Graphics
+import Triple exposing (Triple)
+
+type alias Point = (Float, Float)
 
 planet : Vec3.Vec3 -> Graphics.Uniform -> Graphics.Entity
 planet position uniform =
   let
-    vertices =
-      List.map (vertex position) vertexAngles |> Array.fromList
+    sphereIcosaFaces =
+      List.filterMap (Triple.mapMaybe (lookup baseCoords)) baseIndexes
+
+    rectIcosaFaces =
+      List.map (Triple.map toRect) sphereIcosaFaces
+
+    recursed =
+      List.concatMap (recurse 1) rectIcosaFaces
 
     mesh =
-      List.map (triangle vertices) indexMesh
+      List.map (toTriangle position) recursed
   in
     Graphics.entity mesh uniform
 
 
-vertexAngles =
-  [ (0, 0)
-  , (63.43494882292198, 0)
-  , (63.43494882292198, 72)
-  , (63.43494882292198, 144)
-  , (63.43494882292198, 216)
-  , (63.43494882292198, 288)
-  , (116.56505117707802, 36)
-  , (116.56505117707802, 108)
-  , (116.56505117707802, 180)
-  , (116.56505117707802, 252)
-  , (116.56505117707802, 324)
-  , (180, 0)
-  ]
+lookup : Array.Array Point -> Int -> Maybe Point
+lookup =
+  flip Array.get
 
 
-vertex position (colatitude, longitude) =
+toRect : Point -> Vec3.Vec3
+toRect (colatitude, longitude) =
   let
     theta = degrees colatitude
     phi = degrees longitude
-    r = 0.06
-    x = r * sin theta * cos phi
-    y = r * sin theta * sin phi
-    z = r * cos theta
-    color = Color.hsl phi (z/r) 0.5
   in
-    Graphics.vertex color
-      (x + Vec3.getX position)
-      (y + Vec3.getY position)
-      (z + Vec3.getZ position - 0.5)
+    Vec3.vec3 (sin theta * cos phi) (sin theta * sin phi) (cos theta)
 
-indexMesh =
+
+recurse : Int -> Triple Vec3.Vec3 -> List (Triple Vec3.Vec3)
+recurse _ t = [ t ]
+
+
+toTriangle : Vec3.Vec3 -> Triple Vec3.Vec3 -> Graphics.Triangle
+toTriangle offset =
+  Triple.map (\position ->
+    let
+      (x, y, z) =
+        Vec3.scale 0.06 position
+        |> Vec3.add offset
+        |> Vec3.add (Vec3.vec3 0 0 -0.5)
+        |> Vec3.toTuple
+
+      color =
+        Color.hsl
+          (atan2 (Vec3.getX position) (Vec3.getY position))
+          (Vec3.getZ position)
+          0.5
+    in
+      Graphics.vertex color x y z
+  )
+
+
+baseCoords : Array.Array (Float, Float)
+baseCoords =
+  Array.fromList
+    [ (0, 0)
+    , (63.43494882292198, 0)
+    , (63.43494882292198, 72)
+    , (63.43494882292198, 144)
+    , (63.43494882292198, 216)
+    , (63.43494882292198, 288)
+    , (116.56505117707802, 36)
+    , (116.56505117707802, 108)
+    , (116.56505117707802, 180)
+    , (116.56505117707802, 252)
+    , (116.56505117707802, 324)
+    , (180, 0)
+    ]
+
+baseIndexes : List (Int, Int, Int)
+baseIndexes =
   [ (0, 1, 2)
   , (0, 2, 3)
   , (0, 3, 4)
@@ -75,11 +109,3 @@ indexMesh =
   , (11, 10, 9)
   ]
 
-triangle vertices (a, b, c) =
-  let
-    get i =
-      Maybe.withDefault
-        (Graphics.vertex Color.white 0 0 0)
-        (Array.get i vertices)
-  in
-    (get a, get b, get c)

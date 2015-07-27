@@ -28,8 +28,13 @@ type alias Attribute =
   , vertColor : Vec4.Vec4
   }
 
+
+type alias Triangle =
+  ( Attribute, Attribute, Attribute )
+
+
 type alias Mesh =
-  List (WebGL.Triangle Attribute)
+  List Triangle
 
 
 type alias Uniform =
