@@ -22,7 +22,7 @@ planet position uniform =
       List.map (Triple.map toRect) sphereIcosaFaces
 
     recursed =
-      List.concatMap (recurse 1) rectIcosaFaces
+      List.concatMap (recurse 3) rectIcosaFaces
 
     mesh =
       List.map (toTriangle position) recursed
@@ -45,7 +45,27 @@ toRect (colatitude, longitude) =
 
 
 recurse : Int -> Triple Vec3.Vec3 -> List (Triple Vec3.Vec3)
-recurse _ t = [ t ]
+recurse iter triangle =
+  if iter == 0
+    then [ triangle ]
+    else List.concatMap (recurse (iter - 1)) (split triangle)
+
+
+split : Triple Vec3.Vec3 -> List (Triple Vec3.Vec3)
+split (a, b, c) =
+  let
+    midpoint u v =
+      Vec3.add u v |> Vec3.normalize
+
+    ab = midpoint a b
+    bc = midpoint b c
+    ca = midpoint c a
+  in
+    [ (a, ab, ca)
+    , (b, bc, ab)
+    , (c, ca, bc)
+    , (ab, bc, ca)
+    ]
 
 
 toTriangle : Vec3.Vec3 -> Triple Vec3.Vec3 -> Graphics.Triangle
@@ -60,7 +80,7 @@ toTriangle offset =
 
       color =
         Color.hsl
-          (atan2 (Vec3.getX position) (Vec3.getY position))
+          (2 * atan2 (Vec3.getX position) (Vec3.getY position))
           (Vec3.getZ position)
           0.5
     in
