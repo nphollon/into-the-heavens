@@ -22,7 +22,7 @@ scatter n =
       Random.generate (Random.list n starPoint) seed
 
     mesh =
-      List.concatMap (uncurry (Constellation.star Color.blue 0.01)) randomPoints
+      List.concatMap (uncurry (Constellation.star Color.blue 1)) randomPoints
   in
     Graphics.entity mesh
 

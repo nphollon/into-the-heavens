@@ -77,10 +77,8 @@ toTriangle : Triple Vec3 -> Triple Graphics.Attribute
 toTriangle =
   Triple.map (\position ->
     let
-      (x, y, z) =
-        Vec3.scale 0.06 position
-        |> Vec3.add (Vec3.vec3 0 0 -0.5)
-        |> Vec3.toTuple
+      (x, y, z) = 
+        Vec3.toTuple position
 
       color =
         Color.hsl

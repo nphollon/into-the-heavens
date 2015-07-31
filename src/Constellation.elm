@@ -61,7 +61,7 @@ constellation : List Point -> Graphics.Uniform -> Graphics.Entity
 constellation stars uniform =
   let
     mesh =
-      List.concatMap (uncurry (star Color.yellow 0.01)) stars
+      List.concatMap (uncurry (star Color.yellow 1)) stars
   in
     Graphics.entity mesh uniform
 
@@ -69,7 +69,7 @@ star : Color.Color -> Float -> Float -> Float -> Graphics.Mesh
 star color r phi theta =
   let
     move =
-      Graphics.translate 0 0.9 0
+      Graphics.translate 0 100 0
       >> Graphics.rotate theta phi
 
     down = move <| Graphics.vertex color 0 -r 0

@@ -144,13 +144,13 @@ view model =
       uncurry (./.) dimensions
 
     uniform =
-      { perspective = Mat4.makePerspective 90 aspect 0.01 70
+      { perspective = Mat4.makePerspective 90 aspect 0.01 210
       , cameraOrientation = Mat4.transpose model.orientation
       , modelPosition = Vec3.vec3 0 0 0
       }
 
     planetUniform =
-      { uniform | modelPosition <- model.position
+      { uniform | modelPosition <- (Vec3.add (Vec3.vec3 1.1 1.5 -2) model.position)
       }
   in
     Graphics.render dimensions
@@ -158,7 +158,7 @@ view model =
       , Constellation.ursaMajor uniform
       , Constellation.aquarius uniform
       , Scatter.scatter 100 uniform
-      , Graphics.entity Planet.mesh planetUniform
       , Grid.grid 2 4 uniform
+      , Graphics.entity Planet.mesh planetUniform
       ]
       
