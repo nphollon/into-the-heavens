@@ -15,7 +15,7 @@ import Graphics
 import Grid
 import Constellation
 import Scatter
-import Planet
+import PlanetOld as Planet
 import Infix exposing (..)
 
 main : Signal Layout.Element
@@ -145,7 +145,12 @@ view model =
 
     uniform =
       { perspective = Mat4.makePerspective 90 aspect 0.01 70
-      , placement = Mat4.transpose model.orientation
+      , cameraOrientation = Mat4.transpose model.orientation
+      , modelPosition = Vec3.vec3 0 0 0
+      }
+
+    planetUniform =
+      { uniform | modelPosition <- model.position
       }
   in
     Graphics.render dimensions
@@ -153,7 +158,7 @@ view model =
       , Constellation.ursaMajor uniform
       , Constellation.aquarius uniform
       , Scatter.scatter 100 uniform
-      , Planet.planet model.position uniform
+      , Planet.planet planetUniform
       , Grid.grid 2 4 uniform
       ]
       

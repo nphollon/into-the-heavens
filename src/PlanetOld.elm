@@ -1,4 +1,4 @@
-module Planet (planet) where
+module PlanetOld (planet) where
 
 import Color
 import Array
@@ -12,8 +12,8 @@ import Triple exposing (Triple)
 
 type alias Point = (Float, Float)
 
-planet : Vec3.Vec3 -> Graphics.Uniform -> Graphics.Entity
-planet position uniform =
+planet : Graphics.Uniform -> Graphics.Entity
+planet uniform =
   let
     sphereIcosaFaces =
       List.filterMap (Triple.mapMaybe (lookup baseCoords)) baseIndexes
@@ -25,7 +25,7 @@ planet position uniform =
       List.concatMap (recurse 3) rectIcosaFaces
 
     mesh =
-      List.map (toTriangle position) recursed
+      List.map toTriangle recursed
   in
     Graphics.entity mesh uniform
 
@@ -68,13 +68,12 @@ split (a, b, c) =
     ]
 
 
-toTriangle : Vec3.Vec3 -> Triple Vec3.Vec3 -> Graphics.Triangle
-toTriangle offset =
+toTriangle : Triple Vec3.Vec3 -> Graphics.Triangle
+toTriangle =
   Triple.map (\position ->
     let
       (x, y, z) =
         Vec3.scale 0.06 position
-        |> Vec3.add offset
         |> Vec3.add (Vec3.vec3 0 0 -0.5)
         |> Vec3.toTuple
 

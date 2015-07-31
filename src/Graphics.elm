@@ -24,7 +24,7 @@ render dimensions =
 
 
 type alias Attribute =
-  { position : Vec3.Vec3
+  { vertPosition : Vec3.Vec3
   , vertColor : Vec4.Vec4
   }
 
@@ -39,12 +39,13 @@ type alias Mesh =
 
 type alias Uniform =
   { perspective : Mat4.Mat4
-  , placement : Mat4.Mat4
+  , cameraOrientation : Mat4.Mat4
+  , modelPosition : Vec3.Vec3
   }
 
 
-type alias Varying = {
-  fragColor : Vec4.Vec4
+type alias Varying =
+  { fragColor : Vec4.Vec4
   }
 
 
@@ -65,7 +66,7 @@ vertex color x y z =
         (rgba.blue ./. 255)
         rgba.alpha
   in
-    { position = Vec3.vec3 x y z
+    { vertPosition = Vec3.vec3 x y z
     , vertColor = colorVector }
 
 
@@ -76,17 +77,17 @@ rotate pitch yaw vertex =
       Mat4.makeRotate yaw yAxis
       |> Mat4.rotate pitch zAxis
   in
-    { vertex | position <- Mat4.transform rotation vertex.position }
+    { vertex | vertPosition <- Mat4.transform rotation vertex.vertPosition }
 
 
 translate : Float -> Float -> Float -> Attribute -> Attribute
 translate x y z vertex =
-  { vertex | position <- Vec3.add vertex.position (Vec3.vec3 x y z) }
+  { vertex | vertPosition <- Vec3.add vertex.vertPosition (Vec3.vec3 x y z) }
 
 
 scale : Float -> Attribute -> Attribute
 scale factor vertex =
-  { vertex | position <- Vec3.scale factor vertex.position }
+  { vertex | vertPosition <- Vec3.scale factor vertex.vertPosition }
 
 
 entity : List (WebGL.Triangle Attribute) -> Uniform -> WebGL.Entity
@@ -112,16 +113,20 @@ zAxis =
 vertexShader : WebGL.Shader Attribute Uniform Varying
 vertexShader =
   [glsl|
-  attribute vec3 position;
+  attribute vec3 vertPosition;
   attribute vec4 vertColor;
+
   uniform mat4 perspective;
-  uniform mat4 placement;
+  uniform mat4 cameraOrientation;
+  uniform vec3 modelPosition;
+
   varying vec4 fragColor;
 
   void main() {
-    vec4 offset = vec4 (0, 0, length(position), 0);
+    vec4 worldPosition = vec4(vertPosition + modelPosition, 1);
+    vec4 projectionOffset = vec4(0, 0, length(worldPosition.xyz), 0);
     gl_Position =
-      perspective * (placement * vec4(position, 1.0) - offset);
+      perspective * (cameraOrientation * worldPosition - projectionOffset);
 
     fragColor = vertColor;
   }
