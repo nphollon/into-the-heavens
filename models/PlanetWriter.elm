@@ -1,61 +1,26 @@
-module Planet (main) where
+module PlanetWriter (main) where
 
 import Color
-import Array
+import Array exposing (Array)
 import List
-import Maybe
 import Graphics.Element as Layout
 import Text
 import String
 
-import Math.Vector3 as Vec3
+import Math.Vector3 as Vec3 exposing (Vec3)
 
 import Triple exposing (Triple)
+import Graphics
+import Model.Writer
 
 type alias Point = (Float, Float)
 
 main : Layout.Element
 main =
-  Layout.leftAligned <| Text.fromString <| source "Planet" planet
-
-source : String -> List (Triple Vec3.Vec3) -> String
-source moduleName mesh =
-  String.join "\n"
-    [ "module " ++ moduleName ++ " where"
-    , "import Math.Vector3 exposing (fromTuple)"
-    , printMesh mesh
-    ]
+  Layout.leftAligned <| Text.fromString <| Model.Writer.source "Planet" planet
 
 
-printMesh : List (Triple Vec3.Vec3) -> String
-printMesh triples = 
-  let
-    tripleText =
-      List.map printTriple triples
-  in
-    String.concat
-      [ "  ["
-      , String.join "," tripleText
-      , "]"
-      ]
-
-
-printTriple : Triple Vec3.Vec3 -> String
-printTriple (a, b, c) =
-  String.concat
-    [ "(", printVector a
-    , ",", printVector b
-    , ",", printVector c
-    , ")"
-    ]
-
-
-printVector : Vec3.Vec3 -> String
-printVector v =
-  "fromTuple " ++ (toString (Vec3.toTuple v))
-
-
-planet : List (Triple Vec3.Vec3)
+planet : Graphics.Mesh
 planet =
   let
     sphereIcosaFaces =
@@ -64,16 +29,18 @@ planet =
     rectIcosaFaces =
       List.map (Triple.map toRect) sphereIcosaFaces
 
-  in
+    meshCoords =
       List.concatMap (recurse 2) rectIcosaFaces
+  in
+    List.map toTriangle meshCoords
   
 
-lookup : Array.Array Point -> Int -> Maybe Point
+lookup : Array Point -> Int -> Maybe Point
 lookup =
   flip Array.get
 
 
-toRect : Point -> Vec3.Vec3
+toRect : Point -> Vec3
 toRect (colatitude, longitude) =
   let
     theta = degrees colatitude
@@ -82,14 +49,14 @@ toRect (colatitude, longitude) =
     Vec3.vec3 (sin theta * cos phi) (sin theta * sin phi) (cos theta)
 
 
-recurse : Int -> Triple Vec3.Vec3 -> List (Triple Vec3.Vec3)
+recurse : Int -> Triple Vec3 -> List (Triple Vec3)
 recurse iter triangle =
   if iter == 0
     then [ triangle ]
     else List.concatMap (recurse (iter - 1)) (split triangle)
 
 
-split : Triple Vec3.Vec3 -> List (Triple Vec3.Vec3)
+split : Triple Vec3 -> List (Triple Vec3)
 split (a, b, c) =
   let
     midpoint u v =
@@ -106,6 +73,25 @@ split (a, b, c) =
     ]
 
 
+toTriangle : Triple Vec3 -> Triple Graphics.Attribute
+toTriangle =
+  Triple.map (\position ->
+    let
+      (x, y, z) =
+        Vec3.scale 0.06 position
+        |> Vec3.add (Vec3.vec3 0 0 -0.5)
+        |> Vec3.toTuple
+
+      color =
+        Color.hsl
+          (2 * atan2 (Vec3.getX position) (Vec3.getY position))
+          (Vec3.getZ position)
+          0.5
+    in
+      Graphics.vertex color x y z
+  )
+
+
 color position =
   Color.hsl
     (2 * atan2 (Vec3.getX position) (Vec3.getY position))
@@ -113,7 +99,7 @@ color position =
     0.5
 
 
-baseCoords : Array.Array (Float, Float)
+baseCoords : Array (Float, Float)
 baseCoords =
   Array.fromList
     [ (0, 0)
@@ -130,7 +116,7 @@ baseCoords =
     , (180, 0)
     ]
 
-baseIndexes : List (Int, Int, Int)
+baseIndexes : List (Triple Int)
 baseIndexes =
   [ (0, 1, 2)
   , (0, 2, 3)

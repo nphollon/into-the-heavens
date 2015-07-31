@@ -8,6 +8,7 @@ import Math.Matrix4 as Mat4
 import WebGL
 
 import Infix exposing (..)
+import Triple
 
 
 {-
@@ -29,12 +30,8 @@ type alias Attribute =
   }
 
 
-type alias Triangle =
-  ( Attribute, Attribute, Attribute )
-
-
 type alias Mesh =
-  List Triangle
+  List (Triple.Triple Attribute)
 
 
 type alias Uniform =
@@ -90,7 +87,7 @@ scale factor vertex =
   { vertex | vertPosition <- Vec3.scale factor vertex.vertPosition }
 
 
-entity : List (WebGL.Triangle Attribute) -> Uniform -> WebGL.Entity
+entity : Mesh -> Uniform -> WebGL.Entity
 entity mesh uniform =
   WebGL.entity vertexShader fragmentShader mesh uniform
 

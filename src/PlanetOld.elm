@@ -8,7 +8,7 @@ import Maybe
 import Math.Vector3 as Vec3
 
 import Graphics
-import Triple exposing (Triple)
+import Triple
 
 type alias Point = (Float, Float)
 
@@ -44,14 +44,14 @@ toRect (colatitude, longitude) =
     Vec3.vec3 (sin theta * cos phi) (sin theta * sin phi) (cos theta)
 
 
-recurse : Int -> Triple Vec3.Vec3 -> List (Triple Vec3.Vec3)
+recurse : Int -> Triple.Triple Vec3.Vec3 -> List (Triple.Triple Vec3.Vec3)
 recurse iter triangle =
   if iter == 0
     then [ triangle ]
     else List.concatMap (recurse (iter - 1)) (split triangle)
 
 
-split : Triple Vec3.Vec3 -> List (Triple Vec3.Vec3)
+split : Triple.Triple Vec3.Vec3 -> List (Triple.Triple Vec3.Vec3)
 split (a, b, c) =
   let
     midpoint u v =
@@ -68,7 +68,7 @@ split (a, b, c) =
     ]
 
 
-toTriangle : Triple Vec3.Vec3 -> Graphics.Triangle
+toTriangle : Triple.Triple Vec3.Vec3 -> Triple.Triple Graphics.Attribute
 toTriangle =
   Triple.map (\position ->
     let
@@ -104,7 +104,7 @@ baseCoords =
     , (180, 0)
     ]
 
-baseIndexes : List (Int, Int, Int)
+baseIndexes : List (Triple.Triple Int)
 baseIndexes =
   [ (0, 1, 2)
   , (0, 2, 3)
