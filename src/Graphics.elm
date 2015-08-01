@@ -1,21 +1,17 @@
 module Graphics where
 
-import Color
+import Color exposing (Color)
+import Array exposing (Array)
 import Graphics.Element as Layout
-import Math.Vector3 as Vec3
-import Math.Vector4 as Vec4
-import Math.Matrix4 as Mat4
+
+import Math.Vector3 as Vec3 exposing (Vec3)
+import Math.Vector4 as Vec4 exposing (Vec4)
+import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL
 
 import Infix exposing (..)
-import Triple
+import Triple exposing (Triple)
 
-
-{-
-  questions:
-    triangle fans & strips -- Pull request
-    geometry shaders
-  -}
 
 render : (Int, Int) -> List WebGL.Entity -> Layout.Element
 render dimensions =
@@ -25,24 +21,24 @@ render dimensions =
 
 
 type alias Attribute =
-  { vertPosition : Vec3.Vec3
-  , vertColor : Vec4.Vec4
+  { vertPosition : Vec3
+  , vertColor : Vec4
   }
 
 
 type alias Mesh =
-  List (Triple.Triple Attribute)
+  List (Triple Attribute)
 
 
 type alias Uniform =
-  { perspective : Mat4.Mat4
-  , cameraOrientation : Mat4.Mat4
-  , modelPosition : Vec3.Vec3
+  { perspective : Mat4
+  , cameraOrientation : Mat4
+  , modelPosition : Vec3
   }
 
 
 type alias Varying =
-  { fragColor : Vec4.Vec4
+  { fragColor : Vec4
   }
 
 
@@ -50,7 +46,7 @@ type alias Entity =
   WebGL.Entity
 
 
-vertex : Color.Color -> Float -> Float -> Float -> Attribute
+vertex : Color -> Float -> Float -> Float -> Attribute
 vertex color x y z =
   let
     rgba =
@@ -65,6 +61,23 @@ vertex color x y z =
   in
     { vertPosition = Vec3.vec3 x y z
     , vertColor = colorVector }
+
+
+triangleStrip : Array Attribute -> Mesh
+triangleStrip vertexes =
+  let
+    vertexList =
+      Array.toIndexedList vertexes
+
+    triangle (i, a) (_, b) (_, c) =
+      if (i % 2 == 0)
+        then (a, b, c)
+        else (a, c, b)
+  in
+    List.map3 triangle
+      vertexList
+      (List.drop 1 vertexList)
+      (List.drop 2 vertexList)  
 
 
 rotate : Float -> Float -> Attribute -> Attribute
@@ -97,17 +110,12 @@ entity mesh uniform =
   WebGL.entity vertexShader fragmentShader mesh uniform
 
 
-xAxis : Vec3.Vec3
-xAxis =
-  Vec3.vec3 1 0 0
-
-
-yAxis : Vec3.Vec3
+yAxis : Vec3
 yAxis =
   Vec3.vec3 0 1 0
 
 
-zAxis : Vec3.Vec3
+zAxis : Vec3
 zAxis =
   Vec3.vec3 0 0 1
 

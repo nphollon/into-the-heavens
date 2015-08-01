@@ -1,11 +1,8 @@
 module Grid (grid) where
 
-import Color
-import Array
+import Color exposing (Color)
+import Array exposing (Array)
 import List
-
-import Math.Vector3 as Vec3
-import Math.Matrix4 as Mat4
 
 import Graphics
 import Infix exposing (..)
@@ -29,41 +26,22 @@ grid xRes yRes uniform =
 
 parallel : Float -> Graphics.Mesh
 parallel declination =
-  triangleRing identity declination
+  vertexRing (degrees 90 + declination)
+  |> Graphics.triangleStrip
 
 
 meridian : Float -> Graphics.Mesh
-meridian azimuth = 
+meridian azimuth =
+  vertexRing (degrees 90)
+  |> Array.map (Graphics.rotate (degrees 90) azimuth)
+  |> Graphics.triangleStrip
+
+
+vertexRing : Float -> Array Graphics.Attribute
+vertexRing zenithAngle =
   let
-    transform =
-      Graphics.rotate (degrees 90) azimuth
-  in
-    triangleRing transform 0
-
-
-triangleRing : (Graphics.Attribute -> Graphics.Attribute) -> Float -> Graphics.Mesh
-triangleRing transform altitude =
-  let
-    ring =
-      Array.map transform (vertexRing 50 0.005 (degrees 90 + altitude))
-      |> Array.toIndexedList
-
-    triangle (i, a) (_, b) (_, c) =
-      if (i % 2 == 0)
-        then (a, b, c)
-        else (a, c, b)
-  in
-    List.map3 triangle
-      ring
-      (List.drop 1 ring)
-      (List.drop 2 ring)
-
-
-vertexRing : Int -> Float -> Float -> Array.Array Graphics.Attribute
-vertexRing resolution width zenithAngle =
-  let
-    grate =
-      2 * resolution
+    grate = 100
+    width = 5e-3
 
     indexedVertex i =
       let
@@ -78,7 +56,7 @@ vertexRing resolution width zenithAngle =
     Array.initialize (grate + 2) indexedVertex
 
 
-sphVertex : Color.Color -> Float -> Float -> Float -> Graphics.Attribute
+sphVertex : Color -> Float -> Float -> Float -> Graphics.Attribute
 sphVertex color r phi theta =
   Graphics.vertex
     color
