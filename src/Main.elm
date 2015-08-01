@@ -87,9 +87,9 @@ keysDown =
           { action | roll <- action.roll - 1 }
         'E' ->
           { action | roll <- action.roll + 1 }
-        ' ' ->
+        'I' ->
           { action | thrust <- action.thrust + 1 }
-        'J' ->
+        'M' ->
           { action | thrust <- action.thrust - 1 }
         otherwise ->
           action
