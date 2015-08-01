@@ -146,7 +146,7 @@ view model =
     uniform =
       { perspective = Mat4.makePerspective 90 aspect 0.01 210
       , cameraOrientation = Mat4.transpose model.orientation
-      , modelPosition = Vec3.vec3 0 0 0
+      , modelPosition = model.position
       }
 
     planetUniform =

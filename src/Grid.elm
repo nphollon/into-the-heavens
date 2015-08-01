@@ -24,16 +24,12 @@ grid xRes yRes uniform =
           parallel (i ./. yRes * turns 0.5 - turns 0.25)
         ) |> Array.toList |> List.concat
   in
-    Graphics.entity (meridians ++ parallels) uniform
+    Graphics.distantEntity (meridians ++ parallels) uniform
     
 
 parallel : Float -> Graphics.Mesh
 parallel declination =
-  let
-    transform =
-      Graphics.scale (cos declination)
-  in
-    triangleRing transform declination
+  triangleRing identity declination
 
 
 meridian : Float -> Graphics.Mesh

@@ -63,7 +63,7 @@ constellation stars uniform =
     mesh =
       List.concatMap (uncurry (star Color.yellow 1)) stars
   in
-    Graphics.entity mesh uniform
+    Graphics.distantEntity mesh uniform
 
 star : Color.Color -> Float -> Float -> Float -> Graphics.Mesh
 star color r phi theta =

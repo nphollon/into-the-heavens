@@ -87,6 +87,11 @@ scale factor vertex =
   { vertex | vertPosition <- Vec3.scale factor vertex.vertPosition }
 
 
+distantEntity : Mesh -> Uniform -> WebGL.Entity
+distantEntity =
+  WebGL.entity distantVertexShader fragmentShader
+
+
 entity : Mesh -> Uniform -> WebGL.Entity
 entity mesh uniform =
   WebGL.entity vertexShader fragmentShader mesh uniform
@@ -121,6 +126,28 @@ vertexShader =
 
   void main() {
     vec4 worldPosition = vec4(vertPosition + modelPosition, 1);
+    vec4 projectionOffset = vec4(0, 0, length(worldPosition.xyz), 0);
+    gl_Position =
+      perspective * (cameraOrientation * worldPosition - projectionOffset);
+
+    fragColor = vertColor;
+  }
+  |]
+
+
+distantVertexShader : WebGL.Shader Attribute Uniform Varying
+distantVertexShader =
+  [glsl|
+  attribute vec3 vertPosition;
+  attribute vec4 vertColor;
+
+  uniform mat4 perspective;
+  uniform mat4 cameraOrientation;
+
+  varying vec4 fragColor;
+
+  void main() {
+    vec4 worldPosition = vec4(vertPosition, 1);
     vec4 projectionOffset = vec4(0, 0, length(worldPosition.xyz), 0);
     gl_Position =
       perspective * (cameraOrientation * worldPosition - projectionOffset);

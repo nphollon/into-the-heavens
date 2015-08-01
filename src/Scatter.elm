@@ -24,7 +24,7 @@ scatter n =
     mesh =
       List.concatMap (uncurry (Constellation.star Color.blue 1)) randomPoints
   in
-    Graphics.entity mesh
+    Graphics.distantEntity mesh
 
 starPoint : Random.Generator Point
 starPoint =
