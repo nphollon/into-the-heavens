@@ -23,8 +23,17 @@ type alias NearUniform u =
   | perspective : Mat4
   , cameraOrientation : Mat4
   , cameraPosition : Vec3
-  , modelPosition : Vec3 
+  , modelPosition : Vec3
+  , scale : Float
   }
+
+
+place : u -> Vec3 -> Float -> { u | modelPosition : Vec3, scale : Float }
+place u v f =
+  let
+    u' = { u | modelPosition = v }
+  in
+    { u' | scale = f }
 
 
 planet =
@@ -37,6 +46,8 @@ moon =
 nearVertexShader : WebGL.Shader Attribute (NearUniform u) Varying
 nearVertexShader =
   [glsl|
+  precision mediump float;
+
   attribute vec3 vertPosition;
   attribute vec4 vertColor;
 
@@ -44,11 +55,12 @@ nearVertexShader =
   uniform mat4 cameraOrientation;
   uniform vec3 cameraPosition;
   uniform vec3 modelPosition;
+  uniform float scale;
 
   varying vec4 fragColor;
 
   void main() {
-    vec4 worldPosition = vec4(vertPosition + modelPosition + cameraPosition, 1);
+    vec4 worldPosition = vec4(scale * vertPosition + modelPosition + cameraPosition, 1);
     vec4 projectionOffset = vec4(0, 0, length(worldPosition.xyz), 0);
     gl_Position =
       perspective * (cameraOrientation * worldPosition - projectionOffset);

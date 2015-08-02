@@ -122,7 +122,7 @@ move action model =
       |> Mat4.rotate (action.roll .* delta) (Vec3.vec3 0 0 1)
 
     thrust =
-      Vec3.vec3 0 0 (action.thrust .* 0.01)
+      Vec3.vec3 0 0 (action.thrust .* 0.03)
 
     newPosition =
       Mat4.transform newOrientation thrust
@@ -150,12 +150,10 @@ view model =
       }
 
     planetUniform =
-      { uniform | modelPosition = Vec3.vec3 1.1 1.5 -2
-      }
+      World.place uniform (Vec3.vec3 3 10 -15) 2.0
 
     moonUniform =
-      { uniform | modelPosition = Vec3.vec3 -1.1 1.5 -4
-      }
+      World.place uniform (Vec3.vec3 2 2 -7) 0.5
   in
     Graphics.render dimensions
       [ Constellation.crux uniform
