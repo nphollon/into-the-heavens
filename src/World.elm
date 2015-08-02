@@ -23,17 +23,17 @@ type alias NearUniform u =
   | perspective : Mat4
   , cameraOrientation : Mat4
   , cameraPosition : Vec3
-  , modelPosition : Vec3
-  , scale : Float
+  , placement : Mat4
   }
 
 
-place : u -> Vec3 -> Float -> { u | modelPosition : Vec3, scale : Float }
-place u v f =
+place : u -> Vec3 -> Float -> { u | placement : Mat4 }
+place uniform position size =
   let
-    u' = { u | modelPosition = v }
+    placement =
+      Mat4.makeTranslate position |> Mat4.scale (Vec3.vec3 size size size)
   in
-    { u' | scale = f }
+    { uniform | placement = placement }
 
 
 planet =
@@ -51,19 +51,21 @@ nearVertexShader =
   attribute vec3 vertPosition;
   attribute vec4 vertColor;
 
+  uniform vec3 cameraPosition;
   uniform mat4 perspective;
   uniform mat4 cameraOrientation;
-  uniform vec3 cameraPosition;
-  uniform vec3 modelPosition;
-  uniform float scale;
+  uniform mat4 placement;
 
   varying vec4 fragColor;
 
   void main() {
-    vec4 worldPosition = vec4(scale * vertPosition + modelPosition + cameraPosition, 1);
-    vec4 projectionOffset = vec4(0, 0, length(worldPosition.xyz), 0);
+    vec4 worldFrame = placement * vec4(vertPosition, 1);
+    vec4 cameraFrame = worldFrame + vec4(cameraPosition, 1);
+
+    vec4 projectionOffset = vec4(0, 0, length(cameraFrame.xyz), 0);
+
     gl_Position =
-      perspective * (cameraOrientation * worldPosition - projectionOffset);
+      perspective * (cameraOrientation * cameraFrame - projectionOffset);
 
     fragColor = vertColor;
   }
