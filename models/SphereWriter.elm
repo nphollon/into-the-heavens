@@ -8,19 +8,26 @@ import Text
 import String
 
 import Math.Vector3 as Vec3 exposing (Vec3)
+import Math.Vector4 as Vec4 exposing (Vec4)
+
 
 import Triple exposing (Triple)
-import Graphics
+import World
 import Model.Writer
 
-type alias Point = (Float, Float)
+
+type alias TupPoint = ((Float, Float), Zone)
+
+
+type Zone = One | Two | Three | Four
+
 
 main : Layout.Element
 main =
   Layout.leftAligned <| Text.fromString <| Model.Writer.source "Sphere" sphere
 
 
-sphere : Graphics.Mesh
+sphere : Triple.Mesh World.Attribute
 sphere =
   let
     sphereIcosaFaces =
@@ -28,39 +35,48 @@ sphere =
 
     rectIcosaFaces =
       List.map (Triple.map toRect) sphereIcosaFaces
-
-    meshCoords =
-      List.concatMap (recurse 2) rectIcosaFaces
   in
-    List.map toTriangle meshCoords
+    List.concatMap (recurse 2) rectIcosaFaces
   
 
-lookup : Array Point -> Int -> Maybe Point
+lookup : Array TupPoint -> Int -> Maybe TupPoint
 lookup =
   flip Array.get
 
 
-toRect : Point -> Vec3
-toRect (colatitude, longitude) =
+toRect : TupPoint -> World.Attribute
+toRect ((colatitude, longitude), zone) =
   let
     theta = degrees colatitude
     phi = degrees longitude
+    position =
+      Vec3.vec3 (sin theta * cos phi) (sin theta * sin phi) (cos theta)
   in
-    Vec3.vec3 (sin theta * cos phi) (sin theta * sin phi) (cos theta)
+    { vertPosition = position
+    , vertColor = toColor zone
+    }
 
 
-recurse : Int -> Triple Vec3 -> List (Triple Vec3)
+recurse : Int -> Triple World.Attribute -> Triple.Mesh World.Attribute
 recurse iter triangle =
   if iter == 0
     then [ triangle ]
     else List.concatMap (recurse (iter - 1)) (split triangle)
 
 
-split : Triple Vec3 -> List (Triple Vec3)
+split : Triple World.Attribute -> Triple.Mesh World.Attribute
 split (a, b, c) =
   let
-    midpoint u v =
+    normalMidpoint u v =
       Vec3.add u v |> Vec3.normalize
+
+    meanMidpoint c d =
+      Vec4.add c d |> Vec4.scale 0.5
+
+    midpoint a b =
+      { vertPosition = normalMidpoint a.vertPosition b.vertPosition
+      , vertColor = meanMidpoint a.vertColor b.vertColor
+      }
 
     ab = midpoint a b
     bc = midpoint b c
@@ -73,48 +89,37 @@ split (a, b, c) =
     ]
 
 
-toTriangle : Triple Vec3 -> Triple Graphics.Attribute
-toTriangle =
-  Triple.map (\position ->
-    let
-      (x, y, z) = 
-        Vec3.toTuple position
-
-      color =
-        Color.hsl
-          (2 * atan2 (Vec3.getX position) (Vec3.getY position))
-          (Vec3.getZ position)
-          0.5
-    in
-      Graphics.vertex color x y z
-  )
+toColor : Zone -> Vec4
+toColor z =
+  case z of
+    One ->
+      Vec4.vec4 1 0 0 0
+    Two ->
+      Vec4.vec4 0 1 0 0
+    Three ->
+      Vec4.vec4 0 0 1 0
+    Four ->
+      Vec4.vec4 0 0 0 1
 
 
-color position =
-  Color.hsl
-    (2 * atan2 (Vec3.getX position) (Vec3.getY position))
-    (1 - abs (Vec3.getZ position))
-    0.5
-
-
-baseCoords : Array (Float, Float)
+baseCoords : Array TupPoint
 baseCoords =
   Array.fromList
-    [ (0, 0)
-    , (63.43494882292198, 0)
-    , (63.43494882292198, 72)
-    , (63.43494882292198, 144)
-    , (63.43494882292198, 216)
-    , (63.43494882292198, 288)
-    , (116.56505117707802, 36)
-    , (116.56505117707802, 108)
-    , (116.56505117707802, 180)
-    , (116.56505117707802, 252)
-    , (116.56505117707802, 324)
-    , (180, 0)
+    [ ((0, 0), One)
+    , ((63.43494882292198, 0), Two)
+    , ((63.43494882292198, 72), Three)
+    , ((63.43494882292198, 144), Four)
+    , ((63.43494882292198, 216), Two)
+    , ((63.43494882292198, 288), Three)
+    , ((116.56505117707802, 36), Four)
+    , ((116.56505117707802, 108), One)
+    , ((116.56505117707802, 180), Three)
+    , ((116.56505117707802, 252), Four)
+    , ((116.56505117707802, 324), One)
+    , ((180, 0), Two)
     ]
 
-baseIndexes : List (Triple Int)
+baseIndexes : Triple.Mesh Int
 baseIndexes =
   [ (0, 1, 2)
   , (0, 2, 3)

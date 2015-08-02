@@ -4,6 +4,8 @@ import List
 
 type alias Triple a = (a, a, a)
 
+type alias Mesh a = List (Triple a)
+
 map : (a -> b) -> Triple a -> Triple b
 map f (a, b, c) =
   (f a, f b, f c)

@@ -37,15 +37,6 @@ type alias FarUniform u =
   }
 
 
-type alias NearUniform u =
-  { u
-  | perspective : Mat4
-  , cameraOrientation : Mat4
-  , cameraPosition : Vec3
-  , modelPosition : Vec3 
-  }
-
-
 type alias Varying =
   { fragColor : Vec4
   }
@@ -70,6 +61,19 @@ vertex color x y z =
   in
     { vertPosition = Vec3.vec3 x y z
     , vertColor = colorVector }
+
+
+colorVector : Color -> Vec4
+colorVector color =
+  let
+    rgba =
+      Color.toRgb color
+  in
+    Vec4.vec4
+      (rgba.red ./. 255)
+      (rgba.green ./. 255)
+      (rgba.blue ./. 255)
+      rgba.alpha
 
 
 triangleStrip : Array Attribute -> Mesh
@@ -122,30 +126,6 @@ yAxis =
 zAxis : Vec3
 zAxis =
   Vec3.vec3 0 0 1
-
-
-nearVertexShader : WebGL.Shader Attribute (NearUniform u) Varying
-nearVertexShader =
-  [glsl|
-  attribute vec3 vertPosition;
-  attribute vec4 vertColor;
-
-  uniform mat4 perspective;
-  uniform mat4 cameraOrientation;
-  uniform vec3 cameraPosition;
-  uniform vec3 modelPosition;
-
-  varying vec4 fragColor;
-
-  void main() {
-    vec4 worldPosition = vec4(vertPosition + modelPosition + cameraPosition, 1);
-    vec4 projectionOffset = vec4(0, 0, length(worldPosition.xyz), 0);
-    gl_Position =
-      perspective * (cameraOrientation * worldPosition - projectionOffset);
-
-    fragColor = vertColor;
-  }
-  |]
 
 
 distantVertexShader : WebGL.Shader Attribute (FarUniform u) Varying
