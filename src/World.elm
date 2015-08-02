@@ -65,16 +65,20 @@ planetShader =
   varying vec4 fragColor;
 
   void main () {
-    if (fragColor.x < 1e-4) {
-      gl_FragColor = vec4(0.82421875,0.8828125,0.7109375, 1);
-    } else if (fragColor.y < 1e-4) {
-      gl_FragColor = vec4(0.6640625,0.796875,0.69140625, 1);
-    } else if (fragColor.z < 1e-4) {
-      gl_FragColor = vec4(0.52734375,0.73828125,0.69140625, 1);
-    } else if (fragColor.w < 1e-4) {
-      gl_FragColor = vec4(0.40625,0.69921875,0.68359375, 1);
+    vec4 blue = vec4(0.2265625,0.28515625,0.84375,1);
+    vec4 green = vec4(0.2734375,0.57421875,0.37109375,1);
+
+    bool border = length(fragColor.xy) < 1e-1 
+      || length(fragColor.xz) < 1e-1
+      || length(fragColor.xw) < 1e-1
+      || length(fragColor.yz) < 1e-1
+      || length(fragColor.yw) < 1e-1
+      || length(fragColor.zw) < 1e-1;
+
+    if (border) {
+      gl_FragColor = blue;
     } else {
-      gl_FragColor = vec4(0, 0, 0, 1);
+      gl_FragColor = green;
     }
   }
   |]
