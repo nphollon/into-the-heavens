@@ -12,7 +12,7 @@ type alias Point =
   (Float, Float)
 
 
-scatter : Int -> Graphics.Uniform -> Graphics.Entity
+scatter : Int -> Graphics.FarUniform u -> Graphics.Entity
 scatter n =
   let
     seed =

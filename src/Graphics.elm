@@ -30,10 +30,18 @@ type alias Mesh =
   List (Triple Attribute)
 
 
-type alias Uniform =
-  { perspective : Mat4
+type alias FarUniform u =
+  { u
+  | perspective : Mat4
   , cameraOrientation : Mat4
-  , modelPosition : Vec3
+  }
+
+
+type alias NearUniform u =
+  { u
+  | perspective : Mat4
+  , cameraOrientation : Mat4
+  , modelPosition : Vec3 
   }
 
 
@@ -100,12 +108,12 @@ scale factor vertex =
   { vertex | vertPosition <- Vec3.scale factor vertex.vertPosition }
 
 
-distantEntity : Mesh -> Uniform -> WebGL.Entity
+distantEntity : Mesh -> FarUniform u -> WebGL.Entity
 distantEntity =
   WebGL.entity distantVertexShader fragmentShader
 
 
-entity : Mesh -> Uniform -> WebGL.Entity
+entity : Mesh -> NearUniform u -> WebGL.Entity
 entity mesh uniform =
   WebGL.entity vertexShader fragmentShader mesh uniform
 
@@ -120,7 +128,7 @@ zAxis =
   Vec3.vec3 0 0 1
 
 
-vertexShader : WebGL.Shader Attribute Uniform Varying
+vertexShader : WebGL.Shader Attribute (NearUniform u) Varying
 vertexShader =
   [glsl|
   attribute vec3 vertPosition;
@@ -143,7 +151,7 @@ vertexShader =
   |]
 
 
-distantVertexShader : WebGL.Shader Attribute Uniform Varying
+distantVertexShader : WebGL.Shader Attribute (FarUniform u) Varying
 distantVertexShader =
   [glsl|
   attribute vec3 vertPosition;
@@ -165,7 +173,7 @@ distantVertexShader =
   |]
 
 
-fragmentShader : WebGL.Shader { } Uniform Varying
+fragmentShader : WebGL.Shader { } u Varying
 fragmentShader =
   [glsl|
   precision mediump float;

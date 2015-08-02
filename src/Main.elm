@@ -146,11 +146,14 @@ view model =
     uniform =
       { perspective = Mat4.makePerspective 90 aspect 0.01 210
       , cameraOrientation = Mat4.transpose model.orientation
-      , modelPosition = model.position
       }
 
     planetUniform =
-      { uniform | modelPosition <- (Vec3.add (Vec3.vec3 1.1 1.5 -2) model.position)
+      { uniform | modelPosition = (Vec3.add (Vec3.vec3 1.1 1.5 -2) model.position)
+      }
+
+    moonUniform =
+      { uniform | modelPosition = (Vec3.add (Vec3.vec3 -1.1 1.5 -4) model.position)
       }
   in
     Graphics.render dimensions
@@ -160,5 +163,6 @@ view model =
       , Scatter.scatter 100 uniform
       , Grid.grid 2 4 uniform
       , Graphics.entity Planet.mesh planetUniform
+      , Graphics.entity Planet.mesh moonUniform
       ]
       

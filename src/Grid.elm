@@ -8,8 +8,8 @@ import Graphics
 import Infix exposing (..)
   
 
-grid : Int -> Int -> Graphics.Uniform -> Graphics.Entity
-grid xRes yRes uniform =
+grid : Int -> Int -> Graphics.FarUniform u -> Graphics.Entity
+grid xRes yRes =
   let
     meridians =
       Array.initialize xRes (\i ->
@@ -21,7 +21,7 @@ grid xRes yRes uniform =
           parallel (i ./. yRes * turns 0.5 - turns 0.25)
         ) |> Array.toList |> List.concat
   in
-    Graphics.distantEntity (meridians ++ parallels) uniform
+    Graphics.distantEntity (meridians ++ parallels)
     
 
 parallel : Float -> Graphics.Mesh
