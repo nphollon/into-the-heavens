@@ -41,6 +41,7 @@ type alias NearUniform u =
   { u
   | perspective : Mat4
   , cameraOrientation : Mat4
+  , cameraPosition : Vec3
   , modelPosition : Vec3 
   }
 
@@ -113,11 +114,6 @@ distantEntity =
   WebGL.entity distantVertexShader fragmentShader
 
 
-entity : Mesh -> NearUniform u -> WebGL.Entity
-entity mesh uniform =
-  WebGL.entity vertexShader fragmentShader mesh uniform
-
-
 yAxis : Vec3
 yAxis =
   Vec3.vec3 0 1 0
@@ -128,20 +124,21 @@ zAxis =
   Vec3.vec3 0 0 1
 
 
-vertexShader : WebGL.Shader Attribute (NearUniform u) Varying
-vertexShader =
+nearVertexShader : WebGL.Shader Attribute (NearUniform u) Varying
+nearVertexShader =
   [glsl|
   attribute vec3 vertPosition;
   attribute vec4 vertColor;
 
   uniform mat4 perspective;
   uniform mat4 cameraOrientation;
+  uniform vec3 cameraPosition;
   uniform vec3 modelPosition;
 
   varying vec4 fragColor;
 
   void main() {
-    vec4 worldPosition = vec4(vertPosition + modelPosition, 1);
+    vec4 worldPosition = vec4(vertPosition + modelPosition + cameraPosition, 1);
     vec4 projectionOffset = vec4(0, 0, length(worldPosition.xyz), 0);
     gl_Position =
       perspective * (cameraOrientation * worldPosition - projectionOffset);

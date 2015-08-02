@@ -1,4 +1,4 @@
-module PlanetWriter (main) where
+module SphereWriter (main) where
 
 import Color
 import Array exposing (Array)
@@ -17,11 +17,11 @@ type alias Point = (Float, Float)
 
 main : Layout.Element
 main =
-  Layout.leftAligned <| Text.fromString <| Model.Writer.source "Planet" planet
+  Layout.leftAligned <| Text.fromString <| Model.Writer.source "Sphere" sphere
 
 
-planet : Graphics.Mesh
-planet =
+sphere : Graphics.Mesh
+sphere =
   let
     sphereIcosaFaces =
       List.filterMap (Triple.mapMaybe (lookup baseCoords)) baseIndexes

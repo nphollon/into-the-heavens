@@ -1,4 +1,4 @@
-module Planet where
+module Sphere where
 import Math.Vector3 as V3
 import Math.Vector4 as V4
 mesh =
