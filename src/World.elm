@@ -65,7 +65,17 @@ planetShader =
   varying vec4 fragColor;
 
   void main () {
-    gl_FragColor = fragColor;
+    if (fragColor.x < 1e-4) {
+      gl_FragColor = vec4(0.82421875,0.8828125,0.7109375, 1);
+    } else if (fragColor.y < 1e-4) {
+      gl_FragColor = vec4(0.6640625,0.796875,0.69140625, 1);
+    } else if (fragColor.z < 1e-4) {
+      gl_FragColor = vec4(0.52734375,0.73828125,0.69140625, 1);
+    } else if (fragColor.w < 1e-4) {
+      gl_FragColor = vec4(0.40625,0.69921875,0.68359375, 1);
+    } else {
+      gl_FragColor = vec4(0, 0, 0, 1);
+    }
   }
   |]
 
@@ -77,6 +87,12 @@ moonShader =
   varying vec4 fragColor;
 
   void main () {
-    gl_FragColor = fragColor;
+    float zone = length(step(0.8, fragColor));
+
+    if (zone < 1e-4) {
+      gl_FragColor = vec4(1, 1, 1, 1);
+    } else {
+      gl_FragColor = vec4(0.2, 0.1, 0.2, 1);
+    }    
   }
   |]
