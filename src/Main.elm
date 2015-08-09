@@ -122,7 +122,7 @@ move action model =
       |> Mat4.rotate (action.roll .* delta) (Vec3.vec3 0 0 1)
 
     thrust =
-      Vec3.vec3 0 0 (action.thrust .* 0.03)
+      Vec3.vec3 0 0 (action.thrust .* 0.1)
 
     newPosition =
       Mat4.transform newOrientation thrust
@@ -149,19 +149,21 @@ view model =
       , cameraOrientation = Mat4.transpose model.orientation
       }
 
-    planetUniform =
-      World.place uniform (Vec3.vec3 3 10 -15) 2.0
+    unit = 10
 
-    moonUniform =
-      World.place uniform (Vec3.vec3 2 2 -7) 0.5
+    body r x y z =
+      World.place uniform (Vec3.scale unit (Vec3.vec3 x y z)) (r * unit)
+           
   in
     Graphics.render dimensions
       [ Constellation.crux uniform
       , Constellation.ursaMajor uniform
       , Constellation.aquarius uniform
       , Scatter.scatter 100 uniform
-      , Grid.grid 2 4 uniform
-      , World.planet planetUniform
-      , World.moon moonUniform
+      , Grid.grid 0 2 uniform
+      , World.planet (body 1 0 -10 -5) {-Jupiter-}
+      , World.moon (body 0.02606 0 -3.968 -5) {-Io-}
+      , World.moon (body 0.02233 0 -0.404 -5) {-Europa-}
+      , World.moon (body 0.03768 0 5.31  -5) {-Ganymede-}
+      , World.moon (body 0.03447 0 16.93 -5) {-Callisto-}
       ]
-      

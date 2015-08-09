@@ -51,7 +51,7 @@ vertexRing zenithAngle =
         phi =
           turns (i ./. grate)
       in
-        sphVertex Color.blue 100 phi (zenithAngle + side .* width)
+        sphVertex Color.darkCharcoal 100 phi (zenithAngle + side .* width)
   in
     Array.initialize (grate + 2) indexedVertex
 
