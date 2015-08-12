@@ -6,6 +6,7 @@ import Time
 import Keyboard
 import Set
 import Char
+import Text
 
 import AnimationFrame
 import Math.Vector3 as Vec3
@@ -25,6 +26,7 @@ main =
       { orientation = Mat4.identity
       , position = Vec3.vec3 0 0 0
       , action = inaction
+      , message = "Hello Jupiter!"
       }
     model =
       Signal.foldp update startModel signal
@@ -36,6 +38,7 @@ type alias Model =
   { orientation : Mat4.Mat4
   , position : Vec3.Vec3
   , action : Action
+  , message : String
   }
 
 
@@ -137,11 +140,22 @@ move action model =
 view : Model -> Layout.Element
 view model =
   let
-    dimensions =
-      (600, 600)
+    sceneWidth = 600
+    height = 600
+    textBoxWidth = 200
+    
+  in
+    Layout.flow Layout.right
+            [ scene sceneWidth height model
+            , textBox model textBoxWidth height
+            ]
 
+
+scene : Int -> Int -> Model -> Layout.Element
+scene width height model =
+  let
     aspect =
-      uncurry (./.) dimensions
+      width ./. height
 
     uniform =
       { perspective = Mat4.makePerspective 90 aspect 0.01 210
@@ -155,7 +169,7 @@ view model =
       World.place uniform (Vec3.scale unit (Vec3.vec3 x y z)) (r * unit)
            
   in
-    Graphics.render dimensions
+    Graphics.render (width, height)
       [ Constellation.crux uniform
       , Constellation.ursaMajor uniform
       , Constellation.aquarius uniform
@@ -167,3 +181,10 @@ view model =
       , World.moon (body 0.03768 0 5.31  -5) {-Ganymede-}
       , World.moon (body 0.03447 0 16.93 -5) {-Callisto-}
       ]
+
+
+textBox : Model -> Int -> Int -> Layout.Element
+textBox model width height =
+  Text.fromString model.message
+    |> Layout.rightAligned
+    |> Layout.size width height
