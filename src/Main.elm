@@ -124,7 +124,7 @@ move action model =
       |> Mat4.rotate (action.roll .* delta) (Vec3.vec3 0 0 1)
 
     thrust =
-      Vec3.vec3 0 0 (action.thrust .* 0.1)
+      Vec3.vec3 0 0 (action.thrust .* 0.2)
 
     newPosition =
       Mat4.transform newOrientation thrust
@@ -156,29 +156,23 @@ scene width height model =
     aspect =
       width ./. height
 
-    uniform =
+    camera =
       { perspective = Mat4.makePerspective 100 aspect 0.01 210
       , cameraPosition = model.position
       , cameraOrientation = Mat4.transpose model.orientation
       }
-
-    unit = 10
-
-    body r xyz =
-      Graphics.place (Vec3.scale unit (Vec3.fromTuple xyz)) (r * unit) uniform
-           
   in
-    Graphics.render (width, height)
-      [ Constellation.crux uniform
-      , Constellation.ursaMajor uniform
-      , Constellation.aquarius uniform
-      , Scatter.scatter 100 uniform
-      , Grid.grid 0 2 uniform
-      , Graphics.planet (body 1 (0, -10, -5)) {-Jupiter-}
-      , Graphics.moon (body 0.02606 (0, -3.968, -5)) {-Io-}
-      , Graphics.moon (body 0.02233 (0, -0.404, -5)) {-Europa-}
-      , Graphics.moon (body 0.03768 (0, 5.31, -5)) {-Ganymede-}
-      , Graphics.moon (body 0.03447 (0, 16.93, -5)) {-Callisto-}
+    Graphics.render (width, height) camera
+      [ Constellation.crux 
+      , Constellation.ursaMajor 
+      , Constellation.aquarius 
+      , Scatter.scatter 100 
+      , Grid.grid 0 2 
+      , Graphics.planet 10 (0, -100, -50)  {-Jupiter-}
+      , Graphics.moon 0.2606 (0, -39.68, -50)  {-Io-}
+      , Graphics.moon 0.2233 (0, -4.04, -50)  {-Europa-}
+      , Graphics.moon 0.3768 (0, 53.1, -50)  {-Ganymede-}
+      , Graphics.moon 0.3447 (0, 169.3, -50)  {-Callisto-}
       ]
 
 

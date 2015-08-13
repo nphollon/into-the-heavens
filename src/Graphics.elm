@@ -2,6 +2,7 @@ module Graphics where
 
 import Color exposing (Color)
 import Array exposing (Array)
+import List
 import Graphics.Element as Layout
 
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -14,11 +15,12 @@ import Triple exposing (Triple)
 import Sphere
 
 
-render : (Int, Int) -> List WebGL.Entity -> Layout.Element
-render dimensions =
-  WebGL.webgl dimensions
-  >> uncurry Layout.container dimensions Layout.middle
-  >> Layout.color Color.black
+render : (Int, Int) -> Camera -> List (Camera -> WebGL.Entity) -> Layout.Element
+render dimensions camera entities =
+  List.map (\i -> i camera) entities
+    |> WebGL.webgl dimensions
+    |> uncurry Layout.container dimensions Layout.middle
+    |> Layout.color Color.black
 
 
 type alias Attribute =
@@ -38,9 +40,8 @@ type alias Camera =
   }
 
                   
-type alias NearUniform u =
-  { u
-  | perspective : Mat4
+type alias NearUniform =
+  { perspective : Mat4
   , cameraOrientation : Mat4
   , cameraPosition : Vec3
   , placement : Mat4
@@ -138,23 +139,24 @@ zAxis =
   Vec3.vec3 0 0 1
 
 
-place : Vec3 -> Float -> u -> { u | placement : Mat4 }
-place position size uniform =
+world : FragmentShader NearUniform -> Float -> Triple Float -> Camera -> Entity
+world shader size position uniform =
   let
     placement =
-      Mat4.makeTranslate position |> Mat4.scale (Vec3.vec3 size size size)
+      Vec3.fromTuple position
+        |> Mat4.makeTranslate
+        |> Mat4.scale (Vec3.vec3 size size size)
   in
-    { uniform | placement = placement }
+    WebGL.entity nearVertexShader shader Sphere.mesh
+           { uniform | placement = placement }
 
 
-planet =
-  WebGL.entity nearVertexShader planetShader Sphere.mesh
+planet = world planetShader
 
-moon =
-  WebGL.entity nearVertexShader moonShader Sphere.mesh
+moon = world moonShader
 
 
-nearVertexShader : WebGL.Shader Attribute (NearUniform u) Varying
+nearVertexShader : WebGL.Shader Attribute NearUniform Varying
 nearVertexShader =
   [glsl|
   precision mediump float;
@@ -205,7 +207,11 @@ distantVertexShader =
   |]
 
 
-smoothFragmentShader : WebGL.Shader { } u Varying
+type alias FragmentShader u =
+  WebGL.Shader { } u Varying
+
+
+smoothFragmentShader : FragmentShader u
 smoothFragmentShader =
   [glsl|
   precision mediump float;
@@ -217,7 +223,7 @@ smoothFragmentShader =
   |]
 
 
-planetShader : WebGL.Shader { } u Varying
+planetShader : FragmentShader u
 planetShader =
   [glsl|
   precision mediump float;
@@ -243,7 +249,7 @@ planetShader =
   |]
 
 
-moonShader : WebGL.Shader { } u Varying
+moonShader : FragmentShader u
 moonShader =
   [glsl|
   precision mediump float;
