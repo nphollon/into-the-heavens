@@ -177,7 +177,7 @@ nearVertexShader =
 
   void main() {
     vec4 worldFrame = placement * vec4(vertPosition, 1);
-    vec4 cameraFrame = worldFrame + vec4(cameraPosition, 1);
+    vec4 cameraFrame = worldFrame - vec4(cameraPosition, 0);
 
     vec4 projectionOffset = vec4(0, 0, length(cameraFrame.xyz), 0);
 

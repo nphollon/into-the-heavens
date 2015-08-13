@@ -7,6 +7,8 @@ import Keyboard
 import Set
 import Char
 import Text
+import Dict exposing (Dict)
+import Maybe
 
 import AnimationFrame
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -20,6 +22,7 @@ import World exposing (World, WorldStyle(..))
 import Infix exposing (..)
 import Triple exposing (Triple)
 
+import Debug
 
 main : Signal Layout.Element
 main =
@@ -35,7 +38,7 @@ type alias Model =
   , position : Vec3
   , action : Action
   , message : String
-  , worlds : List World
+  , worlds : Dict String World
   }
 
 
@@ -67,12 +70,13 @@ startModel =
   , action = inaction
   , message = "Hello Jupiter!"
   , worlds =
-    [ World.world Planet 10 (0, -100, -50)  {-Jupiter-}
-    , World.world Moon 0.2606 (0, -39.68, -50)  {-Io-}
-    , World.world Moon 0.2233 (0, -4.04, -50)  {-Europa-}
-    , World.world Moon 0.3768 (0, 53.1, -50)  {-Ganymede-}
-    , World.world Moon 0.3447 (0, 169.3, -50)  {-Callisto-}
-    ]
+    Dict.fromList
+          [ ("Jupiter", World.world Planet 10 (0, -100, -50))
+          , ("Io", World.world Moon 0.2606 (0, -39.68, -50))
+          , ("Europa", World.world Moon 0.2233 (0, -4.04, -50))
+          , ("Ganymede", World.world Moon 0.3768 (0, 53.1, -50))
+          , ("Callisto", World.world Moon 0.3447 (0, 169.3, -50))
+          ]
   }
 
 
@@ -104,9 +108,9 @@ keysDown =
         'E' ->
           { action | roll <- action.roll + 1 }
         'I' ->
-          { action | thrust <- action.thrust + 1 }
-        'M' ->
           { action | thrust <- action.thrust - 1 }
+        'M' ->
+          { action | thrust <- action.thrust + 1 }
         otherwise ->
           action
 
@@ -142,11 +146,22 @@ move action model =
 
     newPosition =
       Mat4.transform newOrientation thrust
-      |> Vec3.add model.position 
+      |> Vec3.add model.position
+
+    isNearJupiter =
+      Dict.get "Jupiter" model.worlds
+        |> Maybe.map .position
+        |> Maybe.map (Vec3.distance newPosition)
+        |> Maybe.map (\x -> x < 25)
+        |> Maybe.withDefault False
+
+    newMessage =
+      if isNearJupiter then "Hello Jupiter!" else "So lonely..."
   in
     { model
     | orientation <- newOrientation
     , position <- newPosition
+    , message <- newMessage
     }
 
 
@@ -185,7 +200,7 @@ scene width height model =
       ]
 
     foreground =
-      List.map World.toEntity model.worlds
+      Dict.values model.worlds |> List.map World.toEntity
   in
     Graphics.render (width, height) camera (background ++ foreground)
               
