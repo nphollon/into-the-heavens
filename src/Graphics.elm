@@ -139,21 +139,25 @@ zAxis =
   Vec3.vec3 0 0 1
 
 
-world : FragmentShader NearUniform -> Float -> Triple Float -> Camera -> Entity
-world shader size position uniform =
+drawWorld : FragmentShader NearUniform -> Float -> Vec3 -> Camera -> Entity
+drawWorld shader size position uniform =
   let
     placement =
-      Vec3.fromTuple position
-        |> Mat4.makeTranslate
+      Mat4.makeTranslate position
         |> Mat4.scale (Vec3.vec3 size size size)
   in
     WebGL.entity nearVertexShader shader Sphere.mesh
            { uniform | placement = placement }
 
 
-planet = world planetShader
+planet : Float -> Vec3 -> Camera -> Entity
+planet =
+  drawWorld planetShader
 
-moon = world moonShader
+            
+moon : Float -> Vec3 -> Camera -> Entity
+moon =
+  drawWorld moonShader
 
 
 nearVertexShader : WebGL.Shader Attribute NearUniform Varying

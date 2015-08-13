@@ -9,24 +9,21 @@ import Char
 import Text
 
 import AnimationFrame
-import Math.Vector3 as Vec3
-import Math.Matrix4 as Mat4
+import Math.Vector3 as Vec3 exposing (Vec3)
+import Math.Matrix4 as Mat4 exposing (Mat4)
 
 import Graphics
 import Grid
 import Constellation
 import Scatter
+import World exposing (World, WorldStyle(..))
 import Infix exposing (..)
+import Triple exposing (Triple)
+
 
 main : Signal Layout.Element
 main =
   let
-    startModel =
-      { orientation = Mat4.identity
-      , position = Vec3.vec3 0 0 0
-      , action = inaction
-      , message = "Hello Jupiter!"
-      }
     model =
       Signal.foldp update startModel signal
   in
@@ -34,10 +31,11 @@ main =
 
 
 type alias Model =
-  { orientation : Mat4.Mat4
-  , position : Vec3.Vec3
+  { orientation : Mat4
+  , position : Vec3
   , action : Action
   , message : String
+  , worlds : List World
   }
 
 
@@ -59,6 +57,22 @@ inaction =
   , pitch = 0
   , yaw = 0
   , roll = 0
+  }
+
+
+startModel : Model
+startModel =
+  { orientation = Mat4.identity
+  , position = Vec3.vec3 0 0 0
+  , action = inaction
+  , message = "Hello Jupiter!"
+  , worlds =
+    [ World.world Planet 10 (0, -100, -50)  {-Jupiter-}
+    , World.world Moon 0.2606 (0, -39.68, -50)  {-Io-}
+    , World.world Moon 0.2233 (0, -4.04, -50)  {-Europa-}
+    , World.world Moon 0.3768 (0, 53.1, -50)  {-Ganymede-}
+    , World.world Moon 0.3447 (0, 169.3, -50)  {-Callisto-}
+    ]
   }
 
 
@@ -161,19 +175,20 @@ scene width height model =
       , cameraPosition = model.position
       , cameraOrientation = Mat4.transpose model.orientation
       }
-  in
-    Graphics.render (width, height) camera
+
+    background =
       [ Constellation.crux 
       , Constellation.ursaMajor 
       , Constellation.aquarius 
       , Scatter.scatter 100 
       , Grid.grid 0 2 
-      , Graphics.planet 10 (0, -100, -50)  {-Jupiter-}
-      , Graphics.moon 0.2606 (0, -39.68, -50)  {-Io-}
-      , Graphics.moon 0.2233 (0, -4.04, -50)  {-Europa-}
-      , Graphics.moon 0.3768 (0, 53.1, -50)  {-Ganymede-}
-      , Graphics.moon 0.3447 (0, 169.3, -50)  {-Callisto-}
       ]
+
+    foreground =
+      List.map World.toEntity model.worlds
+  in
+    Graphics.render (width, height) camera (background ++ foreground)
+              
 
 
 textBox : Model -> Int -> Int -> Layout.Element
