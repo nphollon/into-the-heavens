@@ -11,6 +11,7 @@ import WebGL
 
 import Infix exposing (..)
 import Triple exposing (Triple)
+import Sphere
 
 
 render : (Int, Int) -> List WebGL.Entity -> Layout.Element
@@ -30,10 +31,19 @@ type alias Mesh =
   List (Triple Attribute)
 
 
-type alias FarUniform u =
+type alias Camera =
+  { perspective : Mat4
+  , cameraOrientation : Mat4
+  , cameraPosition : Vec3
+  }
+
+                  
+type alias NearUniform u =
   { u
   | perspective : Mat4
   , cameraOrientation : Mat4
+  , cameraPosition : Vec3
+  , placement : Mat4
   }
 
 
@@ -113,9 +123,9 @@ scale factor vertex =
   { vertex | vertPosition <- Vec3.scale factor vertex.vertPosition }
 
 
-distantEntity : Mesh -> FarUniform u -> WebGL.Entity
+distantEntity : Mesh -> Camera -> WebGL.Entity
 distantEntity =
-  WebGL.entity distantVertexShader fragmentShader
+  WebGL.entity distantVertexShader smoothFragmentShader
 
 
 yAxis : Vec3
@@ -128,7 +138,52 @@ zAxis =
   Vec3.vec3 0 0 1
 
 
-distantVertexShader : WebGL.Shader Attribute (FarUniform u) Varying
+place : Vec3 -> Float -> u -> { u | placement : Mat4 }
+place position size uniform =
+  let
+    placement =
+      Mat4.makeTranslate position |> Mat4.scale (Vec3.vec3 size size size)
+  in
+    { uniform | placement = placement }
+
+
+planet =
+  WebGL.entity nearVertexShader planetShader Sphere.mesh
+
+moon =
+  WebGL.entity nearVertexShader moonShader Sphere.mesh
+
+
+nearVertexShader : WebGL.Shader Attribute (NearUniform u) Varying
+nearVertexShader =
+  [glsl|
+  precision mediump float;
+
+  attribute vec3 vertPosition;
+  attribute vec4 vertColor;
+
+  uniform vec3 cameraPosition;
+  uniform mat4 perspective;
+  uniform mat4 cameraOrientation;
+  uniform mat4 placement;
+
+  varying vec4 fragColor;
+
+  void main() {
+    vec4 worldFrame = placement * vec4(vertPosition, 1);
+    vec4 cameraFrame = worldFrame + vec4(cameraPosition, 1);
+
+    vec4 projectionOffset = vec4(0, 0, length(cameraFrame.xyz), 0);
+
+    gl_Position =
+      perspective * (cameraOrientation * cameraFrame - projectionOffset);
+
+    fragColor = vertColor;
+  }
+  |]
+
+
+distantVertexShader : WebGL.Shader Attribute Camera Varying
 distantVertexShader =
   [glsl|
   attribute vec3 vertPosition;
@@ -150,13 +205,57 @@ distantVertexShader =
   |]
 
 
-fragmentShader : WebGL.Shader { } u Varying
-fragmentShader =
+smoothFragmentShader : WebGL.Shader { } u Varying
+smoothFragmentShader =
   [glsl|
   precision mediump float;
   varying vec4 fragColor;
 
   void main () {
     gl_FragColor = fragColor;
+  }
+  |]
+
+
+planetShader : WebGL.Shader { } u Varying
+planetShader =
+  [glsl|
+  precision mediump float;
+  varying vec4 fragColor;
+
+  void main () {
+    vec4 blue = vec4(0.2265625,0.28515625,0.84375,1);
+    vec4 green = vec4(0.2734375,0.57421875,0.37109375,1);
+
+    bool border = length(fragColor.xy) < 1e-1 
+      || length(fragColor.xz) < 1e-1
+      || length(fragColor.xw) < 1e-1
+      || length(fragColor.yz) < 1e-1
+      || length(fragColor.yw) < 1e-1
+      || length(fragColor.zw) < 1e-1;
+
+    if (border) {
+      gl_FragColor = blue;
+    } else {
+      gl_FragColor = green;
+    }
+  }
+  |]
+
+
+moonShader : WebGL.Shader { } u Varying
+moonShader =
+  [glsl|
+  precision mediump float;
+  varying vec4 fragColor;
+
+  void main () {
+    float zone = length(step(0.8, fragColor));
+
+    if (zone < 1e-4) {
+      gl_FragColor = vec4(1, 1, 1, 1);
+    } else {
+      gl_FragColor = vec4(0.2, 0.1, 0.2, 1);
+    }    
   }
   |]

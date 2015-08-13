@@ -14,7 +14,7 @@ skyPoint ra dec =
   (turns ra / 24, degrees (90 - dec))
 
 
-crux : Graphics.FarUniform u -> Graphics.Entity
+crux : Graphics.Camera -> Graphics.Entity
 crux =
   constellation
     [ skyPoint 12.43 -63.08
@@ -25,7 +25,7 @@ crux =
     ]
 
 
-ursaMajor : Graphics.FarUniform u -> Graphics.Entity
+ursaMajor : Graphics.Camera -> Graphics.Entity
 ursaMajor =
   constellation
     [ skyPoint 11.06 61.75
@@ -45,7 +45,7 @@ ursaMajor =
     ]
 
 
-aquarius : Graphics.FarUniform u -> Graphics.Entity
+aquarius : Graphics.Camera -> Graphics.Entity
 aquarius =
   constellation
     [ skyPoint 22.10 -0.32
@@ -57,7 +57,7 @@ aquarius =
     ]
 
 
-constellation : List Point -> Graphics.FarUniform u -> Graphics.Entity
+constellation : List Point -> Graphics.Camera -> Graphics.Entity
 constellation stars uniform =
   let
     mesh =

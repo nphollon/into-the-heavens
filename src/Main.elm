@@ -16,7 +16,6 @@ import Graphics
 import Grid
 import Constellation
 import Scatter
-import World
 import Infix exposing (..)
 
 main : Signal Layout.Element
@@ -158,15 +157,15 @@ scene width height model =
       width ./. height
 
     uniform =
-      { perspective = Mat4.makePerspective 90 aspect 0.01 210
+      { perspective = Mat4.makePerspective 100 aspect 0.01 210
       , cameraPosition = model.position
       , cameraOrientation = Mat4.transpose model.orientation
       }
 
     unit = 10
 
-    body r x y z =
-      World.place uniform (Vec3.scale unit (Vec3.vec3 x y z)) (r * unit)
+    body r xyz =
+      Graphics.place (Vec3.scale unit (Vec3.fromTuple xyz)) (r * unit) uniform
            
   in
     Graphics.render (width, height)
@@ -175,11 +174,11 @@ scene width height model =
       , Constellation.aquarius uniform
       , Scatter.scatter 100 uniform
       , Grid.grid 0 2 uniform
-      , World.planet (body 1 0 -10 -5) {-Jupiter-}
-      , World.moon (body 0.02606 0 -3.968 -5) {-Io-}
-      , World.moon (body 0.02233 0 -0.404 -5) {-Europa-}
-      , World.moon (body 0.03768 0 5.31  -5) {-Ganymede-}
-      , World.moon (body 0.03447 0 16.93 -5) {-Callisto-}
+      , Graphics.planet (body 1 (0, -10, -5)) {-Jupiter-}
+      , Graphics.moon (body 0.02606 (0, -3.968, -5)) {-Io-}
+      , Graphics.moon (body 0.02233 (0, -0.404, -5)) {-Europa-}
+      , Graphics.moon (body 0.03768 (0, 5.31, -5)) {-Ganymede-}
+      , Graphics.moon (body 0.03447 (0, 16.93, -5)) {-Callisto-}
       ]
 
 

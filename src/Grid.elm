@@ -8,7 +8,7 @@ import Graphics
 import Infix exposing (..)
   
 
-grid : Int -> Int -> Graphics.FarUniform u -> Graphics.Entity
+grid : Int -> Int -> Graphics.Camera -> Graphics.Entity
 grid xRes yRes =
   let
     meridians =
