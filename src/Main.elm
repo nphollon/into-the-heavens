@@ -188,10 +188,12 @@ view model =
   let
     sceneWidth = 600
     height = 600
-    textBoxWidth = 200    
+    textBoxWidth = 200
+    padding = 20
   in
     Layout.flow Layout.right
             [ scene sceneWidth height model
+            , Layout.spacer padding 1
             , textBox model textBoxWidth height
             ]
 
@@ -226,5 +228,5 @@ scene width height model =
 textBox : Model -> Int -> Int -> Layout.Element
 textBox model width height =
   Text.fromString model.message
-    |> Layout.rightAligned
+    |> Layout.leftAligned
     |> Layout.size width height
