@@ -126,7 +126,7 @@ scale factor vertex =
 
 distantEntity : Mesh -> Camera -> WebGL.Entity
 distantEntity =
-  WebGL.entity distantVertexShader smoothFragmentShader
+  WebGL.entity distantVertexShader distantFragmentShader
 
 
 yAxis : Vec3
@@ -215,8 +215,8 @@ type alias FragmentShader u =
   WebGL.Shader { } u Varying
 
 
-smoothFragmentShader : FragmentShader u
-smoothFragmentShader =
+distantFragmentShader : FragmentShader u
+distantFragmentShader =
   [glsl|
   precision mediump float;
   varying vec4 fragColor;
