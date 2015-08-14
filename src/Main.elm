@@ -68,7 +68,7 @@ startModel =
   { orientation = Mat4.identity
   , position = Vec3.vec3 0 0 0
   , action = inaction
-  , message = "Hello Jupiter!"
+  , message = ""
   , worlds =
     Dict.fromList
           [ ("Jupiter", World.world Planet 10 (0, -100, -50))
@@ -80,6 +80,18 @@ startModel =
   }
 
 
+messages : Dict String (Model -> Bool)
+messages =
+  Dict.fromList
+        [ ("Hello Jupiter!", isNear 25 "Jupiter")
+        , ("Bonjour Io!", isNear 3 "Io")
+        , ("Hola Europa!", isNear 3 "Europa")
+        , ("Ohayo Ganymede!", isNear 3 "Ganymede")
+        , ("Callisto! Long time no see!", isNear 3 "Callisto")
+        , ("So lonely...", always otherwise)
+        ]
+
+  
 signal : Signal Update
 signal =
   Signal.merge keysDown sample
@@ -126,48 +138,41 @@ update update model =
     KeyPress newAction ->
       { model | action <- newAction }
     TimeDelta _ ->
-      move model.action model
+      model
+        |> turn (degrees 3)
+        |> thrust 0.3
+        |> updateMessage messages
+
+              
+turn : Float -> Model -> Model
+turn delta model =
+  { model | orientation <-
+            model.orientation
+              |> Mat4.rotate (model.action.pitch .* delta) (Vec3.vec3 1 0 0)
+              |> Mat4.rotate (model.action.yaw .* delta) (Vec3.vec3 0 1 0)
+              |> Mat4.rotate (model.action.roll .* delta) (Vec3.vec3 0 0 1)
+  }
 
 
-move : Action -> Model -> Model
-move action model =
+thrust : Float -> Model -> Model
+thrust delta model =
+  { model | position <-
+            Vec3.vec3 0 0 (model.action.thrust .* delta)
+              |> Mat4.transform model.orientation
+              |> Vec3.add model.position
+  }
+
+                 
+updateMessage : (Dict String (Model -> Bool)) -> Model -> Model
+updateMessage messages model =
   let
-    delta =
-      degrees 3
-
-    newOrientation =
-      model.orientation
-      |> Mat4.rotate (action.pitch .* delta) (Vec3.vec3 1 0 0)
-      |> Mat4.rotate (action.yaw .* delta) (Vec3.vec3 0 1 0)
-      |> Mat4.rotate (action.roll .* delta) (Vec3.vec3 0 0 1)
-
-    thrust =
-      Vec3.vec3 0 0 (action.thrust .* 0.2)
-
-    newPosition =
-      Mat4.transform newOrientation thrust
-      |> Vec3.add model.position
-
-    messages =
-      Dict.fromList
-          [ ("Hello Jupiter!", isNear 25 "Jupiter")
-          , ("Bonjour Io!", isNear 3 "Io")
-          , ("Hola Europa!", isNear 3 "Europa")
-          , ("Ohayo Ganymede!", isNear 3 "Ganymede")
-          , ("Callisto! Long time no see!", isNear 3 "Callisto")
-          ]
-
-    newMessage =
-      Dict.foldr (\newValue condition oldValue ->
-                    if (condition model) then newValue else oldValue
-                 ) "So lonely..." messages
+    check newText isTrueFor oldText =
+      if (isTrueFor model) then newText else oldText
   in
-    { model
-    | orientation <- newOrientation
-    , position <- newPosition
-    , message <- newMessage
+    { model | message <-
+              Dict.foldr check model.message messages
     }
-
+  
 
 isNear : Float -> String -> Model -> Bool
 isNear altitude worldName model =
