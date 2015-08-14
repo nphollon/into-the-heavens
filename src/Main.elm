@@ -148,15 +148,19 @@ move action model =
       Mat4.transform newOrientation thrust
       |> Vec3.add model.position
 
-    isNearJupiter =
-      Dict.get "Jupiter" model.worlds
-        |> Maybe.map .position
-        |> Maybe.map (Vec3.distance newPosition)
-        |> Maybe.map (\x -> x < 25)
-        |> Maybe.withDefault False
+    messages =
+      Dict.fromList
+          [ ("Hello Jupiter!", isNear 25 "Jupiter")
+          , ("Bonjour Io!", isNear 3 "Io")
+          , ("Hola Europa!", isNear 3 "Europa")
+          , ("Ohayo Ganymede!", isNear 3 "Ganymede")
+          , ("Callisto! Long time no see!", isNear 3 "Callisto")
+          ]
 
     newMessage =
-      if isNearJupiter then "Hello Jupiter!" else "So lonely..."
+      Dict.foldr (\newValue condition oldValue ->
+                    if (condition model) then newValue else oldValue
+                 ) "So lonely..." messages
   in
     { model
     | orientation <- newOrientation
@@ -165,13 +169,21 @@ move action model =
     }
 
 
+isNear : Float -> String -> Model -> Bool
+isNear altitude worldName model =
+  Dict.get worldName model.worlds
+    |> Maybe.map .position
+    |> Maybe.map (Vec3.distance model.position)
+    |> Maybe.map (\x -> x < altitude)
+    |> Maybe.withDefault False
+
+       
 view : Model -> Layout.Element
 view model =
   let
     sceneWidth = 600
     height = 600
-    textBoxWidth = 200
-    
+    textBoxWidth = 200    
   in
     Layout.flow Layout.right
             [ scene sceneWidth height model
