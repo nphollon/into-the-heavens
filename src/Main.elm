@@ -80,18 +80,17 @@ startModel =
   }
 
 
-messages : Dict String (Model -> Bool)
+messages : List (String, (Model -> Bool))
 messages =
-  Dict.fromList
-        [ ("Hello Jupiter!", isNear 25 "Jupiter")
-        , ("Bonjour Io!", isNear 3 "Io")
-        , ("Hola Europa!", isNear 3 "Europa")
-        , ("Ohayo Ganymede!", isNear 3 "Ganymede")
-        , ("Callisto! Long time no see!", isNear 3 "Callisto")
-        , ("So lonely...", always otherwise)
-        ]
+  [ ("Zello Jupiter!", isNear 25 "Jupiter")
+  , ("Bonjour Io!", isNear 3 "Io")
+  , ("Hola Europa!", isNear 3 "Europa")
+  , ("Ohayo Ganymede!", isNear 3 "Ganymede")
+  , ("Shalom Callisto", isNear 3 "Callisto")
+  , ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam rhoncus est nunc, non consequat enim ullamcorper vitae. Duis ut tellus velit. Nulla vel sollicitudin neque. Integer at gravida nisi, sed ultrices quam. Proin dictum eu est at malesuada. Suspendisse aliquam magna ultrices porta consequat. Mauris fermentum quam tellus, congue luctus dui fringilla sed. Nam et eros velit.", always otherwise)
+  ]
 
-  
+
 signal : Signal Update
 signal =
   Signal.merge keysDown sample
@@ -163,14 +162,14 @@ thrust delta model =
   }
 
                  
-updateMessage : (Dict String (Model -> Bool)) -> Model -> Model
+updateMessage : List (String, (Model -> Bool)) -> Model -> Model
 updateMessage messages model =
   let
-    check newText isTrueFor oldText =
+    check (newText, isTrueFor) oldText =
       if (isTrueFor model) then newText else oldText
   in
     { model | message <-
-              Dict.foldr check model.message messages
+              List.foldr check model.message messages
     }
   
 
@@ -188,7 +187,7 @@ view model =
   let
     sceneWidth = 600
     height = 600
-    textBoxWidth = 200
+    textBoxWidth = 300
     padding = 20
   in
     Layout.flow Layout.right
