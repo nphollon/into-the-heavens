@@ -1,12 +1,14 @@
 module Main where
 
 import Graphics.Element as Layout
+import Color
 import Signal
 import Time
 import Keyboard
 import Set
 import Char
 import Text
+import String
 import Dict exposing (Dict)
 import Maybe
 
@@ -82,12 +84,12 @@ startModel =
 
 messages : List (String, (Model -> Bool))
 messages =
-  [ ("Zello Jupiter!", isNear 25 "Jupiter")
+  [ ("Hello Jupiter!", isNear 25 "Jupiter")
   , ("Bonjour Io!", isNear 3 "Io")
   , ("Hola Europa!", isNear 3 "Europa")
   , ("Ohayo Ganymede!", isNear 3 "Ganymede")
   , ("Shalom Callisto", isNear 3 "Callisto")
-  , ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam rhoncus est nunc, non consequat enim ullamcorper vitae. Duis ut tellus velit. Nulla vel sollicitudin neque. Integer at gravida nisi, sed ultrices quam. Proin dictum eu est at malesuada. Suspendisse aliquam magna ultrices porta consequat. Mauris fermentum quam tellus, congue luctus dui fringilla sed. Nam et eros velit.", always otherwise)
+  , ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam rhoncus est nunc, non consequat enim ullamcorper vitae. Duis ut tellus velit. Nulla vel sollicitudin neque. Integer at gravida nisi, sed ultrices quam. Proin dictum eu est at malesuada.", always otherwise)
   ]
 
 
@@ -186,14 +188,28 @@ view : Model -> Layout.Element
 view model =
   let
     sceneWidth = 600
-    height = 600
+    sceneHeight = 600
     textBoxWidth = 300
+    textBoxHeight = 300
     padding = 20
+    instructions =
+      String.join "\n"
+              [ "Turn the camera - w,a,s,d"
+              , "Roll the camera - q,e"
+              , "Fly forwards - i"
+              , "Fly backwards - m"
+              ]
   in
     Layout.flow Layout.right
-            [ scene sceneWidth height model
+            [ scene sceneWidth sceneHeight model
             , Layout.spacer padding 1
-            , textBox model textBoxWidth height
+            , Layout.flow Layout.down
+                    [ textBox textBoxWidth textBoxHeight model.message
+                    , Layout.spacer textBoxWidth 1
+                      |> Layout.color (Color.rgba 204 255 238 0.5)
+                    , Layout.spacer 1 padding
+                    , textBox textBoxWidth textBoxHeight instructions
+                    ]
             ]
 
 
@@ -224,8 +240,8 @@ scene width height model =
               
 
 
-textBox : Model -> Int -> Int -> Layout.Element
-textBox model width height =
-  Text.fromString model.message
+textBox : Int -> Int -> String -> Layout.Element
+textBox width height message =
+  Text.fromString message
     |> Layout.leftAligned
     |> Layout.size width height
