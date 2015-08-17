@@ -6,28 +6,33 @@
 }
 
 body {
-  background-color: #000033;
-  font-family: 'Coelacanth';
-  font-weight: normal;
-  font-size: 15pt;
-  line-height: 1.4;
-  color: #CCFFEE;
-  padding-left: 20%
+    background-color: #000033;
+    font-family: 'Coelacanth';
+    font-weight: normal;
+    font-size: 15pt;
+    line-height: 1.4;
+    color: #CCFFEE;
+    padding-left: 20%
 }
 
 h1 {
-  font-style: italic;
-  font-weight: normal;
-  font-size: 1.5rem;
-  padding-left: 2rem;
+    font-style: italic;
+    font-weight: normal;
+    font-size: 1.5rem;
+    padding-left: 2rem;
 }
 
 p {
-  padding-left: 2rem;
-  width: 35rem;
+    padding-left: 2rem;
+    width: 35rem;
 }
 
 a {
-  color: inherit;
-  text-decoration: inherit;
+    color: inherit;
+    text-decoration: inherit;
+}
+
+#app {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
 }
