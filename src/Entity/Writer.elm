@@ -1,4 +1,4 @@
-module Model.Writer (source) where
+module Entity.Writer (source) where
 
 import String
 import List
