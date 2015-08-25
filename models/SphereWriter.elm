@@ -12,8 +12,8 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 
 
 import Triple exposing (Triple)
-import World
-import Model.Writer
+import Graphics
+import Entity.Writer
 
 
 type alias TupPoint = ((Float, Float), Zone)
@@ -24,10 +24,10 @@ type Zone = One | Two | Three | Four
 
 main : Layout.Element
 main =
-  Layout.leftAligned <| Text.fromString <| Model.Writer.source "Sphere" sphere
+  Layout.leftAligned <| Text.fromString <| Entity.Writer.source "Sphere" sphere
 
 
-sphere : Triple.Mesh World.Attribute
+sphere : Triple.Mesh Graphics.Attribute
 sphere =
   let
     sphereIcosaFaces =
@@ -44,7 +44,7 @@ lookup =
   flip Array.get
 
 
-toRect : TupPoint -> World.Attribute
+toRect : TupPoint -> Graphics.Attribute
 toRect ((colatitude, longitude), zone) =
   let
     theta = degrees colatitude
@@ -57,14 +57,14 @@ toRect ((colatitude, longitude), zone) =
     }
 
 
-recurse : Int -> Triple World.Attribute -> Triple.Mesh World.Attribute
+recurse : Int -> Triple Graphics.Attribute -> Triple.Mesh Graphics.Attribute
 recurse iter triangle =
   if iter == 0
     then [ triangle ]
     else List.concatMap (recurse (iter - 1)) (split triangle)
 
 
-split : Triple World.Attribute -> Triple.Mesh World.Attribute
+split : Triple Graphics.Attribute -> Triple.Mesh Graphics.Attribute
 split (a, b, c) =
   let
     normalMidpoint u v =
