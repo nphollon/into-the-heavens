@@ -11,6 +11,10 @@ import AnimationFrame
 import Model
 import View
 
+import Time
+import Debug
+
+port hasFocus : Signal Bool
 
 main =
   let
@@ -24,10 +28,18 @@ signal : Signal Model.Update
 signal =
   Signal.merge keysDown sample
 
+log : Signal Model.Update -> Signal Model.Update
+log u =
+  let
+    t = Time.timestamp u
+    s = Signal.map (Debug.log "sig" >> snd) t
+  in
+    s
 
 sample : Signal Model.Update
 sample =
-  Signal.map Model.TimeDelta AnimationFrame.frame
+  Signal.map Model.TimeDelta
+        (AnimationFrame.frameWhen hasFocus)
 
 
 keysDown : Signal Model.Update

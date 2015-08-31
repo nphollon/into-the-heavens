@@ -4,3 +4,4 @@ elm.js
 *.sublime-workspace
 public_html/heavens.js
 *~
+temp/
