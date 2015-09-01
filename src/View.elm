@@ -34,17 +34,34 @@ view model =
               ]
   in
     Layout.flow Layout.right
-            [ scene sceneWidth sceneHeight model
+            [ fade sceneHeight
+            , scene sceneWidth sceneHeight model
             , Layout.spacer padding 1
             , Layout.flow Layout.down
-                    [ textBox textBoxWidth textBoxHeight model.message
-                    , Layout.spacer textBoxWidth 1
-                      |> Layout.color (Color.rgba 204 255 238 0.5)
-                    , Layout.spacer 1 padding
-                    , textBox textBoxWidth textBoxHeight instructions
-                    ]
+                      [ textBox textBoxWidth textBoxHeight model.message
+                      , Layout.spacer textBoxWidth 1
+                        |> Layout.color (Color.rgba 204 255 238 0.5)
+                      , Layout.spacer 1 padding
+                      , textBox textBoxWidth textBoxHeight instructions
+                      ]
             ]
 
+fade height =
+  let
+    light x =
+      Layout.spacer x height
+
+    dark x =
+      Layout.color Color.black (light x)
+  in
+    Layout.flow Layout.right
+          [ dark 1
+          , light 9
+          , dark 4
+          , light 4
+          , dark 9
+          , light 1
+          ]
 
 scene : Int -> Int -> Model.Model -> Layout.Element
 scene width height model =
