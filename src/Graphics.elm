@@ -2,7 +2,6 @@ module Graphics where
 
 import Color exposing (Color)
 import Array exposing (Array)
-import List
 import Graphics.Element as Layout
 
 import Math.Vector3 as Vec3 exposing (Vec3)

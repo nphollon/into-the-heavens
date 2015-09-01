@@ -2,7 +2,6 @@ module Grid (grid) where
 
 import Color exposing (Color)
 import Array exposing (Array)
-import List
 
 import Graphics
 import Infix exposing (..)

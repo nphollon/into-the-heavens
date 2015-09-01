@@ -1,7 +1,5 @@
 module Triple where
 
-import List
-
 type alias Triple a = (a, a, a)
 
 type alias Mesh a = List (Triple a)

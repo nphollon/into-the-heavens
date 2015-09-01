@@ -1,7 +1,6 @@
 module Constellation (crux, ursaMajor, aquarius, star) where
 
 import Color
-import List
 
 import Graphics
 

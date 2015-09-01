@@ -1,7 +1,6 @@
 module Scatter (scatter) where
 
 import Random
-import List
 import Color
 
 import Graphics

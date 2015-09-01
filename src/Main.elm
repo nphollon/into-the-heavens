@@ -1,12 +1,10 @@
 module Main where
 
-import Signal
-import Time
 import Keyboard
 import Set
 import Char
 
-import AnimationFrame
+import Time
 
 import Model
 import View
@@ -23,7 +21,7 @@ main =
 
 sample : Signal Model.Update
 sample =
-  AnimationFrame.frameWhen hasFocus
+  (Time.fpsWhen 60) hasFocus
     |> Signal.map Model.TimeDelta
 
 
