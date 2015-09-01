@@ -1,25 +1,28 @@
-@font-face {
-    font-family: 'Coelacanth';
-    src: url('Coelac.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal, italic;
-}
-
 body {
     background-color: #000033;
-    font-family: 'Coelacanth';
+    font-family: 'PT Serif', serif;
     font-weight: normal;
-    font-size: 15pt;
+    font-size: 13pt;
     line-height: 1.4;
     color: #CCFFEE;
     padding-left: 20%
 }
 
 h1 {
+    font-family: 'Bitter', serif;
     font-style: italic;
     font-weight: normal;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     padding-left: 2rem;
+}
+
+h2 {
+    font-family: 'Fira Sans', sans-serif;
+    font-weight: normal;
+    font-size: 1.2rem;
+    padding-left: 3rem;
+    word-spacing: 1rem;
+    margin-bottom: 3rem;
 }
 
 p {
@@ -30,9 +33,4 @@ p {
 a {
     color: inherit;
     text-decoration: inherit;
-}
-
-#app {
-    margin-top: 3rem;
-    margin-bottom: 3rem;
 }
