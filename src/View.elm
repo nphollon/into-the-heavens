@@ -55,12 +55,12 @@ fade height =
       Layout.color Color.black (light x)
   in
     Layout.flow Layout.right
-          [ dark 1
+          [ dark 2
           , light 9
           , dark 4
           , light 4
           , dark 9
-          , light 1
+          , light 2
           ]
 
 scene : Int -> Int -> Model.Model -> Layout.Element
