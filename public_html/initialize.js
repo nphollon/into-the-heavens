@@ -17,8 +17,17 @@ window.onload = function () {
     };
 
     /* Cull back faces to speed up rendering */
-    document
-        .getElementsByTagName("canvas")[0]
-        .getContext("webgl")
-        .enable(WebGLRenderingContext.CULL_FACE);
+    var cullFaces = function () {
+        var canvas = document.getElementsByTagName("canvas")[0];
+
+        if (canvas === undefined) {
+            setTimeout(cullFaces);
+        } else {
+            canvas
+                .getContext("webgl")
+                .enable(WebGLRenderingContext.CULL_FACE);
+        }
+    };
+
+    setTimeout(cullFaces);
 }
