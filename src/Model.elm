@@ -1,5 +1,8 @@
 module Model where
 
+import Keyboard
+import Char
+import Set exposing (Set)
 import Dict exposing (Dict)
 
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -26,10 +29,6 @@ type alias Action =
   }
 
                   
-type Update =
-  KeyPress Action | TimeDelta Float
-
-    
 inaction : Action
 inaction =
   { thrust = 0
@@ -67,17 +66,10 @@ messages =
   ]
 
 
-update : Update -> Model -> Model
-update update model =
-  case update of
-    KeyPress newAction ->
-      { model | action <- newAction }
-    TimeDelta _ ->
-      model
-        |> turn (degrees 3)
-        |> thrust 0.3
-        |> updateMessage messages
-
+timeUpdate : Float -> Model -> Model
+timeUpdate _ =
+  turn (degrees 3) >> thrust 0.3 >> updateMessage messages
+    
               
 turn : Float -> Model -> Model
 turn delta model =
@@ -116,3 +108,33 @@ isNear altitude worldName model =
     |> Maybe.map (Vec3.distance model.position)
     |> Maybe.map (\x -> x < altitude)
     |> Maybe.withDefault False
+
+       
+controlUpdate : Set Keyboard.KeyCode -> Model -> Model
+controlUpdate keysDown model =
+  let
+    keyAct key action =
+      case (Char.fromCode key) of
+        'D' ->
+          { action | yaw <- action.yaw - 1 }
+        'A' ->
+          { action | yaw <- action.yaw + 1 }
+        'S' ->
+          { action | pitch <- action.pitch - 1 }
+        'W' ->
+          { action | pitch <- action.pitch + 1 }
+        'Q' ->
+          { action | roll <- action.roll - 1 }
+        'E' ->
+          { action | roll <- action.roll + 1 }
+        'I' ->
+          { action | thrust <- action.thrust - 1 }
+        'M' ->
+          { action | thrust <- action.thrust + 1 }
+        otherwise ->
+          action
+          
+    newAction =
+      Set.foldl keyAct inaction keysDown
+  in
+    { model | action <- newAction }

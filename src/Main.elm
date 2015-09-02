@@ -1,12 +1,11 @@
 module Main where
 
 import Keyboard
-import Set
-import Char
+import Set exposing (Set)
+import Signal exposing ((<~))
+import Time exposing (Time)
 
-import Time
-
-import Model
+import Model exposing (Model)
 import View
 
 
@@ -14,42 +13,26 @@ port hasFocus : Signal Bool
 
                 
 main =
-  Signal.merge keysDown sample
-    |> Signal.foldp Model.update Model.startModel
-    |> Signal.map View.view
+  View.view <~ Signal.foldp update Model.startModel inputs
 
 
-sample : Signal Model.Update
-sample =
-  (Time.fpsWhen 60) hasFocus
-    |> Signal.map Model.TimeDelta
+type Update =
+  Keys (Set Keyboard.KeyCode) | FPS Time
 
+    
+inputs : Signal Update
+inputs =
+  Signal.merge
+          (Keys <~ Keyboard.keysDown)
+          (FPS <~ Time.fpsWhen 60 hasFocus)
 
-keysDown : Signal Model.Update
-keysDown =
-  let
-    keyAct key action =
-      case (Char.fromCode key) of
-        'D' ->
-          { action | yaw <- action.yaw - 1 }
-        'A' ->
-          { action | yaw <- action.yaw + 1 }
-        'S' ->
-          { action | pitch <- action.pitch - 1 }
-        'W' ->
-          { action | pitch <- action.pitch + 1 }
-        'Q' ->
-          { action | roll <- action.roll - 1 }
-        'E' ->
-          { action | roll <- action.roll + 1 }
-        'I' ->
-          { action | thrust <- action.thrust - 1 }
-        'M' ->
-          { action | thrust <- action.thrust + 1 }
-        otherwise ->
-          action
+        
 
-    fullAction =
-      Set.foldl keyAct Model.inaction >> Model.KeyPress
-  in
-    Signal.map fullAction Keyboard.keysDown
+update : Update -> Model -> Model
+update input =
+  case input of
+    FPS dt ->
+      Model.timeUpdate dt
+    Keys keysDown ->
+      Model.controlUpdate keysDown
+           
