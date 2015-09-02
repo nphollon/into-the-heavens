@@ -8,7 +8,7 @@ import Task exposing (Task)
 
 import Http
 
-import Model exposing (Model)
+import Flight
 import View
 
 
@@ -23,8 +23,8 @@ type Update =
   Keys (Set Keyboard.KeyCode) | FPS Time | Resource String
 
 
-type MainModel =
-  Game Model | WaitingForResource
+type Model =
+  Game Flight.Model | WaitingForResource
 
     
 inputs : Signal Update
@@ -36,15 +36,15 @@ inputs =
           ]
         
 
-update : Update -> MainModel -> MainModel
+update : Update -> Model -> Model
 update input model =
   case (input, model) of
     (FPS dt, Game m) ->
-      Model.timeUpdate dt m |> Game
+      Flight.timeUpdate dt m |> Game
     (Keys keysDown, Game m) ->
-      Model.controlUpdate keysDown m |> Game
+      Flight.controlUpdate keysDown m |> Game
     (Resource s, WaitingForResource) ->
-      Game Model.init
+      Game Flight.init
     otherwise ->
       model
 

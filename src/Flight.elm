@@ -1,4 +1,4 @@
-module Model where
+module Flight where
 
 import Keyboard
 import Char

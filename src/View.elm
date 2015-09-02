@@ -13,7 +13,7 @@ import Grid
 import Constellation
 import Scatter
 import World
-import Model
+import Flight
 import Infix exposing (..)
 
 
@@ -22,7 +22,7 @@ loading =
   textBox 900 100 "Loading..."
 
         
-view : Model.Model -> Layout.Element
+view : Flight.Model -> Layout.Element
 view model =
   let
     sceneWidth = 600
@@ -68,7 +68,7 @@ fade height =
           , light 2
           ]
 
-scene : Int -> Int -> Model.Model -> Layout.Element
+scene : Int -> Int -> Flight.Model -> Layout.Element
 scene width height model =
   let
     aspect =
