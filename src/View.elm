@@ -6,6 +6,7 @@ import String
 import Dict
 import Text
 
+import Http
 import Math.Matrix4 as Mat4 exposing (Mat4)
 
 import Graphics
@@ -21,6 +22,23 @@ loading : Layout.Element
 loading =
   textBox 900 100 "Loading..."
 
+
+resourceFailure : Http.Error -> Layout.Element
+resourceFailure e =
+  let
+    message =
+      case e of
+        Http.Timeout ->
+          "Nobody is listening to me."
+        Http.NetworkError ->
+          "I can't find what I am looking for."
+        Http.UnexpectedPayload _ ->
+          "I am hearing things I just don't understand."
+        Http.BadResponse code _ ->
+          "HTTP Error Code: " ++ toString code
+  in
+    textBox 900 100 ("I couldn't load the game for you.\n" ++ message)
+          
         
 view : Flight.Model -> Layout.Element
 view model =

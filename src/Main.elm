@@ -20,11 +20,11 @@ main =
 
 
 type Update =
-  Keys (Set Keyboard.KeyCode) | FPS Time | Resource String
+  Keys (Set Keyboard.KeyCode) | FPS Time | Resource (Result Http.Error String)
 
 
 type Model =
-  Game Flight.Model | WaitingForResource
+  Game Flight.Model | WaitingForResource | ResourceFailure Http.Error
 
     
 inputs : Signal Update
@@ -41,10 +41,17 @@ update input model =
   case (input, model) of
     (FPS dt, Game m) ->
       Flight.timeUpdate dt m |> Game
+        
     (Keys keysDown, Game m) ->
       Flight.controlUpdate keysDown m |> Game
+        
     (Resource s, WaitingForResource) ->
-      Game Flight.init
+      case s of
+        Result.Ok _ ->
+          Game Flight.init
+        Result.Err e ->
+          ResourceFailure e
+          
     otherwise ->
       model
 
@@ -55,14 +62,22 @@ view model =
       View.view m
     WaitingForResource ->
       View.loading
+    ResourceFailure e ->
+      View.resourceFailure e
            
 
 port getUrl : Task Http.Error ()
 port getUrl =
-  Task.andThen
-        (Http.getString "http://intotheheavens.net/resource.json")
-        (Signal.send resource.address)
+  let
+    fetch =
+      Http.getString "http://intotheheavens.net/resource.json"
+        |> Task.toResult
+
+    notify =
+      Signal.send resource.address
+  in
+    fetch `Task.andThen` notify
 
 
-resource : Signal.Mailbox String
-resource = Signal.mailbox ""
+resource : Signal.Mailbox (Result Http.Error String)
+resource = Signal.mailbox (Result.Ok "")
