@@ -17,6 +17,11 @@ import Model
 import Infix exposing (..)
 
 
+loading : Layout.Element
+loading =
+  textBox 900 100 "Loading..."
+
+        
 view : Model.Model -> Layout.Element
 view model =
   let

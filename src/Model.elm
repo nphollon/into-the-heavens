@@ -38,8 +38,8 @@ inaction =
   }
 
 
-startModel : Model
-startModel =
+init : Model
+init =
   { orientation = Mat4.identity
   , position = Vec3.vec3 0 0 0
   , action = inaction
