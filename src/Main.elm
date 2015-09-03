@@ -10,6 +10,7 @@ import Http
 
 import Flight
 import View
+import Mesh exposing (Mesh)
 
 
 port hasFocus : Signal Bool
@@ -20,19 +21,19 @@ main =
 
 
 type Update =
-  Keys (Set Keyboard.KeyCode) | FPS Time | Resource (Result Http.Error String)
+  Keys (Set Keyboard.KeyCode) | FPS Time | Resource Mesh.Download | NoUpdate
 
 
 type Model =
   Game Flight.Model | WaitingForResource | ResourceFailure Http.Error
 
-    
+
 inputs : Signal Update
 inputs =
   Signal.mergeMany
           [ Keys <~ Keyboard.keysDown
           , FPS <~ Time.fpsWhen 60 hasFocus
-          , Resource <~ resource.signal
+          , Signal.filterMap (Maybe.map Resource) NoUpdate resource.signal
           ]
         
 
@@ -65,19 +66,11 @@ view model =
     ResourceFailure e ->
       View.resourceFailure e
            
-
+          
 port getUrl : Task Http.Error ()
 port getUrl =
-  let
-    fetch =
-      Http.getString "http://intotheheavens.net/resource.json"
-        |> Task.toResult
-
-    notify =
-      Signal.send resource.address
-  in
-    fetch `Task.andThen` notify
+  Mesh.download "http://intotheheavens.net/resource.json" resource.address
 
 
-resource : Signal.Mailbox (Result Http.Error String)
-resource = Signal.mailbox (Result.Ok "")
+resource : Signal.Mailbox (Maybe Mesh.Download)
+resource = Signal.mailbox Nothing
