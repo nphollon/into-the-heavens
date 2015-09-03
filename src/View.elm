@@ -20,7 +20,7 @@ import Infix exposing (..)
 
 loading : Layout.Element
 loading =
-  textBox 900 100 "Loading..."
+  fullscreenText "Loading..."
 
 
 resourceFailure : Http.Error -> Layout.Element
@@ -37,7 +37,7 @@ resourceFailure e =
         Http.BadResponse code _ ->
           "HTTP Error Code: " ++ toString code
   in
-    textBox 900 100 ("I couldn't load the game for you.\n" ++ message)
+    fullscreenText ("I couldn't load the game for you.\n" ++ message)
           
         
 view : Flight.Model -> Layout.Element
@@ -112,7 +112,11 @@ scene width height model =
     Graphics.render (width, height) camera (background ++ foreground)
               
 
+fullscreenText : String -> Layout.Element
+fullscreenText =
+  textBox 900 100
 
+          
 textBox : Int -> Int -> String -> Layout.Element
 textBox width height message =
   Text.fromString message
