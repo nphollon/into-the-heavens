@@ -65,7 +65,7 @@ view model =
           
 port getUrl : Task Http.Error ()
 port getUrl =
-  Mesh.download "http://intotheheavens.net/resource.json" resource.address
+  Mesh.download "http://intotheheavens.net/data/resource.json" resource.address
 
 
 resource : Signal.Mailbox (Maybe Mesh.Download)

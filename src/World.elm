@@ -3,6 +3,7 @@ module World where
 import Math.Vector3 as Vec3 exposing (Vec3)
 
 import Graphics
+import Mesh exposing (Mesh)
 import Triple exposing (Triple)
 
 
@@ -17,8 +18,8 @@ type WorldStyle =
   Planet | Moon
 
 
-world : WorldStyle -> Float -> Triple Float -> World
-world style radius position =
+world : Mesh.Mesh -> WorldStyle -> Float -> Triple Float -> World
+world _ style radius position =
   { style = style
   , radius = radius
   , position = Vec3.fromTuple position

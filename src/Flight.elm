@@ -10,6 +10,7 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 
 import World exposing (World, WorldStyle(..))
 import Infix exposing (..)
+import Mesh exposing (Mesh)
 
 
 type alias Model =
@@ -38,19 +39,19 @@ inaction =
   }
 
 
-init : Model
-init =
+init : Mesh -> Model
+init m =
   { orientation = Mat4.identity
   , position = Vec3.vec3 0 0 0
   , action = inaction
   , message = ""
   , worlds =
     Dict.fromList
-          [ ("Jupiter", World.world Planet 10 (0, -100, -50))
-          , ("Io", World.world Moon 0.2606 (0, -39.68, -50))
-          , ("Europa", World.world Moon 0.2233 (0, -4.04, -50))
-          , ("Ganymede", World.world Moon 0.3768 (0, 53.1, -50))
-          , ("Callisto", World.world Moon 0.3447 (0, 169.3, -50))
+          [ ("Jupiter", World.world m Planet 10 (0, -100, -50))
+          , ("Io", World.world m Moon 0.2606 (0, -39.68, -50))
+          , ("Europa", World.world m Moon 0.2233 (0, -4.04, -50))
+          , ("Ganymede", World.world m Moon 0.3768 (0, 53.1, -50))
+          , ("Callisto", World.world m Moon 0.3447 (0, 169.3, -50))
           ]
   }
 
