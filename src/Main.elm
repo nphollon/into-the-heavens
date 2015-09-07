@@ -47,11 +47,7 @@ update input model =
       Flight.controlUpdate keysDown m |> Game
         
     (Resource s, WaitingForResource) ->
-      case s of
-        Result.Ok _ ->
-          Game Flight.init
-        Result.Err e ->
-          ResourceFailure e
+      Mesh.resolve ResourceFailure (Flight.init >> Game) s
           
     otherwise ->
       model

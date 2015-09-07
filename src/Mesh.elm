@@ -12,6 +12,15 @@ type Mesh =
 type alias Download =
   Result Http.Error Mesh
 
+
+resolve : (Http.Error -> a) -> (Mesh -> a) -> Download -> a
+resolve error success download =
+  case download of
+    Result.Err e ->
+      error e
+    Result.Ok m ->
+      success m
+              
           
 decode : Json.Decoder Mesh
 decode = Json.object1 Data ("disaster" := Json.bool)
