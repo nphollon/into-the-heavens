@@ -11,7 +11,6 @@ import WebGL
 
 import Infix exposing (..)
 import Triple exposing (Triple)
-import Sphere
 
 
 render : (Int, Int) -> Camera -> List (Camera -> WebGL.Entity) -> Layout.Element
@@ -107,8 +106,8 @@ rotate : Float -> Float -> Attribute -> Attribute
 rotate pitch yaw vertex =
   let
     rotation =
-      Mat4.makeRotate yaw yAxis
-      |> Mat4.rotate pitch zAxis
+      Mat4.makeRotate yaw Vec3.j
+      |> Mat4.rotate pitch Vec3.k
   in
     { vertex | vertPosition <- Mat4.transform rotation vertex.vertPosition }
 
@@ -126,37 +125,6 @@ scale factor vertex =
 distantEntity : Mesh -> Camera -> WebGL.Entity
 distantEntity =
   WebGL.entity distantVertexShader distantFragmentShader
-
-
-yAxis : Vec3
-yAxis =
-  Vec3.vec3 0 1 0
-
-
-zAxis : Vec3
-zAxis =
-  Vec3.vec3 0 0 1
-
-
-drawWorld : FragmentShader NearUniform -> Float -> Vec3 -> Camera -> Entity
-drawWorld shader size position uniform =
-  let
-    placement =
-      Mat4.makeTranslate position
-        |> Mat4.scale (Vec3.vec3 size size size)
-  in
-    WebGL.entity nearVertexShader shader Sphere.mesh
-           { uniform | placement = placement }
-
-
-planet : Float -> Vec3 -> Camera -> Entity
-planet =
-  drawWorld planetShader
-
-            
-moon : Float -> Vec3 -> Camera -> Entity
-moon =
-  drawWorld moonShader
 
 
 nearVertexShader : WebGL.Shader Attribute NearUniform Varying
@@ -222,49 +190,5 @@ distantFragmentShader =
 
   void main () {
     gl_FragColor = fragColor;
-  }
-  |]
-
-
-planetShader : FragmentShader u
-planetShader =
-  [glsl|
-  precision mediump float;
-  varying vec4 fragColor;
-
-  void main () {
-    vec4 blue = vec4(0.2265625,0.28515625,0.84375,1);
-    vec4 green = vec4(0.2734375,0.57421875,0.37109375,1);
-
-    bool border = length(fragColor.xy) < 1e-1 
-      || length(fragColor.xz) < 1e-1
-      || length(fragColor.xw) < 1e-1
-      || length(fragColor.yz) < 1e-1
-      || length(fragColor.yw) < 1e-1
-      || length(fragColor.zw) < 1e-1;
-
-    if (border) {
-      gl_FragColor = blue;
-    } else {
-      gl_FragColor = green;
-    }
-  }
-  |]
-
-
-moonShader : FragmentShader u
-moonShader =
-  [glsl|
-  precision mediump float;
-  varying vec4 fragColor;
-
-  void main () {
-    float zone = length(step(0.8, fragColor));
-
-    if (zone < 1e-4) {
-      gl_FragColor = vec4(1, 1, 1, 1);
-    } else {
-      gl_FragColor = vec4(0.2, 0.1, 0.2, 1);
-    }    
   }
   |]
