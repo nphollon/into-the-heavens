@@ -10,7 +10,7 @@ import Triple exposing (Triple)
 
 
 type alias World =
-  { mesh : Mesh
+  { mesh : WebGL.Drawable Mesh.Vertex
   , style : WorldStyle
   , radius : Float
   , position : Vec3
@@ -42,14 +42,14 @@ type alias Varying =
                        
 world : Mesh -> WorldStyle -> Float -> Triple Float -> World
 world mesh style radius position =
-  { mesh = mesh
+  { mesh = WebGL.Triangle mesh
   , style = style
   , radius = radius
   , position = Vec3.fromTuple position
   }
 
 
-toEntity : World -> Camera -> WebGL.Entity
+toEntity : World -> Camera -> WebGL.Renderable
 toEntity world uniform =
   let
     fragShader =
@@ -67,7 +67,7 @@ toEntity world uniform =
     newUniform =
       { uniform | placement = placement }      
   in
-    WebGL.entity vertexShader fragShader world.mesh newUniform
+    WebGL.render vertexShader fragShader world.mesh newUniform
 
 
 vertexShader : WebGL.Shader Mesh.Vertex Geometry Varying

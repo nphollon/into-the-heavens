@@ -14,7 +14,7 @@ import Triple exposing (Triple)
 import Mesh exposing (Mesh)
 
 
-render : (Int, Int) -> Camera -> List (Camera -> WebGL.Entity) -> Layout.Element
+render : (Int, Int) -> Camera -> List (Camera -> Entity) -> Layout.Element
 render dimensions camera entities =
   List.map (\i -> i camera) entities
     |> WebGL.webgl dimensions
@@ -35,7 +35,7 @@ type alias Varying =
 
 
 type alias Entity =
-  WebGL.Entity
+  WebGL.Renderable
 
 
 vertex : Color -> Float -> Float -> Float -> Mesh.Vertex
@@ -53,19 +53,6 @@ vertex color x y z =
   in
     { vertPosition = Vec3.vec3 x y z
     , vertColor = colorVector }
-
-
-colorVector : Color -> Vec4
-colorVector color =
-  let
-    rgba =
-      Color.toRgb color
-  in
-    Vec4.vec4
-      (rgba.red ./. 255)
-      (rgba.green ./. 255)
-      (rgba.blue ./. 255)
-      rgba.alpha
 
 
 triangleStrip : Array Mesh.Vertex -> Mesh
@@ -105,9 +92,9 @@ scale factor vertex =
   { vertex | vertPosition <- Vec3.scale factor vertex.vertPosition }
 
 
-distantEntity : Mesh -> Camera -> WebGL.Entity
+distantEntity : Mesh -> Camera -> Entity
 distantEntity =
-  WebGL.entity distantVertexShader distantFragmentShader
+  WebGL.Triangle >> WebGL.render distantVertexShader distantFragmentShader
 
 
 distantVertexShader : WebGL.Shader Mesh.Vertex Camera Varying
