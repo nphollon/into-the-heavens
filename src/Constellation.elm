@@ -1,8 +1,9 @@
 module Constellation (crux, ursaMajor, aquarius, star) where
 
-import Color
+import Color exposing (Color)
 
 import Graphics
+import Mesh exposing (Mesh)
 
 type alias Point = 
   (Float, Float)
@@ -64,7 +65,7 @@ constellation stars uniform =
   in
     Graphics.distantEntity mesh uniform
 
-star : Color.Color -> Float -> Float -> Float -> Graphics.Mesh
+star : Color.Color -> Float -> Float -> Float -> Mesh
 star color r phi theta =
   let
     move =

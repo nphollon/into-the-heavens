@@ -11,6 +11,7 @@ import WebGL
 
 import Infix exposing (..)
 import Triple exposing (Triple)
+import Mesh exposing (Mesh)
 
 
 render : (Int, Int) -> Camera -> List (Camera -> WebGL.Entity) -> Layout.Element
@@ -21,28 +22,10 @@ render dimensions camera entities =
     |> Layout.color Color.black
 
 
-type alias Attribute =
-  { vertPosition : Vec3
-  , vertColor : Vec4
-  }
-
-
-type alias Mesh =
-  List (Triple Attribute)
-
-
 type alias Camera =
   { perspective : Mat4
   , cameraOrientation : Mat4
   , cameraPosition : Vec3
-  }
-
-                  
-type alias NearUniform =
-  { perspective : Mat4
-  , cameraOrientation : Mat4
-  , cameraPosition : Vec3
-  , placement : Mat4
   }
 
 
@@ -55,7 +38,7 @@ type alias Entity =
   WebGL.Entity
 
 
-vertex : Color -> Float -> Float -> Float -> Attribute
+vertex : Color -> Float -> Float -> Float -> Mesh.Vertex
 vertex color x y z =
   let
     rgba =
@@ -85,7 +68,7 @@ colorVector color =
       rgba.alpha
 
 
-triangleStrip : Array Attribute -> Mesh
+triangleStrip : Array Mesh.Vertex -> Mesh
 triangleStrip vertexes =
   let
     vertexList =
@@ -102,7 +85,7 @@ triangleStrip vertexes =
       (List.drop 2 vertexList)  
 
 
-rotate : Float -> Float -> Attribute -> Attribute
+rotate : Float -> Float -> Mesh.Vertex -> Mesh.Vertex
 rotate pitch yaw vertex =
   let
     rotation =
@@ -112,12 +95,12 @@ rotate pitch yaw vertex =
     { vertex | vertPosition <- Mat4.transform rotation vertex.vertPosition }
 
 
-translate : Float -> Float -> Float -> Attribute -> Attribute
+translate : Float -> Float -> Float -> Mesh.Vertex -> Mesh.Vertex
 translate x y z vertex =
   { vertex | vertPosition <- Vec3.add vertex.vertPosition (Vec3.vec3 x y z) }
 
 
-scale : Float -> Attribute -> Attribute
+scale : Float -> Mesh.Vertex -> Mesh.Vertex
 scale factor vertex =
   { vertex | vertPosition <- Vec3.scale factor vertex.vertPosition }
 
@@ -127,36 +110,7 @@ distantEntity =
   WebGL.entity distantVertexShader distantFragmentShader
 
 
-nearVertexShader : WebGL.Shader Attribute NearUniform Varying
-nearVertexShader =
-  [glsl|
-  precision mediump float;
-
-  attribute vec3 vertPosition;
-  attribute vec4 vertColor;
-
-  uniform vec3 cameraPosition;
-  uniform mat4 perspective;
-  uniform mat4 cameraOrientation;
-  uniform mat4 placement;
-
-  varying vec4 fragColor;
-
-  void main() {
-    vec4 worldFrame = placement * vec4(vertPosition, 1);
-    vec4 cameraFrame = worldFrame - vec4(cameraPosition, 0);
-
-    vec4 projectionOffset = vec4(0, 0, length(cameraFrame.xyz), 0);
-
-    gl_Position =
-      perspective * (cameraOrientation * cameraFrame - projectionOffset);
-
-    fragColor = vertColor;
-  }
-  |]
-
-
-distantVertexShader : WebGL.Shader Attribute Camera Varying
+distantVertexShader : WebGL.Shader Mesh.Vertex Camera Varying
 distantVertexShader =
   [glsl|
   attribute vec3 vertPosition;
@@ -178,11 +132,7 @@ distantVertexShader =
   |]
 
 
-type alias FragmentShader u =
-  WebGL.Shader { } u Varying
-
-
-distantFragmentShader : FragmentShader u
+distantFragmentShader :   WebGL.Shader {} Camera Varying
 distantFragmentShader =
   [glsl|
   precision mediump float;

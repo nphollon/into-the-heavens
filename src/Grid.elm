@@ -4,6 +4,7 @@ import Color exposing (Color)
 import Array exposing (Array)
 
 import Graphics
+import Mesh exposing (Mesh)
 import Infix exposing (..)
   
 
@@ -23,20 +24,20 @@ grid xRes yRes =
     Graphics.distantEntity (meridians ++ parallels)
     
 
-parallel : Float -> Graphics.Mesh
+parallel : Float -> Mesh
 parallel declination =
   vertexRing (degrees 90 + declination)
   |> Graphics.triangleStrip
 
 
-meridian : Float -> Graphics.Mesh
+meridian : Float -> Mesh
 meridian azimuth =
   vertexRing (degrees 90)
   |> Array.map (Graphics.rotate (degrees 90) azimuth)
   |> Graphics.triangleStrip
 
 
-vertexRing : Float -> Array Graphics.Attribute
+vertexRing : Float -> Array Mesh.Vertex
 vertexRing zenithAngle =
   let
     grate = 100
@@ -55,7 +56,7 @@ vertexRing zenithAngle =
     Array.initialize (grate + 2) indexedVertex
 
 
-sphVertex : Color -> Float -> Float -> Float -> Graphics.Attribute
+sphVertex : Color -> Float -> Float -> Float -> Mesh.Vertex
 sphVertex color r phi theta =
   Graphics.vertex
     color

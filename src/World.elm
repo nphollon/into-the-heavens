@@ -1,10 +1,10 @@
 module World where
 
-import Math.Matrix4 as Mat4
+import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
+import Math.Vector4 as Vec4 exposing (Vec4)
 import WebGL
 
-import Graphics
 import Mesh exposing (Mesh)
 import Triple exposing (Triple)
 
@@ -21,6 +21,25 @@ type WorldStyle =
   Planet | Moon
 
 
+type alias Camera =
+  { perspective : Mat4
+  , cameraOrientation : Mat4
+  , cameraPosition : Vec3
+  }
+
+                  
+type alias Placed u =
+  { u | placement : Mat4 }
+
+  
+type alias Geometry = Placed Camera
+
+                       
+type alias Varying =
+  { fragColor : Vec4
+  }
+
+                       
 world : Mesh -> WorldStyle -> Float -> Triple Float -> World
 world mesh style radius position =
   { mesh = mesh
@@ -30,27 +49,57 @@ world mesh style radius position =
   }
 
 
-toEntity : World -> Graphics.Camera -> Graphics.Entity
-toEntity world =
-  case world.style of
-    Planet ->
-      drawWorld planetShader world.mesh world.radius world.position
-    Moon ->
-      drawWorld moonShader world.mesh world.radius world.position
+toEntity : World -> Camera -> WebGL.Entity
+toEntity world uniform =
+  let
+    fragShader =
+      case world.style of
+        Planet ->
+          planetShader
+        Moon ->
+          moonShader
+
+    placement =
+      Mat4.scale
+            (Vec3.vec3 world.radius world.radius world.radius)
+            (Mat4.makeTranslate world.position)
+
+    newUniform =
+      { uniform | placement = placement }      
+  in
+    WebGL.entity vertexShader fragShader world.mesh newUniform
+
+
+vertexShader : WebGL.Shader Mesh.Vertex Geometry Varying
+vertexShader =
+  [glsl|
+  precision mediump float;
+
+  attribute vec3 vertPosition;
+  attribute vec4 vertColor;
+
+  uniform vec3 cameraPosition;
+  uniform mat4 perspective;
+  uniform mat4 cameraOrientation;
+  uniform mat4 placement;
+
+  varying vec4 fragColor;
+
+  void main() {
+    vec4 worldFrame = placement * vec4(vertPosition, 1);
+    vec4 cameraFrame = worldFrame - vec4(cameraPosition, 0);
+
+    vec4 projectionOffset = vec4(0, 0, length(cameraFrame.xyz), 0);
+
+    gl_Position =
+      perspective * (cameraOrientation * cameraFrame - projectionOffset);
+
+    fragColor = vertColor;
+  }
+  |]
 
               
-drawWorld : Graphics.FragmentShader Graphics.NearUniform -> Mesh -> Float -> Vec3 -> Graphics.Camera -> Graphics.Entity
-drawWorld shader mesh size position uniform =
-  let
-    placement =
-      Mat4.makeTranslate position
-        |> Mat4.scale (Vec3.vec3 size size size)
-  in
-    WebGL.entity Graphics.nearVertexShader shader mesh
-           { uniform | placement = placement }
-
-           
-planetShader : Graphics.FragmentShader u
+planetShader : WebGL.Shader {} Geometry Varying
 planetShader =
   [glsl|
   precision mediump float;
@@ -76,7 +125,7 @@ planetShader =
   |]
 
 
-moonShader : Graphics.FragmentShader u
+moonShader : WebGL.Shader {} Geometry Varying
 moonShader =
   [glsl|
   precision mediump float;
