@@ -4,6 +4,7 @@ import Keyboard
 import Char
 import Set exposing (Set)
 import Dict exposing (Dict)
+import Time exposing (Time)
 
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
@@ -67,9 +68,16 @@ messages =
   ]
 
 
-timeUpdate : Float -> Model -> Model
-timeUpdate _ =
-  turn (degrees 3) >> thrust 0.3 >> updateMessage messages
+timeUpdate : Time -> Model -> Model
+timeUpdate dt model =
+  let
+    perSecond =
+      Time.inSeconds dt
+  in
+    model
+      |> turn (degrees 135 * perSecond)
+      |> thrust (20 * perSecond)
+      |> updateMessage messages
     
               
 turn : Float -> Model -> Model
