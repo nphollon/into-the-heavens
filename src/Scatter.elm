@@ -3,7 +3,7 @@ module Scatter (scatter) where
 import Random
 import Color
 
-import Graphics
+import Mesh exposing (Mesh)
 import Constellation
 
 
@@ -11,7 +11,7 @@ type alias Point =
   (Float, Float)
 
 
-scatter : Int -> Graphics.Camera -> Graphics.Entity
+scatter : Int -> Mesh
 scatter n =
   let
     seed =
@@ -20,11 +20,10 @@ scatter n =
     (randomPoints, seed') =
       Random.generate (Random.list n starPoint) seed
 
-    mesh =
-      List.concatMap (uncurry (Constellation.star Color.blue 4)) randomPoints
   in
-    Graphics.distantEntity mesh
+    List.concatMap (uncurry (Constellation.star Color.blue 4)) randomPoints
 
+        
 starPoint : Random.Generator Point
 starPoint =
   let

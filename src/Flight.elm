@@ -12,6 +12,10 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import World exposing (World, WorldStyle(..))
 import Infix exposing (..)
 import Mesh exposing (Mesh)
+import Background exposing (Background)
+import Constellation
+import Scatter
+import Grid
 
 
 type alias Model =
@@ -20,6 +24,7 @@ type alias Model =
   , action : Action
   , message : String
   , worlds : Dict String World
+  , background : Background
   }
 
 
@@ -54,6 +59,15 @@ init m =
           , ("Ganymede", World.world m Moon 0.3768 (0, 53.1, -50))
           , ("Callisto", World.world m Moon 0.3447 (0, 169.3, -50))
           ]
+  , background =
+    List.concat
+          [ Constellation.crux
+          , Constellation.ursaMajor
+          , Constellation.aquarius
+          , Scatter.scatter 100 
+          , Grid.grid 0 2 
+          ]
+      |> Background.background
   }
 
 

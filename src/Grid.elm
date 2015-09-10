@@ -3,12 +3,15 @@ module Grid (grid) where
 import Color exposing (Color)
 import Array exposing (Array)
 
-import Graphics
+import Math.Matrix4 as Mat4 exposing (Mat4)
+import Math.Vector3 as Vec3 exposing (Vec3)
+import Math.Vector4 as Vec4 exposing (Vec4)
+
 import Mesh exposing (Mesh)
 import Infix exposing (..)
   
 
-grid : Int -> Int -> Graphics.Camera -> Graphics.Entity
+grid : Int -> Int ->  Mesh
 grid xRes yRes =
   let
     meridians =
@@ -21,20 +24,20 @@ grid xRes yRes =
           parallel (i ./. yRes * turns 0.5 - turns 0.25)
         ) |> Array.toList |> List.concat
   in
-    Graphics.distantEntity (meridians ++ parallels)
+    meridians ++ parallels
     
 
 parallel : Float -> Mesh
 parallel declination =
   vertexRing (degrees 90 + declination)
-  |> Graphics.triangleStrip
+  |> triangleStrip
 
 
 meridian : Float -> Mesh
 meridian azimuth =
   vertexRing (degrees 90)
-  |> Array.map (Graphics.rotate (degrees 90) azimuth)
-  |> Graphics.triangleStrip
+  |> Array.map (rotate azimuth)
+  |> triangleStrip
 
 
 vertexRing : Float -> Array Mesh.Vertex
@@ -58,8 +61,38 @@ vertexRing zenithAngle =
 
 sphVertex : Color -> Float -> Float -> Float -> Mesh.Vertex
 sphVertex color r phi theta =
-  Graphics.vertex
-    color
-    (r * sin theta * sin phi)
-    (r * cos theta)
-    (r * sin theta * cos phi)
+  { vertPosition =
+    Vec3.vec3
+          (r * sin theta * sin phi)
+          (r * cos theta)
+          (r * sin theta * cos phi)
+  , vertColor =
+    Vec4.vec4 0.19 0.19 0.19 1
+  }
+
+
+rotate : Float -> Mesh.Vertex -> Mesh.Vertex
+rotate yaw vertex =
+  let
+    rotation =
+      Mat4.makeRotate yaw Vec3.j
+      |> Mat4.rotate (degrees 90) Vec3.k
+  in
+    { vertex | vertPosition <- Mat4.transform rotation vertex.vertPosition }
+
+
+triangleStrip : Array Mesh.Vertex -> Mesh
+triangleStrip vertexes =
+  let
+    vertexList =
+      Array.toIndexedList vertexes
+
+    triangle (i, a) (_, b) (_, c) =
+      if (i % 2 == 0)
+        then (a, b, c)
+        else (a, c, b)
+  in
+    List.map3 triangle
+      vertexList
+      (List.drop 1 vertexList)
+      (List.drop 2 vertexList)  

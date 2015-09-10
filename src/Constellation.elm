@@ -2,8 +2,12 @@ module Constellation (crux, ursaMajor, aquarius, star) where
 
 import Color exposing (Color)
 
-import Graphics
+import Math.Vector3 as Vec3 exposing (Vec3)
+import Math.Vector4 as Vec4 exposing (Vec4)
+import Math.Matrix4 as Mat4 exposing (Mat4)
+
 import Mesh exposing (Mesh)
+import Infix exposing (..)
 
 type alias Point = 
   (Float, Float)
@@ -14,7 +18,7 @@ skyPoint ra dec =
   (turns ra / 24, degrees (90 - dec))
 
 
-crux : Graphics.Camera -> Graphics.Entity
+crux : Mesh
 crux =
   constellation
     [ skyPoint 12.43 -63.08
@@ -25,7 +29,7 @@ crux =
     ]
 
 
-ursaMajor : Graphics.Camera -> Graphics.Entity
+ursaMajor : Mesh
 ursaMajor =
   constellation
     [ skyPoint 11.06 61.75
@@ -45,7 +49,7 @@ ursaMajor =
     ]
 
 
-aquarius : Graphics.Camera -> Graphics.Entity
+aquarius : Mesh
 aquarius =
   constellation
     [ skyPoint 22.10 -0.32
@@ -57,27 +61,23 @@ aquarius =
     ]
 
 
-constellation : List Point -> Graphics.Camera -> Graphics.Entity
-constellation stars uniform =
-  let
-    mesh =
-      List.concatMap (uncurry (star Color.yellow 4)) stars
-  in
-    Graphics.distantEntity mesh uniform
+constellation : List Point -> Mesh
+constellation stars =
+  List.concatMap (uncurry (star Color.yellow 4)) stars
 
+      
 star : Color.Color -> Float -> Float -> Float -> Mesh
 star color r phi theta =
   let
     move =
-      Graphics.translate 0 499 0
-      >> Graphics.rotate theta phi
+      translate 0 499 0 >> rotate theta phi
 
-    down = move <| Graphics.vertex color 0 -r 0
-    up = move <| Graphics.vertex color 0 r 0
-    west = move <| Graphics.vertex color -r 0 0
-    east = move <| Graphics.vertex color r 0 0
-    south = move <| Graphics.vertex color 0 0 -r
-    north = move <| Graphics.vertex color 0 0 r
+    down = move <| vertex color 0 -r 0
+    up = move <| vertex color 0 r 0
+    west = move <| vertex color -r 0 0
+    east = move <| vertex color r 0 0
+    south = move <| vertex color 0 0 -r
+    north = move <| vertex color 0 0 r
 
   in
     [ (down, north, west)
@@ -89,3 +89,35 @@ star color r phi theta =
     , (up, east, south)
     , (up, south, west)
     ]
+
+  
+translate : Float -> Float -> Float -> Mesh.Vertex -> Mesh.Vertex
+translate x y z vertex =
+  { vertex | vertPosition <- Vec3.add vertex.vertPosition (Vec3.vec3 x y z) }
+
+
+rotate : Float -> Float -> Mesh.Vertex -> Mesh.Vertex
+rotate pitch yaw vertex =
+  let
+    rotation =
+      Mat4.makeRotate yaw Vec3.j
+      |> Mat4.rotate pitch Vec3.k
+  in
+    { vertex | vertPosition <- Mat4.transform rotation vertex.vertPosition }
+
+
+vertex : Color -> Float -> Float -> Float -> Mesh.Vertex
+vertex color x y z =
+  let
+    rgba =
+      Color.toRgb color
+
+    colorVector =
+      Vec4.vec4
+        (rgba.red ./. 255)
+        (rgba.green ./. 255)
+        (rgba.blue ./. 255)
+        rgba.alpha
+  in
+    { vertPosition = Vec3.vec3 x y z
+    , vertColor = colorVector }

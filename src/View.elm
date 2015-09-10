@@ -8,11 +8,9 @@ import Text
 
 import Http
 import Math.Matrix4 as Mat4 exposing (Mat4)
+import WebGL
 
-import Graphics
-import Grid
-import Constellation
-import Scatter
+import Background
 import World
 import Flight
 import Infix exposing (..)
@@ -99,17 +97,15 @@ scene width height model =
       }
 
     background =
-      [ Constellation.crux 
-      , Constellation.ursaMajor 
-      , Constellation.aquarius 
-      , Scatter.scatter 100 
-      , Grid.grid 0 2 
-      ]
+      Background.toEntity model.background camera
 
     foreground =
-      Dict.values model.worlds |> List.map World.toEntity
+      Dict.values model.worlds
+        |> List.map (\e -> World.toEntity e camera)
   in
-    Graphics.render (width, height) camera (background ++ foreground)
+    WebGL.webgl (width, height) (background :: foreground)
+      |> Layout.container width height Layout.middle
+      |> Layout.color Color.black
               
 
 fullscreenText : String -> Layout.Element

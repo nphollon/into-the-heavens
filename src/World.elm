@@ -1,4 +1,4 @@
-module World where
+module World (World, WorldStyle (..), world, toEntity) where
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -52,7 +52,7 @@ world mesh style radius position =
 toEntity : World -> Camera -> WebGL.Renderable
 toEntity world uniform =
   let
-    fragShader =
+    fragmentShader =
       case world.style of
         Planet ->
           planetShader
@@ -67,7 +67,7 @@ toEntity world uniform =
     newUniform =
       { uniform | placement = placement }      
   in
-    WebGL.render vertexShader fragShader world.mesh newUniform
+    WebGL.render vertexShader fragmentShader world.mesh newUniform
 
 
 vertexShader : WebGL.Shader Mesh.Vertex Geometry Varying
