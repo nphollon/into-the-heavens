@@ -64,9 +64,15 @@ view model =
       View.resourceFailure e
 
 
+downloadRequest =
+  { id = "Sphere"
+  , url = "http://intotheheavens.net/data/resource.json"
+  }
+
+     
 isComplete : Mesh.MeshLibrary -> Model
 isComplete library =
-  case (Dict.get "Sphere" library) of
+  case (Dict.get downloadRequest.id library) of
     Just m ->
       Flight.init m |> Game
     Nothing ->
@@ -75,4 +81,4 @@ isComplete library =
                 
 port getUrl : Task Http.Error ()
 port getUrl =
-  Mesh.download "http://intotheheavens.net/data/resource.json"
+  Mesh.download downloadRequest 

@@ -25,26 +25,35 @@ type alias MeshLibrary =
   Dict String Mesh
 
 
+type alias Request =
+  { id: String
+  , url: String
+  }
+
+
 type alias Download =
-  Result Http.Error Mesh
+  { id: String
+  , response: Result Http.Error Mesh
+  }
 
 
 type alias DownloadLibrary =
   Result Http.Error MeshLibrary
 
 
-response : Signal.Mailbox (Maybe Download)
-response = Signal.mailbox Nothing
+responseMailbox : Signal.Mailbox Download
+responseMailbox =
+  Signal.mailbox (tagResponse "" (Result.Ok []))
 
            
-download : String -> Task Http.Error ()
-download url =
+download : Request -> Task Http.Error ()
+download request =
   let
     fetch =
-      Http.get decode url |> Task.toResult
+      Http.get decode request.url |> Task.toResult
 
     notify =
-      Just >> Signal.send response.address
+      tagResponse request.id >> Signal.send responseMailbox.address
   in
     fetch `Task.andThen` notify
 
@@ -52,19 +61,11 @@ download url =
 downloadLibrary : Signal DownloadLibrary
 downloadLibrary =
   let
-    addTo lib r =
-      Dict.insert "Sphere" r lib
-          
-    update mr lib =
-      case mr of
-        Nothing ->
-          lib
-        Just r ->
-          Result.map2 addTo lib r
+    update d lib =
+      Result.map2 (flip (Dict.insert d.id)) lib d.response
   in
-    Signal.foldp update (Result.Ok Dict.empty) response.signal
+    Signal.foldp update (Result.Ok Dict.empty) responseMailbox.signal
 
-          
       
 resolve : (Http.Error -> a) -> (MeshLibrary -> a) -> DownloadLibrary -> a
 resolve error success download =
@@ -73,6 +74,13 @@ resolve error success download =
       error e
     Result.Ok m ->
       success m
+
+
+tagResponse : String -> Result Http.Error Mesh -> Download
+tagResponse id response =
+  { id = id
+  , response = response
+  }
 
 
 decode : Json.Decoder Mesh
