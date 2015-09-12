@@ -22,11 +22,16 @@ main =
 
 
 type Update =
-  Keys (Set Keyboard.KeyCode) | FPS Time | Downloads Mesh.DownloadLibrary
+  LoadError Http.Error
+    | LoadSuccess Mesh.Library
+    | FPS Time
+    | Keys (Set Keyboard.KeyCode)
 
 
 type Model =
-  Game Flight.Model | Loading | ResourceFailure Http.Error
+  ResourceFailure Http.Error
+    | Loading
+    | Game Flight.Model
 
 
 inputs : Signal Update
@@ -34,7 +39,7 @@ inputs =
   Signal.mergeMany
           [ Keys <~ Keyboard.keysDown
           , FPS <~ Time.fpsWhen 60 hasFocus
-          , Downloads <~ Mesh.downloadLibrary
+          , Mesh.response LoadError LoadSuccess
           ]
         
 
@@ -47,8 +52,11 @@ update input model =
     (Keys keysDown, Game m) ->
       Flight.controlUpdate keysDown m |> Game
         
-    (Downloads library, Loading) ->
-      Mesh.resolve ResourceFailure isComplete library
+    (LoadError e, Loading) ->
+      ResourceFailure e
+
+    (LoadSuccess lib, Loading) ->
+      Flight.init lib |> Game
           
     otherwise ->
       model
@@ -64,21 +72,7 @@ view model =
       View.resourceFailure e
 
 
-downloadRequest =
-  { id = "Sphere"
-  , url = "http://intotheheavens.net/data/resource.json"
-  }
-
-     
-isComplete : Mesh.MeshLibrary -> Model
-isComplete library =
-  case (Dict.get downloadRequest.id library) of
-    Just m ->
-      Flight.init m |> Game
-    Nothing ->
-      Loading
-
-                
-port getUrl : Task Http.Error ()
-port getUrl =
-  Mesh.download downloadRequest 
+port getResources : Task Http.Error ()
+port getResources =
+  Dict.singleton "Sphere" "http://intotheheavens.net/data/resource.json"
+    |> Mesh.request

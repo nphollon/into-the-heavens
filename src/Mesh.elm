@@ -1,4 +1,7 @@
-module Mesh where
+module Mesh (
+             Mesh, Vertex, Library,
+             response, request
+            ) where
 
 import Dict exposing (Dict)
 import Task exposing (Task)
@@ -21,66 +24,42 @@ type alias Mesh =
   List (Triple Vertex)
                 
        
-type alias MeshLibrary =
+type alias Library =
   Dict String Mesh
 
 
-type alias Request =
-  { id: String
-  , url: String
-  }
-
-
-type alias Download =
-  { id: String
-  , response: Result Http.Error Mesh
-  }
-
-
-type alias DownloadLibrary =
-  Result Http.Error MeshLibrary
-
-
-responseMailbox : Signal.Mailbox Download
-responseMailbox =
-  Signal.mailbox (tagResponse "" (Result.Ok []))
-
-           
-download : Request -> Task Http.Error ()
-download request =
+response : (Http.Error -> a) -> (Library -> a) -> Signal a
+response errCallback okCallback =
   let
-    fetch =
-      Http.get decode request.url |> Task.toResult
+    format r =
+      case r of
+        Result.Ok lib -> okCallback lib
+        Result.Err err -> errCallback err
+  in
+    Signal.map format libraryMailbox.signal
 
+
+request : Dict String String -> Task Http.Error ()
+request requests =
+  let
+    get (id, url) =
+      Task.map ((,) id) (Http.get decode url)
+          
+    fetch =
+      Dict.toList requests
+        |> List.map get
+        |> Task.sequence
+        |> Task.toResult
+        
     notify =
-      tagResponse request.id >> Signal.send responseMailbox.address
+      Result.map Dict.fromList >> Signal.send libraryMailbox.address
   in
     fetch `Task.andThen` notify
 
-          
-downloadLibrary : Signal DownloadLibrary
-downloadLibrary =
-  let
-    update d lib =
-      Result.map2 (flip (Dict.insert d.id)) lib d.response
-  in
-    Signal.foldp update (Result.Ok Dict.empty) responseMailbox.signal
 
-      
-resolve : (Http.Error -> a) -> (MeshLibrary -> a) -> DownloadLibrary -> a
-resolve error success download =
-  case download of
-    Result.Err e ->
-      error e
-    Result.Ok m ->
-      success m
-
-
-tagResponse : String -> Result Http.Error Mesh -> Download
-tagResponse id response =
-  { id = id
-  , response = response
-  }
+libraryMailbox : Signal.Mailbox (Result Http.Error Library)
+libraryMailbox =
+  Signal.mailbox (Result.Ok Dict.empty)
 
 
 decode : Json.Decoder Mesh
