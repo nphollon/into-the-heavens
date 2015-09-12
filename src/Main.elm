@@ -1,6 +1,7 @@
 module Main where
 
 import Keyboard
+import Dict exposing (Dict)
 import Set exposing (Set)
 import Signal exposing ((<~))
 import Time exposing (Time)
@@ -17,15 +18,15 @@ port hasFocus : Signal Bool
 
                 
 main =
-  view <~ Signal.foldp update WaitingForResource inputs
+  view <~ Signal.foldp update Loading inputs
 
 
 type Update =
-  Keys (Set Keyboard.KeyCode) | FPS Time | Resource Mesh.Download | NoUpdate
+  Keys (Set Keyboard.KeyCode) | FPS Time | Downloads Mesh.DownloadLibrary
 
 
 type Model =
-  Game Flight.Model | WaitingForResource | ResourceFailure Http.Error
+  Game Flight.Model | Loading | ResourceFailure Http.Error
 
 
 inputs : Signal Update
@@ -33,7 +34,7 @@ inputs =
   Signal.mergeMany
           [ Keys <~ Keyboard.keysDown
           , FPS <~ Time.fpsWhen 60 hasFocus
-          , Signal.filterMap (Maybe.map Resource) NoUpdate resource.signal
+          , Downloads <~ Mesh.downloadLibrary
           ]
         
 
@@ -46,8 +47,8 @@ update input model =
     (Keys keysDown, Game m) ->
       Flight.controlUpdate keysDown m |> Game
         
-    (Resource s, WaitingForResource) ->
-      Mesh.resolve ResourceFailure (Flight.init >> Game) s
+    (Downloads library, Loading) ->
+      Mesh.resolve ResourceFailure isComplete library
           
     otherwise ->
       model
@@ -57,16 +58,21 @@ view model =
   case model of
     Game m ->
       View.view m
-    WaitingForResource ->
+    Loading ->
       View.loading
     ResourceFailure e ->
       View.resourceFailure e
-           
-          
+
+
+isComplete : Mesh.MeshLibrary -> Model
+isComplete library =
+  case (Dict.get "Sphere" library) of
+    Just m ->
+      Flight.init m |> Game
+    Nothing ->
+      Loading
+
+                
 port getUrl : Task Http.Error ()
 port getUrl =
-  Mesh.download "http://intotheheavens.net/data/resource.json" resource.address
-
-
-resource : Signal.Mailbox (Maybe Mesh.Download)
-resource = Signal.mailbox Nothing
+  Mesh.download "http://intotheheavens.net/data/resource.json"
