@@ -1,18 +1,21 @@
 module Entity.Writer (source) where
 
 import String
-import List
+import Graphics.Element as Layout
+import Text
+
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
+
 import Triple exposing (Triple)
-import Graphics
+import Mesh exposing (Mesh)
 
-source : String -> Graphics.Mesh -> String
-source moduleName mesh =
-    printMesh mesh
+source : Mesh -> Layout.Element
+source mesh =
+  Layout.leftAligned <| Text.fromString <| printMesh mesh
 
 
-printMesh : Graphics.Mesh -> String
+printMesh : Mesh -> String
 printMesh triples = 
   let
     tripleText =
@@ -25,7 +28,7 @@ printMesh triples =
       ]
 
 
-printTriple : Triple Graphics.Attribute -> String
+printTriple : Triple Mesh.Vertex -> String
 printTriple (a, b, c) =
   String.concat
     [ "[", printAttribute a
@@ -56,7 +59,7 @@ printVec4 a =
     ]
 
 
-printAttribute : Graphics.Attribute -> String
+printAttribute : Mesh.Vertex -> String
 printAttribute att =
   String.concat
     [ "{\"position\":"

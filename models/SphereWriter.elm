@@ -2,17 +2,12 @@ module SphereWriter (main) where
 
 import Color
 import Array exposing (Array)
-import List
-import Graphics.Element as Layout
-import Text
-import String
 
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 
-
 import Triple exposing (Triple)
-import Graphics
+import Mesh exposing (Mesh)
 import Entity.Writer
 
 
@@ -22,12 +17,11 @@ type alias TupPoint = ((Float, Float), Zone)
 type Zone = One | Two | Three | Four
 
 
-main : Layout.Element
 main =
-  Layout.leftAligned <| Text.fromString <| Entity.Writer.source "Sphere" sphere
+   Entity.Writer.source sphere
 
 
-sphere : Triple.Mesh Graphics.Attribute
+sphere : Mesh
 sphere =
   let
     sphereIcosaFaces =
@@ -44,7 +38,7 @@ lookup =
   flip Array.get
 
 
-toRect : TupPoint -> Graphics.Attribute
+toRect : TupPoint -> Mesh.Vertex
 toRect ((colatitude, longitude), zone) =
   let
     theta = degrees colatitude
@@ -57,14 +51,14 @@ toRect ((colatitude, longitude), zone) =
     }
 
 
-recurse : Int -> Triple Graphics.Attribute -> Triple.Mesh Graphics.Attribute
+recurse : Int -> Triple Mesh.Vertex -> Mesh
 recurse iter triangle =
   if iter == 0
     then [ triangle ]
     else List.concatMap (recurse (iter - 1)) (split triangle)
 
 
-split : Triple Graphics.Attribute -> Triple.Mesh Graphics.Attribute
+split : Triple Mesh.Vertex -> Mesh
 split (a, b, c) =
   let
     normalMidpoint u v =
@@ -119,7 +113,7 @@ baseCoords =
     , ((180, 0), Two)
     ]
 
-baseIndexes : Triple.Mesh Int
+baseIndexes : List (Triple Int)
 baseIndexes =
   [ (0, 1, 2)
   , (0, 2, 3)
