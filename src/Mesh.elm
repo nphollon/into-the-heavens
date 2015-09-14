@@ -1,6 +1,6 @@
 module Mesh (
              Mesh, Vertex, Library,
-             response, request
+             response, request, get
             ) where
 
 import Dict exposing (Dict)
@@ -57,6 +57,11 @@ request requests =
     fetch `Task.andThen` notify
 
 
+get : String -> Library -> Mesh
+get name lib =
+  Dict.get name lib |> Maybe.withDefault []
+
+         
 libraryMailbox : Signal.Mailbox (Result Http.Error Library)
 libraryMailbox =
   Signal.mailbox (Result.Ok Dict.empty)

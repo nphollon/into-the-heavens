@@ -2,8 +2,8 @@ module Flight where
 
 import Keyboard
 import Char
-import Set exposing (Set)
 import Dict exposing (Dict)
+import Set exposing (Set)
 import Time exposing (Time)
 
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -13,9 +13,6 @@ import World exposing (World, WorldStyle(..))
 import Infix exposing (..)
 import Mesh exposing (Mesh)
 import Background exposing (Background)
-import Constellation
-import Scatter
-import Grid
 
 
 type alias Model =
@@ -48,8 +45,11 @@ inaction =
 init : Mesh.Library -> Model
 init lib =
   let
-    m =
-      Dict.get "Sphere" lib |> Maybe.withDefault []
+    sphere =
+      Mesh.get "Sphere" lib
+
+    stars =
+      Mesh.get "Background" lib
   in
     { orientation = Mat4.identity
     , position = Vec3.vec3 0 0 0
@@ -57,21 +57,14 @@ init lib =
     , message = ""
     , worlds =
       Dict.fromList
-            [ ("Jupiter", World.world m Planet 10 (0, -100, -50))
-            , ("Io", World.world m Moon 0.2606 (0, -39.68, -50))
-            , ("Europa", World.world m Moon 0.2233 (0, -4.04, -50))
-            , ("Ganymede", World.world m Moon 0.3768 (0, 53.1, -50))
-            , ("Callisto", World.world m Moon 0.3447 (0, 169.3, -50))
+            [ ("Jupiter", World.world sphere Planet 10 (0, -100, -50))
+            , ("Io", World.world sphere Moon 0.2606 (0, -39.68, -50))
+            , ("Europa", World.world sphere Moon 0.2233 (0, -4.04, -50))
+            , ("Ganymede", World.world sphere Moon 0.3768 (0, 53.1, -50))
+            , ("Callisto", World.world sphere Moon 0.3447 (0, 169.3, -50))
             ]
     , background =
-      List.concat
-            [ Constellation.crux
-            , Constellation.ursaMajor
-            , Constellation.aquarius
-            , Scatter.scatter 100 
-            , Grid.grid 0 2 
-            ]
-      |> Background.background
+      Background.background stars
     }
 
 
