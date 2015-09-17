@@ -22,8 +22,7 @@ main =
 
 
 type Update =
-  LoadError Http.Error
-    | LoadSuccess Mesh.Library
+  Meshes Mesh.Response
     | FPS Time
     | Keys (Set Keyboard.KeyCode)
 
@@ -39,7 +38,7 @@ inputs =
   Signal.mergeMany
           [ Keys <~ Keyboard.keysDown
           , FPS <~ Time.fpsWhen 60 hasFocus
-          , Mesh.response LoadError LoadSuccess
+          , Meshes <~ Mesh.response
           ]
         
 
@@ -52,14 +51,24 @@ update input model =
     (Keys keysDown, Game m) ->
       Flight.controlUpdate keysDown m |> Game
         
-    (LoadError e, Loading) ->
-      ResourceFailure e
+    (Meshes response, Loading) ->
+      load response
 
-    (LoadSuccess lib, Loading) ->
-      Flight.init lib |> Game
-          
     otherwise ->
       model
+
+
+load : Mesh.Response -> Model
+load response =
+  case response of
+    Mesh.Waiting ->
+      Loading
+
+    Mesh.Error e ->
+      ResourceFailure e
+
+    Mesh.Success lib ->
+      Flight.init lib |> Game
 
 
 view model =

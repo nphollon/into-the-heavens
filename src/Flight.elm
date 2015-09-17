@@ -46,10 +46,10 @@ init : Mesh.Library -> Model
 init lib =
   let
     sphere =
-      Mesh.get "Sphere" lib
+      lib.sphere
 
     stars =
-      Mesh.get "Background" lib
+      lib.background
   in
     { orientation = Mat4.identity
     , position = Vec3.vec3 0 0 0

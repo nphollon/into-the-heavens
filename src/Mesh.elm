@@ -1,11 +1,12 @@
 module Mesh (
-             Mesh, Vertex, Library,
-             response, request, get
+             Mesh, Vertex, Library, Response(..),
+             response, request
             ) where
 
 import Dict exposing (Dict)
 import Task exposing (Task)
-import Json.Decode as Json exposing ((:=))
+import Json.Encode as Encode
+import Json.Decode as Json exposing (Decoder, Value, (:=))
 
 import Http
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -25,50 +26,74 @@ type alias Mesh =
                 
        
 type alias Library =
-  Dict String Mesh
+  { sphere: Mesh
+  , background: Mesh
+  }
 
-
-response : (Http.Error -> a) -> (Library -> a) -> Signal a
-response errCallback okCallback =
-  let
-    format r =
-      case r of
-        Result.Ok lib -> okCallback lib
-        Result.Err err -> errCallback err
-  in
-    Signal.map format libraryMailbox.signal
+type Response = Waiting | Error Http.Error | Success Library
+                   
+response : Signal Response
+response =
+  libraryMailbox.signal
 
 
 request : Dict String String -> Task Http.Error ()
 request requests =
   let
     get (id, url) =
-      Task.map ((,) id) (Http.get decode url)
+      Task.map ((,) id) (Http.get Json.value url)
           
     fetch =
       Dict.toList requests
         |> List.map get
         |> Task.sequence
         |> Task.toResult
-        
-    notify =
-      Result.map Dict.fromList >> Signal.send libraryMailbox.address
+
+    resolve r =
+      case r of
+        Ok a -> Success a
+        Err a -> Error a
+                 
+    notify r =
+      r `Result.andThen` toLibrary
+        |> resolve
+        |> Signal.send libraryMailbox.address
   in
     fetch `Task.andThen` notify
 
 
-get : String -> Library -> Mesh
-get name lib =
-  Dict.get name lib |> Maybe.withDefault []
-
+toLibrary : List (String, Value) -> Result Http.Error Library
+toLibrary list =
+  Encode.object list
+    |> Json.decodeValue decode
+    |> Result.formatError Http.UnexpectedPayload
+  
          
-libraryMailbox : Signal.Mailbox (Result Http.Error Library)
+libraryMailbox : Signal.Mailbox Response
 libraryMailbox =
-  Signal.mailbox (Result.Ok Dict.empty)
+  Signal.mailbox Waiting
 
 
-decode : Json.Decoder Mesh
+decode : Json.Decoder Library
 decode =
+  let
+    init a b =
+      { sphere = a
+      , background = b
+      }
+  in
+    Json.succeed init
+          `andMap` ("Sphere" := mesh)
+          `andMap` ("Background" := mesh)
+        
+
+andMap : Decoder (a -> b) -> Decoder a -> Decoder b
+andMap partial next =
+  partial `Json.andThen` (Json.map `flip` next)
+
+
+mesh : Json.Decoder Mesh
+mesh =
   Json.tuple3 (,,) vertex vertex vertex |> Json.list
       
 
