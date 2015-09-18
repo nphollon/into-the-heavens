@@ -16,8 +16,8 @@ import Flight
 import Infix exposing (..)
 
 
-loading : Layout.Element
-loading =
+--loading : Layout.Element
+loading _ =
   fullscreenText "Loading..."
 
 

@@ -12,13 +12,14 @@ import Http
 import Flight
 import View
 import Mesh exposing (Mesh)
+import Menu
 
 
 port hasFocus : Signal Bool
 
                 
 main =
-  view <~ Signal.foldp update Loading inputs
+  view <~ Signal.foldp update init inputs
 
 
 type Update =
@@ -29,8 +30,14 @@ type Update =
 
 type Model =
   ResourceFailure Http.Error
-    | Loading
+    | Loading Menu.Model
+    | Ready Menu.Model Mesh.Library
     | Game Flight.Model
+
+      
+init : Model
+init =
+  Loading Menu.init
 
 
 inputs : Signal Update
@@ -47,36 +54,34 @@ update input model =
   case (input, model) of
     (FPS dt, Game m) ->
       Flight.timeUpdate dt m |> Game
-        
+          
     (Keys keysDown, Game m) ->
       Flight.controlUpdate keysDown m |> Game
-        
-    (Meshes response, Loading) ->
-      load response
+
+    (FPS dt, Loading m) ->
+      Menu.update dt m |> Loading
+
+    (FPS dt, Ready m lib) ->
+      Menu.update dt m |> flip Ready lib
+                         
+    (Meshes response, Loading m) ->
+      Mesh.handle ResourceFailure (Ready m) model response
 
     otherwise ->
       model
-
-
-load : Mesh.Response -> Model
-load response =
-  case response of
-    Mesh.Waiting ->
-      Loading
-
-    Mesh.Error e ->
-      ResourceFailure e
-
-    Mesh.Success lib ->
-      Flight.init lib |> Game
 
 
 view model =
   case model of
     Game m ->
       View.view m
-    Loading ->
-      View.loading
+          
+    Loading m ->
+      View.loading m
+
+    Ready m lib ->
+      Menu.ready m
+          
     ResourceFailure e ->
       View.resourceFailure e
 
