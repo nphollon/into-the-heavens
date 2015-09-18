@@ -1,21 +1,17 @@
-module Menu where
+module Menu (Model, update, loading, ready, resourceFailure, init) where
 
-import Graphics.Element as Layout
-import Time exposing (Time)
-
-type alias Model =
-  { time: Float
-  }
-
-                 
-init : Model
-init = { time = 0 }
+import Menu.Model as Model
+import Menu.View as View
 
 
-update : Time -> Model -> Model
-update dt model =
-  { model | time <- dt + model.time }
+type alias Model = Model.Model
 
+update = Model.update
 
-ready : Model -> Layout.Element
-ready = Layout.show
+loading = View.loading
+
+ready = View.ready
+
+resourceFailure = View.resourceFailure
+
+init = Model.init

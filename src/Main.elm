@@ -10,9 +10,8 @@ import Task exposing (Task)
 import Http
 
 import Flight
-import View
-import Mesh exposing (Mesh)
 import Menu
+import Mesh exposing (Mesh)
 
 
 port hasFocus : Signal Bool
@@ -74,16 +73,16 @@ update input model =
 view model =
   case model of
     Game m ->
-      View.view m
+      Flight.view m
           
     Loading m ->
-      View.loading m
+      Menu.loading m
 
     Ready m lib ->
       Menu.ready m
           
     ResourceFailure e ->
-      View.resourceFailure e
+      Menu.resourceFailure e
 
 
 port getResources : Task Http.Error ()

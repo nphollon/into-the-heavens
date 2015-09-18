@@ -1,44 +1,21 @@
-module View where
+module Flight.View where
 
 import Graphics.Element as Layout
-import Color
 import String
+import Color
 import Dict
 import Text
 
-import Http
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL
 
 import Background
 import World
-import Flight
+import Flight.Model exposing (Model)
 import Infix exposing (..)
 
 
---loading : Layout.Element
-loading _ =
-  fullscreenText "Loading..."
-
-
-resourceFailure : Http.Error -> Layout.Element
-resourceFailure e =
-  let
-    message =
-      case e of
-        Http.Timeout ->
-          "Nobody is listening to me."
-        Http.NetworkError ->
-          "I can't find what I am looking for."
-        Http.UnexpectedPayload _ ->
-          "I am hearing things I just don't understand."
-        Http.BadResponse code _ ->
-          "HTTP Error Code: " ++ toString code
-  in
-    fullscreenText ("I couldn't load the game for you.\n" ++ message)
-          
-        
-view : Flight.Model -> Layout.Element
+view : Model -> Layout.Element
 view model =
   let
     sceneWidth = 600
@@ -84,7 +61,7 @@ fade height =
           , light 2
           ]
 
-scene : Int -> Int -> Flight.Model -> Layout.Element
+scene : Int -> Int -> Model -> Layout.Element
 scene width height model =
   let
     aspect =
@@ -108,11 +85,6 @@ scene width height model =
       |> Layout.color Color.black
               
 
-fullscreenText : String -> Layout.Element
-fullscreenText =
-  textBox 900 100
-
-          
 textBox : Int -> Int -> String -> Layout.Element
 textBox width height message =
   Text.fromString message
