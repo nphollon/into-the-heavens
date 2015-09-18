@@ -1,5 +1,5 @@
 module Mesh (
-             Mesh, Vertex, Library, Response,
+             Mesh, Vertex, Library, Response(..),
              response, request, handle
             ) where
 

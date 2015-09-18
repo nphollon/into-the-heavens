@@ -1,4 +1,4 @@
-module Menu (Model, update, loading, ready, resourceFailure, init) where
+module Menu (Model, timeUpdate, resourceUpdate, view, init) where
 
 import Menu.Model as Model
 import Menu.View as View
@@ -6,12 +6,10 @@ import Menu.View as View
 
 type alias Model = Model.Model
 
-update = Model.update
+timeUpdate = Model.timeUpdate
 
-loading = View.loading
+resourceUpdate = Model.resourceUpdate
 
-ready = View.ready
-
-resourceFailure = View.resourceFailure
+view = View.view
 
 init = Model.init

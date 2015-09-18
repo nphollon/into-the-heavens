@@ -28,15 +28,13 @@ type Update =
 
 
 type Model =
-  ResourceFailure Http.Error
-    | Loading Menu.Model
-    | Ready Menu.Model Mesh.Library
+    Start Menu.Model
     | Game Flight.Model
 
       
 init : Model
 init =
-  Loading Menu.init
+  Start Menu.init
 
 
 inputs : Signal Update
@@ -57,14 +55,11 @@ update input model =
     (Keys keysDown, Game m) ->
       Flight.controlUpdate keysDown m |> Game
 
-    (FPS dt, Loading m) ->
-      Menu.update dt m |> Loading
+    (FPS dt, Start m) ->
+      Menu.timeUpdate dt m |> Start
 
-    (FPS dt, Ready m lib) ->
-      Menu.update dt m |> flip Ready lib
-                         
-    (Meshes response, Loading m) ->
-      Mesh.handle ResourceFailure (Ready m) model response
+    (Meshes response, Start m) ->
+      Menu.resourceUpdate response m |> Start
 
     otherwise ->
       model
@@ -72,17 +67,11 @@ update input model =
 
 view model =
   case model of
+    Start m ->
+      Menu.view m
+    
     Game m ->
       Flight.view m
-          
-    Loading m ->
-      Menu.loading m
-
-    Ready m lib ->
-      Menu.ready m
-          
-    ResourceFailure e ->
-      Menu.resourceFailure e
 
 
 port getResources : Task Http.Error ()

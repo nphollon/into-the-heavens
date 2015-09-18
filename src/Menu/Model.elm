@@ -2,15 +2,25 @@ module Menu.Model where
 
 import Time exposing (Time)
 
+import Mesh
+
 type alias Model =
-  { time: Float
+  { time: Time
+  , resources : Mesh.Response
   }
 
                  
 init : Model
-init = { time = 0 }
+init = { time = 0
+       , resources = Mesh.Waiting
+       }
 
 
-update : Time -> Model -> Model
-update dt model =
+timeUpdate : Time -> Model -> Model
+timeUpdate dt model =
   { model | time <- dt + model.time }
+
+
+resourceUpdate : Mesh.Response -> Model -> Model
+resourceUpdate response model =
+  { model | resources <- response }
