@@ -1,6 +1,6 @@
 module Mesh (
              Mesh, Vertex, Library, Response(..),
-             response, request, handle
+             response, request
             ) where
 
 import Dict exposing (Dict)
@@ -30,24 +30,13 @@ type alias Library =
   , background: Mesh
   }
 
-type Response = Waiting | Error Http.Error | Success Library
                    
+type Response = Waiting | Error Http.Error | Success Library
+
+              
 response : Signal Response
 response =
   libraryMailbox.signal
-
-
-handle : (Http.Error -> a) -> (Library -> a) -> a -> Response -> a
-handle fail succeed default response =
-  case response of
-    Success lib ->
-      succeed lib
-
-    Error err ->
-      fail err
-           
-    Waiting ->
-      default
 
 
 request : Dict String String -> Task Http.Error ()
