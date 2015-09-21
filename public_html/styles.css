@@ -8,19 +8,8 @@ body {
     padding-left: 20%
 }
 
-h1 {
-    font-family: 'Bitter', serif;
-    font-style: italic;
-    font-weight: normal;
-    font-size: 2rem;
-    padding-left: 2rem;
-}
-
-h2 {
-    font-family: 'Fira Sans', sans-serif;
-    font-weight: bold;
-    font-size: 1.3rem;
-    padding-left: 2rem;
+#app {
+    margin: 2rem;
 }
 
 h3 {
@@ -29,11 +18,11 @@ h3 {
     font-size: 1rem;
     padding-left: 3rem;
     word-spacing: 1rem;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
 p {
-    padding-left: 2rem;
+    padding-left: 5rem;
     width: 35rem;
 }
 
