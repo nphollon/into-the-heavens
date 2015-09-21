@@ -37,7 +37,7 @@ red : Color
 red = Color.red
 
 yellow : Color
-yellow = Color.yellow
+yellow = Color.rgba 255 214 52 1
 
 black : Color
 black = Color.black

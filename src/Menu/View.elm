@@ -64,8 +64,8 @@ mask =
         [ -450, 450 ]
   -- -}
   List.map (Collage.filled background)
-        [ Collage.polygon [ (0, 0), (-450, 0), (-450, -300), (-150, -300) ]
-        , Collage.polygon [ (-0, 0), (450, 0), (450, -300), (150, -300) ]
+        [ Collage.polygon [ (0, 5), (-450, 5), (-450, -300), (-150, -300) ]
+        , Collage.polygon [ (-0, 5), (450, 5), (450, -300), (150, -300) ]
         ]
     |> Collage.group
 
@@ -122,10 +122,10 @@ earthCircle : Palette.Color -> Float -> Collage.Form
 earthCircle color p =
   let
     r =
-      20 * p^2
+      1 + 19 * p^3
          
     y =
-      20 - 340 * p
+      -320 * p
   in
     Collage.circle r
       |> Collage.filled color
