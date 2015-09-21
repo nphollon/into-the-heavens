@@ -2,13 +2,13 @@ module Flight.View where
 
 import Graphics.Element as Layout
 import String
-import Color
 import Dict
 import Text
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL
 
+import Palette
 import Background
 import World
 import Flight.Model exposing (Model)
@@ -38,7 +38,7 @@ view model =
             , Layout.flow Layout.down
                       [ textBox textBoxWidth textBoxHeight model.message
                       , Layout.spacer textBoxWidth 1
-                        |> Layout.color (Color.rgba 204 255 238 0.5)
+                        |> Layout.color Palette.white
                       , Layout.spacer 1 padding
                       , textBox textBoxWidth textBoxHeight instructions
                       ]
@@ -50,7 +50,7 @@ fade height =
       Layout.spacer x height
 
     dark x =
-      Layout.color Color.black (light x)
+      Layout.color Palette.black (light x)
   in
     Layout.flow Layout.right
           [ dark 2
@@ -82,7 +82,7 @@ scene width height model =
   in
     WebGL.webgl (width, height) (background :: foreground)
       |> Layout.container width height Layout.middle
-      |> Layout.color Color.black
+      |> Layout.color Palette.black
               
 
 textBox : Int -> Int -> String -> Layout.Element
@@ -90,3 +90,5 @@ textBox width height message =
   Text.fromString message
     |> Layout.leftAligned
     |> Layout.size width height
+
+

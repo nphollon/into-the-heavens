@@ -3,6 +3,7 @@ module Menu.Model where
 import Time exposing (Time)
 
 import Mesh
+import Update exposing (Update(..))
 
 type alias Model =
   { time: Time
@@ -11,16 +12,22 @@ type alias Model =
 
                  
 init : Model
-init = { time = 0
-       , resources = Mesh.Waiting
-       }
+init =
+  { time = 0
+  , resources = Mesh.Waiting
+  }
 
 
-timeUpdate : Time -> Model -> Model
-timeUpdate dt model =
-  { model | time <- dt + model.time }
+update : Update -> Model -> Model
+update input model =
+  case input of
+    FPS dt ->
+      { model | time <- dt + model.time }
+
+    Meshes response ->
+      { model | resources <- response }
+
+    otherwise ->
+      model
 
 
-resourceUpdate : Mesh.Response -> Model -> Model
-resourceUpdate response model =
-  { model | resources <- response }

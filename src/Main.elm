@@ -12,6 +12,7 @@ import Http
 import Flight
 import Menu
 import Mesh exposing (Mesh)
+import Update exposing (Update(..))
 
 
 port hasFocus : Signal Bool
@@ -21,14 +22,8 @@ main =
   view <~ Signal.foldp update init inputs
 
 
-type Update =
-  Meshes Mesh.Response
-    | FPS Time
-    | Keys (Set Keyboard.KeyCode)
-
-
 type Model =
-    Start Menu.Model
+  Start Menu.Model
     | Game Flight.Model
 
       
@@ -48,21 +43,12 @@ inputs =
 
 update : Update -> Model -> Model
 update input model =
-  case (input, model) of
-    (FPS dt, Game m) ->
-      Flight.timeUpdate dt m |> Game
-          
-    (Keys keysDown, Game m) ->
-      Flight.controlUpdate keysDown m |> Game
+  case model of
+    Start m ->
+      Menu.update input m |> Start
 
-    (FPS dt, Start m) ->
-      Menu.timeUpdate dt m |> Start
-
-    (Meshes response, Start m) ->
-      Menu.resourceUpdate response m |> Start
-
-    otherwise ->
-      model
+    Game m ->
+      Flight.update input m |> Game
 
 
 view model =

@@ -9,6 +9,7 @@ import Time exposing (Time)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 
+import Update exposing (Update(..))
 import World exposing (World, WorldStyle(..))
 import Infix exposing (..)
 import Mesh exposing (Mesh)
@@ -79,6 +80,19 @@ messages =
   ]
 
 
+update : Update -> Model -> Model
+update input model =
+  case input of
+    FPS dt ->
+      timeUpdate dt model
+                 
+    Keys keysDown ->
+      controlUpdate keysDown model
+
+    otherwise ->
+      model                
+
+      
 timeUpdate : Time -> Model -> Model
 timeUpdate dt model =
   let
