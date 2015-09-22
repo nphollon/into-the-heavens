@@ -28,8 +28,23 @@ view model =
 
 
 ready : Time -> Layout.Element
-ready t =
-  [ skyCircles t, earthCircles t, mask, title, subtitle ]
+ready = titleScreen
+        [ text Palette.titleStyle (-280, -256) "Into the Heavens"
+        , text Palette.subtitleStyle (340, -260) "Press any key"
+        ]
+
+
+loading : Time -> Layout.Element
+loading = titleScreen
+        [ text Palette.titleStyle (-280, -256) "Into the Heavens"
+        , text Palette.subtitleStyle (340, -200) "Loading"
+        ]
+
+
+titleScreen : List Collage.Form -> Time -> Layout.Element
+titleScreen titles t =
+  titles
+    |> List.append [ earthCircles t, mask, skyCircles t ]
     |> Collage.collage 900 600
     |> Layout.color background
 
@@ -39,7 +54,7 @@ mask =
   let
     shape =
       [ (0, -15), (0, 50), (450, 50), (450, -300)
-      , (1, -300), (4, -70)
+      , (2, -300), (4, -70)
       ]
 
     reflection =
@@ -49,41 +64,10 @@ mask =
       |> List.map (Collage.polygon >> Collage.filled background)
       |> Collage.group
         
-
-title : Collage.Form
-title =
-  let
-    style =
-      { typeface = [ "Bitter", "serif" ]
-      , height = Just 40
-      , color = Palette.white
-      , bold = False
-      , italic = True
-      , line = Nothing
-      }
-  in
-    Text.fromString "Into the Heavens"
-    |> Text.style style
-    |> Collage.text
-    |> Collage.moveY 40
-
-    
-subtitle : Collage.Form
-subtitle =
-  let
-    style =
-      { typeface = [ "Fira Sans", "sans-serif" ]
-      , height = Just 28
-      , color = Palette.white
-      , bold = False
-      , italic = False
-      , line = Nothing
-      }
-  in 
-    Text.fromString "Press any key"
-    |> Text.style style
-    |> Collage.text
-    |> Collage.move (340, -260)
+       
+text : Text.Style -> (Float, Float) -> String -> Collage.Form
+text style position =
+  Text.fromString >> Text.style style >> Collage.text >> Collage.move position
        
            
 skyCircles : Time -> Collage.Form
@@ -128,10 +112,10 @@ skyCircle : Float -> Collage.Form
 skyCircle p =
   let
     r =
-      20 * (1 - p)
+      20 * (1 - p)^0.5
          
     y =
-      330 - 300 * p
+      330 - 330 * p
   in
     Collage.circle r
       |> Collage.filled Palette.blue
@@ -142,7 +126,7 @@ earthCircle : Float -> Collage.Form
 earthCircle p =
   let
     r =
-      1 + 27 * (1 - p)^2.2
+      28 * (1 - p)^1.8
          
     y =
       12 - 300 * p^0.75
@@ -162,11 +146,7 @@ percent offset bound x =
   in
     frac - (toFloat <| truncate frac)
 
-loading : a -> Layout.Element
-loading _ =
-  fullscreenText "Loading..."
 
-            
 resourceFailure : Http.Error -> Layout.Element
 resourceFailure e =
   let

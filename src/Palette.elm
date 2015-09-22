@@ -1,6 +1,7 @@
 module Palette where
 
 import Color
+import Text
 
 import Infix exposing (..)
 
@@ -41,3 +42,25 @@ yellow = Color.rgba 255 214 52 1
 
 black : Color
 black = Color.black
+
+
+titleStyle : Text.Style
+titleStyle =
+  { typeface = [ "Bitter", "serif" ]
+  , height = Just 36
+  , color = white
+  , bold = False
+  , italic = True
+  , line = Nothing
+  }
+
+
+subtitleStyle : Text.Style
+subtitleStyle =
+  { typeface = [ "Fira Sans", "sans-serif" ]
+  , height = Just 26
+  , color = white
+  , bold = False
+  , italic = False
+  , line = Nothing
+  }
