@@ -45,7 +45,9 @@ update : Update -> Model -> Model
 update input model =
   case model of
     Start m ->
-      Menu.update input m |> Start
+      Maybe.map Game m.continue
+        |> Maybe.withDefault
+           (Menu.update input m |> Start)
 
     Game m ->
       Flight.update input m |> Game

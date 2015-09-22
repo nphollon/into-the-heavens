@@ -23,9 +23,13 @@ window.onload = function () {
         if (canvas === undefined) {
             setTimeout(cullFaces);
         } else {
-            canvas
-                .getContext("webgl")
-                .enable(WebGLRenderingContext.CULL_FACE);
+            var context = canvas.getContext("webgl");
+            
+            if (!context) {
+                setTimeout(cullFaces);
+            } else {
+                context.enable(WebGLRenderingContext.CULL_FACE);
+            }
         }
     };
 
