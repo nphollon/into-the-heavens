@@ -29,49 +29,29 @@ view model =
 
 ready : Time -> Layout.Element
 ready t =
-  [ circles t, mask, titles ]
+  [ skyCircles t, earthCircles t, mask, title, subtitle ]
     |> Collage.collage 900 600
     |> Layout.color background
 
-
-circles : Time -> Collage.Form
-circles t =
-  let
-    toPhase i =
-      if (i % 2 == 0) then 0 else 0.25
-
-    toX i =
-      30 * toFloat i - 450
-
-    toColor i =
-      if (i % 2 == 0) then Palette.white else Palette.yellow
-      
-    column i =
-      circleCol (toPhase i) (toColor i) t |> Collage.moveX (toX i)
-  in
-    Array.initialize 32 column
-      |> Array.toList
-      |> Collage.group
-
-
+       
 mask : Collage.Form
 mask =
-  {-
-  List.map
-        (\x -> Collage.oval 800 600
-            |> Collage.filled background
-            |> Collage.move (x, -90))
-        [ -450, 450 ]
-  -- -}
-  List.map (Collage.filled background)
-        [ Collage.polygon [ (0, 5), (-450, 5), (-450, -300), (-150, -300) ]
-        , Collage.polygon [ (-0, 5), (450, 5), (450, -300), (150, -300) ]
-        ]
-    |> Collage.group
+  let
+    shape =
+      [ (0, -15), (0, 50), (450, 50), (450, -300)
+      , (1, -300), (4, -70)
+      ]
 
+    reflection =
+      List.map (\(x,y) -> (-x,y)) shape
+  in
+    [ shape, reflection ]
+      |> List.map (Collage.polygon >> Collage.filled background)
+      |> Collage.group
+        
 
-titles : Collage.Form
-titles =
+title : Collage.Form
+title =
   let
     style =
       { typeface = [ "Bitter", "serif" ]
@@ -81,29 +61,67 @@ titles =
       , italic = True
       , line = Nothing
       }
-  in Collage.group
-       [ Text.fromString "Into the Heavens"
-           |> Text.style style
-           |> Collage.text
-           |> Collage.moveY 40
-       ]
+  in
+    Text.fromString "Into the Heavens"
+    |> Text.style style
+    |> Collage.text
+    |> Collage.moveY 40
+
+    
+subtitle : Collage.Form
+subtitle =
+  let
+    style =
+      { typeface = [ "Fira Sans", "sans-serif" ]
+      , height = Just 28
+      , color = Palette.white
+      , bold = False
+      , italic = False
+      , line = Nothing
+      }
+  in 
+    Text.fromString "Press any key"
+    |> Text.style style
+    |> Collage.text
+    |> Collage.move (340, -260)
+       
+           
+skyCircles : Time -> Collage.Form
+skyCircles t =
+  let
+    toPhase i =
+      if (i % 2 == 0) then 0 else 0.25
+
+    draw i =
+      circleCol skyCircle (30 * Time.second) (toPhase i)
+
+    toX i =
+      30 * toFloat i - 450
+
+    column i =
+      draw i t |> Collage.moveX (toX i)
+  in
+    Array.initialize 32 column
+      |> Array.toList
+      |> Collage.group
+
+
+earthCircles : Time -> Collage.Form
+earthCircles t =
+  circleCol earthCircle (6 * Time.second) 0 t
   
-circleCol : Float -> Palette.Color -> Time -> Collage.Form
-circleCol offset color t =
+
+circleCol : (Float -> Collage.Form) -> Time -> Float -> Time -> Collage.Form
+circleCol draw period offset t =
   let
     n = 10
         
     toPhase i =
-      (i ./. n) + offset
-                
-    phases =
-      Array.initialize n
-             (\i -> percent (toPhase i) (10 * Time.second) t)
-             
-    draw p =
-      [ skyCircle p, earthCircle color p ]
+      percent ((i ./. n) + offset) period t
   in
-    Array.toList phases |> List.concatMap draw |> Collage.group
+    Array.initialize n (toPhase >> draw)
+      |> Array.toList
+      |> Collage.group
 
         
 skyCircle : Float -> Collage.Form
@@ -115,17 +133,22 @@ skyCircle p =
     y =
       330 - 300 * p
   in
-    Collage.circle r |> Collage.filled Palette.blue |> Collage.moveY y
+    Collage.circle r
+      |> Collage.filled Palette.blue
+      |> Collage.moveY y
 
 
-earthCircle : Palette.Color -> Float -> Collage.Form
-earthCircle color p =
+earthCircle : Float -> Collage.Form
+earthCircle p =
   let
     r =
-      1 + 19 * p^3
+      1 + 27 * (1 - p)^2.2
          
     y =
-      -320 * p
+      12 - 300 * p^0.75
+
+    color =
+      Palette.blend Palette.yellow Palette.white p
   in
     Collage.circle r
       |> Collage.filled color
