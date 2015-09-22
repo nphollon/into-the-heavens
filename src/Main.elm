@@ -65,7 +65,7 @@ view model =
 port getResources : Task Http.Error ()
 port getResources =
   Dict.fromList
-        [ ("Sphere", "http://intotheheavens.net/data/sphere.json")
-        , ("Background", "http://intotheheavens.net/data/background.json")
+        [ ("Sphere", "http://$DOMAIN/data/sphere.json")
+        , ("Background", "http://$DOMAIN/data/background.json")
         ]
     |> Mesh.request
