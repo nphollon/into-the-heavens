@@ -1,10 +1,10 @@
-module Scatter (scatter) where
+module Generate.Scatter (scatter) where
 
 import Random
 import Color
 
 import Mesh exposing (Mesh)
-import Constellation
+import Generate.Constellation as Constellation
 
 
 type alias Point = 

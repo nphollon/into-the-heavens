@@ -1,4 +1,4 @@
-module Grid (grid) where
+module Generate.Grid (equator) where
 
 import Color exposing (Color)
 import Array exposing (Array)
@@ -9,34 +9,11 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 
 import Mesh exposing (Mesh)
 import Infix exposing (..)
-  
 
-grid : Int -> Int ->  Mesh
-grid xRes yRes =
-  let
-    meridians =
-      Array.initialize xRes (\i ->
-          meridian (i ./. xRes * turns 0.5)
-        ) |> Array.toList |> List.concat
-
-    parallels =
-      Array.initialize yRes (\i ->
-          parallel (i ./. yRes * turns 0.5 - turns 0.25)
-        ) |> Array.toList |> List.concat
-  in
-    meridians ++ parallels
-    
-
-parallel : Float -> Mesh
-parallel declination =
-  vertexRing (degrees 90 + declination)
-  |> triangleStrip
-
-
-meridian : Float -> Mesh
-meridian azimuth =
-  vertexRing (degrees 90)
-  |> Array.map (rotate azimuth)
+equator : Mesh
+equator =
+  degrees 90
+  |> vertexRing
   |> triangleStrip
 
 

@@ -1,4 +1,4 @@
-module Constellation (crux, ursaMajor, aquarius, star) where
+module Generate.Constellation (crux, ursaMajor, aquarius, star) where
 
 import Color exposing (Color)
 

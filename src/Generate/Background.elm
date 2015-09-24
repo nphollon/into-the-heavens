@@ -3,9 +3,9 @@ module Generate.Background where
 import Graphics.Element
 
 import Mesh exposing (Mesh)
-import Constellation
-import Scatter
-import Grid
+import Generate.Constellation as Constellation
+import Generate.Scatter as Scatter
+import Generate.Grid as Grid
 
 mesh : Mesh
 mesh = List.concat
@@ -13,6 +13,6 @@ mesh = List.concat
        , Constellation.ursaMajor
        , Constellation.aquarius
        , Scatter.scatter 100 
-       , Grid.grid 0 2 
+       , Grid.equator 
        ]
       
