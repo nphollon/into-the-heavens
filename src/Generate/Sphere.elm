@@ -1,4 +1,4 @@
-module SphereWriter (main) where
+module Generate.Sphere (sphere) where
 
 import Color
 import Array exposing (Array)
@@ -8,17 +8,12 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 
 import Triple exposing (Triple)
 import Mesh exposing (Mesh)
-import Entity.Writer
 
 
 type alias TupPoint = ((Float, Float), Zone)
 
 
 type Zone = One | Two | Three | Four
-
-
-main =
-   Entity.Writer.source sphere
 
 
 sphere : Mesh
