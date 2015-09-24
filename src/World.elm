@@ -37,6 +37,7 @@ type alias Geometry = Placed Camera
                        
 type alias Varying =
   { fragColor : Vec4
+  , cosAngleIncidence : Float
   }
 
                        
@@ -77,6 +78,7 @@ vertexShader =
 
   attribute vec3 vertPosition;
   attribute vec4 vertColor;
+  attribute vec3 normal;
 
   uniform vec3 cameraPosition;
   uniform mat4 perspective;
@@ -84,6 +86,7 @@ vertexShader =
   uniform mat4 placement;
 
   varying vec4 fragColor;
+  varying float cosAngleIncidence;
 
   void main() {
     vec4 worldFrame = placement * vec4(vertPosition, 1);
@@ -94,6 +97,9 @@ vertexShader =
     gl_Position =
       perspective * (cameraOrientation * cameraFrame - projectionOffset);
 
+    vec3 dirToLight = vec3(1, 0, 0);
+
+    cosAngleIncidence = dot(normal, dirToLight);
     fragColor = vertColor;
   }
   |]
@@ -104,6 +110,7 @@ planetShader =
   [glsl|
   precision mediump float;
   varying vec4 fragColor;
+  varying float cosAngleIncidence;
 
   void main () {
     vec4 blue = vec4(0.2265625,0.28515625,0.84375,1);
@@ -121,6 +128,8 @@ planetShader =
     } else {
       gl_FragColor = green;
     }
+
+    gl_FragColor *= cosAngleIncidence;
   }
   |]
 
@@ -130,6 +139,7 @@ moonShader =
   [glsl|
   precision mediump float;
   varying vec4 fragColor;
+  varying float cosAngleIncidence;
 
   void main () {
     float zone = length(step(0.8, fragColor));
@@ -139,5 +149,7 @@ moonShader =
     } else {
       gl_FragColor = vec4(0.2, 0.1, 0.2, 1);
     }    
+
+    gl_FragColor *= cosAngleIncidence;
   }
   |]

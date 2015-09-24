@@ -43,7 +43,7 @@ toRect ((colatitude, longitude), zone) =
   in
     { vertPosition = position
     , vertColor = toColor zone
-    , normal = Vec3.vec3 1 0 0
+    , normal = Vec3.normalize position
     }
 
 
