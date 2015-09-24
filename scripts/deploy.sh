@@ -18,6 +18,8 @@ function compile {
 
     sed "s/\$DOMAIN/$1/g" $min_out > $final_out;
     echo "Successfully generated $final_out"
+
+    scripts/make-mesh.sh
 }
 
 if [ $# -lt 1 ];
