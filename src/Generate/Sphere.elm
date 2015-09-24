@@ -43,6 +43,7 @@ toRect ((colatitude, longitude), zone) =
   in
     { vertPosition = position
     , vertColor = toColor zone
+    , normal = Vec3.vec3 1 0 0
     }
 
 
@@ -65,6 +66,7 @@ split (a, b, c) =
     midpoint a b =
       { vertPosition = normalMidpoint a.vertPosition b.vertPosition
       , vertColor = meanMidpoint a.vertColor b.vertColor
+      , normal = normalMidpoint a.normal b.normal
       }
 
     ab = midpoint a b

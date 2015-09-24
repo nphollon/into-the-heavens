@@ -51,4 +51,5 @@ encodeAttribute att =
   Json.object
         [ ("position", encodeVec3 att.vertPosition)
         , ("color", encodeVec4 att.vertColor)
+        , ("normal", encodeVec3 att.normal)
         ]

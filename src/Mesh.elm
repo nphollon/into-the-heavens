@@ -18,6 +18,7 @@ import Triple exposing (Triple)
 type alias Vertex =
   { vertPosition : Vec3
   , vertColor : Vec4
+  , normal : Vec3
   }
 
                   
@@ -101,10 +102,17 @@ mesh =
 
 vertex : Json.Decoder Vertex
 vertex =
-  Json.object2
-        (\a b -> { vertPosition = a, vertColor = b })
+  let
+    init a b c =
+      { vertPosition = a
+      , vertColor = b
+      , normal = c
+      }
+  in
+    Json.object3 init
         ("position" := vec3)
         ("color" := vec4)
+        ("normal" := vec3)
 
 
 vec3 : Json.Decoder Vec3

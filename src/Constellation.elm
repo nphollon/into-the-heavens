@@ -120,4 +120,6 @@ vertex color x y z =
         rgba.alpha
   in
     { vertPosition = Vec3.vec3 x y z
-    , vertColor = colorVector }
+    , vertColor = colorVector
+    , normal = Vec3.vec3 1 0 0
+    }

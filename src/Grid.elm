@@ -66,8 +66,8 @@ sphVertex color r phi theta =
           (r * sin theta * sin phi)
           (r * cos theta)
           (r * sin theta * cos phi)
-  , vertColor =
-    Vec4.vec4 0.19 0.19 0.19 1
+  , vertColor = Vec4.vec4 0.19 0.19 0.19 1
+  , normal = Vec3.vec3 1 0 0
   }
 
 
