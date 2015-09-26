@@ -41,7 +41,7 @@ yellow : Color
 yellow = Color.rgba 255 214 52 1
 
 black : Color
-black = Color.black
+black = Color.rgba 20 5 10 1
 
 
 titleStyle : Text.Style

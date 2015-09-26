@@ -13,6 +13,5 @@ mesh = List.concat
        , Constellation.ursaMajor
        , Constellation.aquarius
        , Scatter.scatter 100 
-       , Grid.equator 
        ]
       

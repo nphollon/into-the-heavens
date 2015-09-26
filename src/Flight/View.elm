@@ -68,7 +68,7 @@ scene width height model =
       width ./. height
 
     camera =
-      { perspective = Mat4.makePerspective 100 aspect 0.1 1000
+      { perspective = Mat4.makePerspective 60 aspect 1e5 1e10
       , cameraPosition = model.position
       , cameraOrientation = Mat4.transpose model.orientation
       }

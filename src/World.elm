@@ -43,11 +43,14 @@ type alias Varying =
                        
 world : Mesh -> WorldStyle -> Float -> Triple Float -> World
 world mesh style radius position =
-  { mesh = WebGL.Triangle mesh
-  , style = style
-  , radius = radius
-  , position = Vec3.fromTuple position
-  }
+  let
+    scale = 6.9911E6
+  in
+    { mesh = WebGL.Triangle mesh
+    , style = style
+    , radius = radius * scale
+    , position = Vec3.fromTuple position |> Vec3.scale scale
+    }
 
 
 toEntity : World -> Camera -> WebGL.Renderable
@@ -130,6 +133,7 @@ planetShader =
     }
 
     gl_FragColor *= cosAngleIncidence;
+    gl_FragColor.w = 1.0;
   }
   |]
 
@@ -151,5 +155,6 @@ moonShader =
     }    
 
     gl_FragColor *= cosAngleIncidence;
+    gl_FragColor.w = 1.0;
   }
   |]

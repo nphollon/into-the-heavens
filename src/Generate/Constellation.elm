@@ -63,14 +63,20 @@ aquarius =
 
 constellation : List Point -> Mesh
 constellation stars =
-  List.concatMap (uncurry (star Color.yellow 4)) stars
+  List.concatMap (uncurry (star Color.yellow)) stars
 
       
-star : Color.Color -> Float -> Float -> Float -> Mesh
-star color r phi theta =
+star : Color.Color -> Float -> Float -> Mesh
+star color phi theta =
   let
+    distance =
+      4e9
+      
+    r =
+      distance * 4e-3
+               
     move =
-      translate 0 499 0 >> rotate theta phi
+      translate 0 distance 0 >> rotate theta phi
 
     down = move <| vertex color 0 -r 0
     up = move <| vertex color 0 r 0

@@ -19,6 +19,7 @@ import Background exposing (Background)
 type alias Model =
   { orientation : Mat4
   , position : Vec3
+  , speed : Float
   , action : Action
   , message : String
   , worlds : Dict String World
@@ -54,6 +55,7 @@ init lib =
   in
     { orientation = Mat4.identity
     , position = Vec3.vec3 0 0 0
+    , speed = 1
     , action = inaction
     , message = ""
     , worlds =
@@ -101,7 +103,7 @@ timeUpdate dt model =
   in
     model
       |> turn (degrees 135 * perSecond)
-      |> thrust (20 * perSecond)
+      |> thrust (1E7 * perSecond)
       |> updateMessage messages
     
               
@@ -118,7 +120,7 @@ turn delta model =
 thrust : Float -> Model -> Model
 thrust delta model =
   { model | position <-
-            Vec3.vec3 0 0 (model.action.thrust .* delta)
+            Vec3.vec3 0 0 (model.action.thrust .* model.speed * delta)
               |> Mat4.transform model.orientation
               |> Vec3.add model.position
   }
@@ -167,8 +169,20 @@ controlUpdate keysDown model =
           { action | thrust <- action.thrust + 1 }
         otherwise ->
           action
+
+    keySet key m =
+      case (Char.fromCode key) of
+        'B' ->
+          { m | speed <- 1 }
+        'N' ->
+          { m | speed <- 100 }
+        otherwise ->
+          m
           
     newAction =
       Set.foldl keyAct inaction keysDown
+
+    newModel =
+      Set.foldl keySet model keysDown
   in
-    { model | action <- newAction }
+    { newModel | action <- newAction }

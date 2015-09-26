@@ -25,7 +25,7 @@ sphere =
     rectIcosaFaces =
       List.map (Triple.map toRect) sphereIcosaFaces
   in
-    List.concatMap (recurse 3) rectIcosaFaces
+    List.concatMap (recurse 5) rectIcosaFaces
   
 
 lookup : Array TupPoint -> Int -> Maybe TupPoint

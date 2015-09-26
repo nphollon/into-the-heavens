@@ -21,7 +21,7 @@ scatter n =
       Random.generate (Random.list n starPoint) seed
 
   in
-    List.concatMap (uncurry (Constellation.star Color.blue 4)) randomPoints
+    List.concatMap (uncurry (Constellation.star Color.blue)) randomPoints
 
         
 starPoint : Random.Generator Point
