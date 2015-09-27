@@ -30,7 +30,7 @@ view model =
 ready : Time -> Layout.Element
 ready = titleScreen
         [ text Palette.titleStyle (-280, -256) "Into the Heavens"
-        , text Palette.subtitleStyle (340, -260) "Press any key"
+        , text Palette.subtitleStyle (340, -260) "Press 'N'"
         ]
 
 

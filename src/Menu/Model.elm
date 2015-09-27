@@ -1,5 +1,7 @@
 module Menu.Model where
 
+import Char
+import Set
 import Time exposing (Time)
 
 import Mesh
@@ -30,8 +32,9 @@ update input model =
     Meshes response ->
       { model | resources <- response }
 
-    Keys _ ->
-      continue model
+    Keys keySet ->
+      if | Set.member (Char.toCode 'N') keySet -> continue model
+         | otherwise -> model
                
 
 continue : Model -> Model

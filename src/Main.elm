@@ -11,6 +11,7 @@ import Http
 
 import Flight
 import Menu
+import GameOver
 import Mesh exposing (Mesh)
 import Update exposing (Update(..))
 
@@ -24,7 +25,8 @@ main =
 
 type Model =
   Start Menu.Model
-    | Game Flight.Model
+    | Play Flight.Model
+    | GameOver GameOver.Model
 
       
 init : Model
@@ -45,12 +47,20 @@ update : Update -> Model -> Model
 update input model =
   case model of
     Start m ->
-      Maybe.map Game m.continue
-        |> Maybe.withDefault
-           (Menu.update input m |> Start)
+      transition .continue Play (Menu.update input >> Start) m
 
-    Game m ->
-      Flight.update input m |> Game
+    Play m ->
+      transition .dead GameOver (Flight.update input >> Play) m
+
+    GameOver m ->
+      (GameOver.update input >> GameOver) m
+
+
+transition : (a -> Maybe b) -> (b -> Model) -> (a -> Model) -> a -> Model
+transition isReady yes no model =
+  isReady model
+  |> Maybe.map yes
+  |> Maybe.withDefault (no model)
 
 
 view model =
@@ -58,8 +68,11 @@ view model =
     Start m ->
       Menu.view m
     
-    Game m ->
+    Play m ->
       Flight.view m
+
+    GameOver m ->
+      GameOver.view m
 
 
 port getResources : Task Http.Error ()

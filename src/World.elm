@@ -1,4 +1,4 @@
-module World (World, WorldStyle (..), world, toEntity) where
+module World (World, WorldStyle (..), scale, world, toEntity) where
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -40,17 +40,18 @@ type alias Varying =
   , cosAngleIncidence : Float
   }
 
-                       
+
+scale : Float
+scale = 6.9911E6
+                
+
 world : Mesh -> WorldStyle -> Float -> Triple Float -> World
 world mesh style radius position =
-  let
-    scale = 6.9911E6
-  in
-    { mesh = WebGL.Triangle mesh
-    , style = style
-    , radius = radius * scale
-    , position = Vec3.fromTuple position |> Vec3.scale scale
-    }
+  { mesh = WebGL.Triangle mesh
+  , style = style
+  , radius = radius * scale
+  , position = Vec3.fromTuple position |> Vec3.scale scale
+  }
 
 
 toEntity : World -> Camera -> WebGL.Renderable

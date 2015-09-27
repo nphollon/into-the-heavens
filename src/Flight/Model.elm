@@ -14,6 +14,7 @@ import World exposing (World, WorldStyle(..))
 import Infix exposing (..)
 import Mesh exposing (Mesh)
 import Background exposing (Background)
+import GameOver
 
 
 type alias Model =
@@ -24,6 +25,7 @@ type alias Model =
   , message : String
   , worlds : Dict String World
   , background : Background
+  , dead : Maybe GameOver.Model
   }
 
 
@@ -68,6 +70,7 @@ init lib =
             ]
     , background =
       Background.background stars
+    , dead = Nothing
     }
 
 
@@ -105,6 +108,7 @@ timeUpdate dt model =
       |> turn (degrees 135 * perSecond)
       |> thrust (1E7 * perSecond)
       |> updateMessage messages
+      |> checkDead
     
               
 turn : Float -> Model -> Model
@@ -137,12 +141,22 @@ updateMessage messages model =
     }
   
 
+checkDead : Model -> Model
+checkDead model =
+  let
+    isDead = isNear 10 "Jupiter" model
+  in
+    { model | dead <- if | isDead -> Just GameOver.GameOver
+                         | otherwise -> Nothing
+    }
+  
+  
 isNear : Float -> String -> Model -> Bool
 isNear altitude worldName model =
   Dict.get worldName model.worlds
     |> Maybe.map .position
     |> Maybe.map (Vec3.distance model.position)
-    |> Maybe.map (\x -> x < altitude)
+    |> Maybe.map (\x -> x < World.scale * altitude)
     |> Maybe.withDefault False
 
        
