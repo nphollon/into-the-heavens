@@ -25,7 +25,7 @@ type alias Model =
   , message : String
   , worlds : Dict String World
   , background : Background
-  , dead : Maybe GameOver.Model
+  , dead : Maybe ()
   }
 
 
@@ -146,7 +146,7 @@ checkDead model =
   let
     isDead = isNear 10 "Jupiter" model
   in
-    { model | dead <- if | isDead -> Just GameOver.GameOver
+    { model | dead <- if | isDead -> Just ()
                          | otherwise -> Nothing
     }
   

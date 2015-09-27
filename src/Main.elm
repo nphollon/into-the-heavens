@@ -50,7 +50,7 @@ update input model =
       transition .continue Play (Menu.update input >> Start) m
 
     Play m ->
-      transition .dead GameOver (Flight.update input >> Play) m
+      transition .dead (GameOver.init >> GameOver) (Flight.update input >> Play) m
 
     GameOver m ->
       (GameOver.update input >> GameOver) m
