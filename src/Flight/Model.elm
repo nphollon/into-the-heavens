@@ -9,34 +9,13 @@ import Time exposing (Time)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 
-import Update exposing (Update(..))
+import Update exposing (Update(..), Action)
 import World exposing (World, WorldStyle(..))
 import Infix exposing (..)
 import Mesh exposing (Mesh)
 import Background exposing (Background)
-import GameOver
 
 
-type alias Model =
-  { orientation : Mat4
-  , position : Vec3
-  , speed : Float
-  , action : Action
-  , message : String
-  , worlds : Dict String World
-  , background : Background
-  , dead : Maybe ()
-  }
-
-
-type alias Action =
-  { thrust : Int
-  , pitch : Int
-  , yaw : Int
-  , roll : Int
-  }
-
-                  
 inaction : Action
 inaction =
   { thrust = 0
@@ -46,35 +25,40 @@ inaction =
   }
 
 
-init : Mesh.Library -> Model
-init lib =
-  let
-    sphere =
-      lib.sphere
+init : Update.Data -> Update.Data
+init model =
+  case model.resources of
+    Mesh.Success lib ->
+      initFromLib lib model
+                  
+    otherwise ->
+      model
 
-    stars =
-      lib.background
+      
+initFromLib : Mesh.Library -> Update.Data -> Update.Data
+initFromLib lib model =
+  let
+    sphere = lib.sphere
+
+    stars = lib.background
   in
-    { orientation = Mat4.identity
-    , position = Vec3.vec3 0 0 0
-    , speed = 1
-    , action = inaction
-    , message = ""
-    , worlds =
-      Dict.fromList
-            [ ("Jupiter", World.world sphere Planet 10 (0, -100, -50))
-            , ("Io", World.world sphere Moon 0.2606 (0, -39.68, -50))
-            , ("Europa", World.world sphere Moon 0.2233 (0, -4.04, -50))
-            , ("Ganymede", World.world sphere Moon 0.3768 (0, 53.1, -50))
-            , ("Callisto", World.world sphere Moon 0.3447 (0, 169.3, -50))
-            ]
-    , background =
-      Background.background stars
-    , dead = Nothing
+    { model | orientation <- Mat4.identity
+            , position <- Vec3.vec3 0 0 0
+            , speed <- 1
+            , action <- inaction
+            , message <- ""
+            , worlds <-
+              Dict.fromList
+                    [ ("Jupiter", World.world sphere Planet 10 (0, -100, -50))
+                    , ("Io", World.world sphere Moon 0.2606 (0, -39.68, -50))
+                    , ("Europa", World.world sphere Moon 0.2233 (0, -4.04, -50))
+                    , ("Ganymede", World.world sphere Moon 0.3768 (0, 53.1, -50))
+                    , ("Callisto", World.world sphere Moon 0.3447 (0, 169.3, -50))
+                    ]
+            , background <- Background.background stars
     }
 
-
-messages : List (String, (Model -> Bool))
+messages : List (String, (Update.Data -> Bool))
 messages =
   [ ("You have found Jupiter, King of Planets!", isNear 25 "Jupiter")
   , ("Io has lots of volcanoes. Be careful!", isNear 3 "Io")
@@ -85,7 +69,7 @@ messages =
   ]
 
 
-update : Update -> Model -> Model
+update : Update -> Update.Data -> Update.Data
 update input model =
   case input of
     FPS dt ->
@@ -98,7 +82,7 @@ update input model =
       model                
 
       
-timeUpdate : Time -> Model -> Model
+timeUpdate : Time -> Update.Data -> Update.Data
 timeUpdate dt model =
   let
     perSecond =
@@ -108,10 +92,9 @@ timeUpdate dt model =
       |> turn (degrees 135 * perSecond)
       |> thrust (1E7 * perSecond)
       |> updateMessage messages
-      |> checkDead
     
               
-turn : Float -> Model -> Model
+turn : Float -> Update.Data -> Update.Data
 turn delta model =
   { model | orientation <-
             model.orientation
@@ -121,7 +104,7 @@ turn delta model =
   }
 
 
-thrust : Float -> Model -> Model
+thrust : Float -> Update.Data -> Update.Data
 thrust delta model =
   { model | position <-
             Vec3.vec3 0 0 (model.action.thrust .* model.speed * delta)
@@ -130,7 +113,7 @@ thrust delta model =
   }
 
                  
-updateMessage : List (String, (Model -> Bool)) -> Model -> Model
+updateMessage : List (String, (Update.Data -> Bool)) -> Update.Data -> Update.Data
 updateMessage messages model =
   let
     check (newText, isTrueFor) oldText =
@@ -141,17 +124,13 @@ updateMessage messages model =
     }
   
 
-checkDead : Model -> Model
-checkDead model =
-  let
-    isDead = isNear 10 "Jupiter" model
-  in
-    { model | dead <- if | isDead -> Just ()
-                         | otherwise -> Nothing
-    }
+transition : Update.Data -> Maybe Update.Mode
+transition model =
+  if | isNear 10 "Jupiter" model -> Just Update.GameOverMode
+     | otherwise -> Nothing
+    
   
-  
-isNear : Float -> String -> Model -> Bool
+isNear : Float -> String -> Update.Data -> Bool
 isNear altitude worldName model =
   Dict.get worldName model.worlds
     |> Maybe.map .position
@@ -160,7 +139,7 @@ isNear altitude worldName model =
     |> Maybe.withDefault False
 
        
-controlUpdate : Set Keyboard.KeyCode -> Model -> Model
+controlUpdate : Set Keyboard.KeyCode -> Update.Data -> Update.Data
 controlUpdate keysDown model =
   let
     keyAct key action =

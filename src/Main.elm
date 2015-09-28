@@ -1,5 +1,6 @@
 module Main where
 
+import Graphics.Element as Layout
 import Keyboard
 import Dict exposing (Dict)
 import Set exposing (Set)
@@ -8,30 +9,29 @@ import Time exposing (Time)
 import Task exposing (Task)
 
 import Http
+import Math.Matrix4 as Mat4
+import Math.Vector3 as Vec3
 
-import Flight
+import Mesh
+import Update exposing (..)
 import Menu
+import Flight
 import GameOver
-import Mesh exposing (Mesh)
-import Update exposing (Update(..))
+import Background
 
 
 port hasFocus : Signal Bool
 
-                
+        
+type alias Model =
+  { mode : Mode
+  , data : Data
+  }
+
+
+main : Signal Layout.Element
 main =
   view <~ Signal.foldp update init inputs
-
-
-type Model =
-  Start Menu.Model
-    | Play Flight.Model
-    | GameOver GameOver.Model
-
-      
-init : Model
-init =
-  Start Menu.init
 
 
 inputs : Signal Update
@@ -41,38 +41,67 @@ inputs =
           , FPS <~ Time.fpsWhen 60 hasFocus
           , Meshes <~ Mesh.response
           ]
-        
 
-update : Update -> Model -> Model
-update input model =
-  case model of
-    Start m ->
-      transition .continue Play (Menu.update input >> Start) m
+                 
+init : Model
+init =
+  { mode = MenuMode
+  , data = { continue = False
+           , time = 0
+           , resources = Mesh.Waiting
+                         
+           , orientation = Mat4.identity
+           , position = Vec3.vec3 0 0 0
+           , speed = 0
+           , action = { thrust = 0, pitch = 0, yaw = 0, roll = 0 }
+           , message = ""
+           , worlds = Dict.empty
+           , background = Background.background []
+           }
+  }
 
-    Play m ->
-      transition .dead (GameOver.init >> GameOver) (Flight.update input >> Play) m
-
-    GameOver m ->
-      (GameOver.update input >> GameOver) m
-
-
-transition : (a -> Maybe b) -> (b -> Model) -> (a -> Model) -> a -> Model
-transition isReady yes no model =
-  isReady model
-  |> Maybe.map yes
-  |> Maybe.withDefault (no model)
-
-
-view model =
-  case model of
-    Start m ->
-      Menu.view m
     
-    Play m ->
-      Flight.view m
+update : Update -> Model -> Model
+update up model =
+  let
+    engine =
+      chooseEngine model.mode
 
-    GameOver m ->
-      GameOver.view m
+    data =
+      engine.update up model.data
+
+    transition =
+      engine.transition data
+  in
+    case transition of
+      Nothing ->
+        { model | data <- data }
+        
+      Just mode ->
+        { mode = mode
+        , data = .init (chooseEngine mode) data
+        }
+
+
+view : Model -> Layout.Element
+view model =
+  model.data |> chooseView model.mode
+    
+      
+chooseEngine : Mode -> Engine
+chooseEngine mode =
+  case mode of
+    MenuMode -> Menu.engine
+    GameMode -> Flight.engine
+    GameOverMode -> GameOver.engine
+
+
+chooseView : Mode -> Data -> Layout.Element
+chooseView mode =
+  case mode of
+    MenuMode -> Menu.view
+    GameMode -> Flight.view
+    GameOverMode -> GameOver.view
 
 
 port getResources : Task Http.Error ()

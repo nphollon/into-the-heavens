@@ -8,22 +8,16 @@ import Mesh
 import Flight
 import Update exposing (Update(..))
 
-type alias Model =
-  { time: Time
-  , resources : Mesh.Response
-  , continue : Maybe Flight.Model 
-  }
-
                  
-init : Model
-init =
-  { time = 0
-  , resources = Mesh.Waiting
-  , continue = Nothing
+init : Update.Data -> Update.Data
+init model =
+  { model | time <- 0
+          , resources <- Mesh.Waiting
+          , continue <- False
   }
 
 
-update : Update -> Model -> Model
+update : Update -> Update.Data -> Update.Data
 update input model =
   case input of
     FPS dt ->
@@ -33,14 +27,10 @@ update input model =
       { model | resources <- response }
 
     Keys keySet ->
-      if | Set.member (Char.toCode 'N') keySet -> continue model
-         | otherwise -> model
+      { model | continue <- Set.member (Char.toCode 'N') keySet }
                
-
-continue : Model -> Model
-continue model =
-  case model.resources of
-    Mesh.Success lib ->
-      { model | continue <- Just (Flight.init lib) }
-    otherwise ->
-      model
+      
+transition : Update.Data -> Maybe Update.Mode
+transition data =
+  if | data.continue -> Just Update.GameMode
+     | otherwise -> Nothing

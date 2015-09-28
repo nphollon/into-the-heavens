@@ -10,11 +10,11 @@ import Http
 
 import Mesh
 import Palette
-import Menu.Model as Model exposing (Model)
+import Update
 import Infix exposing (..)
 
 
-view : Model -> Layout.Element
+view : Update.Data -> Layout.Element
 view model =
   case model.resources of
     Mesh.Waiting ->

@@ -1,4 +1,4 @@
-module GameOver where
+module GameOver (engine, view) where
 
 import Color
 import Graphics.Element as Layout
@@ -10,20 +10,34 @@ import Mesh
 import Update exposing (Update(..))
 
 
-type alias Model =
-  { time: Time
-  , resources : ()
+engine : Update.Engine
+engine =
+  { init = init
+  , update = update
+  , transition = transition
   }
 
-
-init : () -> Model
-init lib =
-  { time = 0
-  , resources = lib
-  }
+         
+init : Update.Data -> Update.Data
+init model =
+  { model | time <- 0 }
 
            
-view : Model -> Layout.Element
+update : Update -> Update.Data -> Update.Data
+update input model =
+  case input of
+    FPS dt ->
+      { model | time <- dt + model.time }
+
+    otherwise ->
+      model
+
+
+transition : Update.Data -> Maybe Update.Mode
+transition = always Nothing
+             
+      
+view : Update.Data -> Layout.Element
 view model =
   let
     lightness =
@@ -42,11 +56,3 @@ view model =
       |> Layout.color color
 
          
-update : Update -> Model -> Model
-update input model =
-  case input of
-    FPS dt ->
-      { model | time <- dt + model.time }
-
-    otherwise ->
-      model

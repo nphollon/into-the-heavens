@@ -11,11 +11,11 @@ import WebGL
 import Palette
 import Background
 import World
-import Flight.Model exposing (Model)
+import Update
 import Infix exposing (..)
 
 
-view : Model -> Layout.Element
+view : Update.Data -> Layout.Element
 view model =
   let
     sceneWidth = 600
@@ -61,7 +61,7 @@ fade height =
           , light 2
           ]
 
-scene : Int -> Int -> Model -> Layout.Element
+scene : Int -> Int -> Update.Data -> Layout.Element
 scene width height model =
   let
     aspect =

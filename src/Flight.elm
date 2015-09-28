@@ -1,13 +1,16 @@
-module Flight (Model, update, view, init) where
+module Flight (engine, view) where
 
+import Update exposing (Engine)
 import Flight.Model as Model
 import Flight.View as View
 
 
-type alias Model = Model.Model
+engine : Engine
+engine =
+  { init = Model.init
+  , update = Model.update
+  , transition = Model.transition
+  }
 
-update = Model.update
-         
+
 view = View.view
-
-init = Model.init

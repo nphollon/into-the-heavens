@@ -1,13 +1,16 @@
-module Menu (Model, update, view, init) where
+module Menu (engine, view) where
 
+import Update exposing (Engine)
 import Menu.Model as Model
 import Menu.View as View
 
 
-type alias Model = Model.Model
+engine : Engine
+engine =
+  { init = Model.init
+  , update = Model.update
+  , transition = Model.transition
+  }
 
-update = Model.update
 
 view = View.view
-
-init = Model.init
