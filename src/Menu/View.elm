@@ -9,7 +9,8 @@ import Time exposing (Time)
 import Http
 
 import Mesh
-import Palette
+import Graphics.Flat as Flat
+import Graphics.Palette as Palette
 import Update
 import Infix exposing (..)
 
@@ -29,15 +30,15 @@ view model =
 
 ready : Time -> Layout.Element
 ready = titleScreen
-        [ text Palette.titleStyle (-280, -256) "Into the Heavens"
-        , text Palette.subtitleStyle (340, -260) "Press 'N'"
+        [ Flat.text Palette.titleStyle (-280, -256) "Into the Heavens"
+        , Flat.text Palette.subtitleStyle (340, -260) "Press 'N'"
         ]
 
 
 loading : Time -> Layout.Element
 loading = titleScreen
-        [ text Palette.titleStyle (-280, -256) "Into the Heavens"
-        , text Palette.subtitleStyle (340, -200) "Loading"
+        [ Flat.text Palette.titleStyle (-280, -256) "Into the Heavens"
+        , Flat.text Palette.subtitleStyle (340, -200) "Loading"
         ]
 
 
@@ -45,8 +46,7 @@ titleScreen : List Collage.Form -> Time -> Layout.Element
 titleScreen titles t =
   titles
     |> List.append [ earthCircles t, mask, skyCircles t ]
-    |> Collage.collage 900 600
-    |> Layout.color background
+    |> Flat.screen background
 
        
 mask : Collage.Form
@@ -65,11 +65,6 @@ mask =
       |> Collage.group
         
        
-text : Text.Style -> (Float, Float) -> String -> Collage.Form
-text style position =
-  Text.fromString >> Text.style style >> Collage.text >> Collage.move position
-       
-           
 skyCircles : Time -> Collage.Form
 skyCircles t =
   let
@@ -160,15 +155,15 @@ resourceFailure e =
           "I am hearing things I just don't understand."
         Http.BadResponse code _ ->
           "HTTP Error Code: " ++ toString code
+
+    texts =
+      [ Flat.text Palette.titleStyle (0, 0) "Error"
+      , Flat.text Palette.subtitleStyle (0, -70) message
+      ]
   in
-    fullscreenText ("I couldn't load the game for you.\n" ++ message)
-
-                   
-fullscreenText : String -> Layout.Element
-fullscreenText message =
-  Text.fromString message
-    |> Layout.leftAligned
-    |> Layout.size 900 100
+    Flat.screen background texts
 
 
+         
+background : Palette.Color
 background = Palette.black

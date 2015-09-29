@@ -1,9 +1,10 @@
-module Palette where
+module Graphics.Palette where
 
 import Color
 import Text
 
 import Infix exposing (..)
+
 
 type alias Color = Color.Color
 

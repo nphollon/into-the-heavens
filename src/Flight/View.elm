@@ -8,7 +8,7 @@ import Text
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL
 
-import Palette
+import Graphics.Palette as Palette
 import Background
 import World
 import Update

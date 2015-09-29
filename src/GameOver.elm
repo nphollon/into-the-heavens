@@ -5,7 +5,8 @@ import Graphics.Element as Layout
 import Text
 import Time exposing (Time)
 
-import Palette
+import Graphics.Flat as Flat
+import Graphics.Palette as Palette
 import Mesh
 import Update exposing (Update(..))
 
@@ -49,10 +50,9 @@ view model =
     color =
       Color.hsl hue 1 lightness
   in
-    Text.fromString "You Crashed"
-      |> Text.style Palette.titleStyle
-      |> Layout.centered
-      |> Layout.container 900 600 Layout.middle
-      |> Layout.color color
+    Flat.screen color
+          [ Flat.text Palette.titleStyle (0, 0) "You crashed"
+          , Flat.text Palette.subtitleStyle (0, -70) "Press 'N'"
+          ]
 
          
