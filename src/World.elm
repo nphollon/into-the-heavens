@@ -1,5 +1,5 @@
 module World ( World
-             , empty, scale, world, toEntity) where
+             , empty, world, toEntity) where
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -37,15 +37,11 @@ type alias Varying =
   }
 
 
-scale : Float
-scale = 6.9911E6
-                
-
 world : Mesh -> Float -> Triple Float -> World
 world mesh radius position =
   { mesh = WebGL.Triangle mesh
-  , radius = radius * scale
-  , position = Vec3.fromTuple position |> Vec3.scale scale
+  , radius = radius
+  , position = Vec3.fromTuple position
   }
 
 

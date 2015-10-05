@@ -36,7 +36,7 @@ initFromLib lib model =
             , position <- Vec3.vec3 0 0 0
             , speed <- 1
             , action <- Update.inaction
-            , world <- World.world sphere 10 (0, -100, -50)
+            , world <- World.world sphere 7E7 (0, -4E8, -4E8)
             , background <- Background.background stars
     }
 
@@ -85,19 +85,17 @@ thrust delta model =
                  
 transition : Update.Data -> Maybe Update.Mode
 transition model =
-  if | isNear 10 model -> Just Update.GameOverMode
-     | otherwise -> Nothing
+  let
+    distance =
+      Vec3.distance model.position model.world.position
+
+    altitude =
+      model.world.radius
+  in
+    if | distance < altitude -> Just Update.GameOverMode
+       | otherwise -> Nothing
     
   
-isNear : Float -> Update.Data -> Bool
-isNear altitude model =
-  Just model.world
-    |> Maybe.map .position
-    |> Maybe.map (Vec3.distance model.position)
-    |> Maybe.map (\x -> x < World.scale * altitude)
-    |> Maybe.withDefault False
-
-       
 controlUpdate : Set Keyboard.KeyCode -> Update.Data -> Update.Data
 controlUpdate keysDown model =
   let
