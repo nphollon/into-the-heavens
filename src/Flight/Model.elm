@@ -2,7 +2,6 @@ module Flight.Model where
 
 import Keyboard
 import Char
-import Dict exposing (Dict)
 import Set exposing (Set)
 import Time exposing (Time)
 
@@ -10,19 +9,10 @@ import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 
 import Update exposing (Update(..), Action)
-import World exposing (World, WorldStyle(..))
+import World exposing (World)
 import Infix exposing (..)
 import Mesh exposing (Mesh)
 import Background exposing (Background)
-
-
-inaction : Action
-inaction =
-  { thrust = 0
-  , pitch = 0
-  , yaw = 0
-  , roll = 0
-  }
 
 
 init : Update.Data -> Update.Data
@@ -45,28 +35,10 @@ initFromLib lib model =
     { model | orientation <- Mat4.identity
             , position <- Vec3.vec3 0 0 0
             , speed <- 1
-            , action <- inaction
-            , message <- ""
-            , worlds <-
-              Dict.fromList
-                    [ ("Jupiter", World.world sphere Planet 10 (0, -100, -50))
-                    , ("Io", World.world sphere Moon 0.2606 (0, -39.68, -50))
-                    , ("Europa", World.world sphere Moon 0.2233 (0, -4.04, -50))
-                    , ("Ganymede", World.world sphere Moon 0.3768 (0, 53.1, -50))
-                    , ("Callisto", World.world sphere Moon 0.3447 (0, 169.3, -50))
-                    ]
+            , action <- Update.inaction
+            , world <- World.world sphere 10 (0, -100, -50)
             , background <- Background.background stars
     }
-
-messages : List (String, (Update.Data -> Bool))
-messages =
-  [ ("You have found Jupiter, King of Planets!", isNear 25 "Jupiter")
-  , ("Io has lots of volcanoes. Be careful!", isNear 3 "Io")
-  , ("Welcome to Europa. What secrets lurk within her icy ocean depths?", isNear 3 "Europa")
-  , ("Ganymede is bigger than Mercury. That's pretty big!", isNear 3 "Ganymede")
-  , ("Callisto was getting lonely out here by herself.", isNear 3 "Callisto")
-  , ("In the distance is Jupiter and his four Galilean moons. Can you find them all?", always otherwise)
-  ]
 
 
 update : Update -> Update.Data -> Update.Data
@@ -91,7 +63,6 @@ timeUpdate dt model =
     model
       |> turn (degrees 135 * perSecond)
       |> thrust (1E7 * perSecond)
-      |> updateMessage messages
     
               
 turn : Float -> Update.Data -> Update.Data
@@ -111,28 +82,16 @@ thrust delta model =
               |> Mat4.transform model.orientation
               |> Vec3.add model.position
   }
-
                  
-updateMessage : List (String, (Update.Data -> Bool)) -> Update.Data -> Update.Data
-updateMessage messages model =
-  let
-    check (newText, isTrueFor) oldText =
-      if (isTrueFor model) then newText else oldText
-  in
-    { model | message <-
-              List.foldr check model.message messages
-    }
-  
-
 transition : Update.Data -> Maybe Update.Mode
 transition model =
-  if | isNear 10 "Jupiter" model -> Just Update.GameOverMode
+  if | isNear 10 model -> Just Update.GameOverMode
      | otherwise -> Nothing
     
   
-isNear : Float -> String -> Update.Data -> Bool
-isNear altitude worldName model =
-  Dict.get worldName model.worlds
+isNear : Float -> Update.Data -> Bool
+isNear altitude model =
+  Just model.world
     |> Maybe.map .position
     |> Maybe.map (Vec3.distance model.position)
     |> Maybe.map (\x -> x < World.scale * altitude)
@@ -173,7 +132,7 @@ controlUpdate keysDown model =
           m
           
     newAction =
-      Set.foldl keyAct inaction keysDown
+      Set.foldl keyAct Update.inaction keysDown
 
     newModel =
       Set.foldl keySet model keysDown

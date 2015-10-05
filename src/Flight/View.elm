@@ -36,10 +36,9 @@ scene width height model =
       Background.toEntity model.background camera
 
     foreground =
-      Dict.values model.worlds
-        |> List.map (\e -> World.toEntity e camera)
+        World.toEntity model.world camera
   in
-    WebGL.webgl (width, height) (background :: foreground)
+    WebGL.webgl (width, height) [ background, foreground ]
       |> Layout.container width height Layout.middle
       |> Layout.color Palette.black
 

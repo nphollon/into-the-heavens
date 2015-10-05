@@ -31,6 +31,11 @@ background mesh =
   }
 
 
+empty : Background
+empty =
+  background []
+
+             
 toEntity : Background -> Camera -> WebGL.Renderable
 toEntity bkg =
   WebGL.render vertexShader fragmentShader bkg.mesh

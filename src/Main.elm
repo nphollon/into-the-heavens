@@ -18,6 +18,7 @@ import Menu
 import Flight
 import GameOver
 import Background
+import World
 
 
 port hasFocus : Signal Bool
@@ -46,18 +47,7 @@ inputs =
 init : Model
 init =
   { mode = MenuMode
-  , data = { continue = False
-           , time = 0
-           , resources = Mesh.Waiting
-                         
-           , orientation = Mat4.identity
-           , position = Vec3.vec3 0 0 0
-           , speed = 0
-           , action = { thrust = 0, pitch = 0, yaw = 0, roll = 0 }
-           , message = ""
-           , worlds = Dict.empty
-           , background = Background.background []
-           }
+  , data = defaultData
   }
 
     

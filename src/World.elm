@@ -1,4 +1,5 @@
-module World (World, WorldStyle (..), scale, world, toEntity) where
+module World ( World
+             , empty, scale, world, toEntity) where
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -11,14 +12,9 @@ import Triple exposing (Triple)
 
 type alias World =
   { mesh : WebGL.Drawable Mesh.Vertex
-  , style : WorldStyle
   , radius : Float
   , position : Vec3
   }
-
-
-type WorldStyle =
-  Planet | Moon
 
 
 type alias Camera =
@@ -45,25 +41,22 @@ scale : Float
 scale = 6.9911E6
                 
 
-world : Mesh -> WorldStyle -> Float -> Triple Float -> World
-world mesh style radius position =
+world : Mesh -> Float -> Triple Float -> World
+world mesh radius position =
   { mesh = WebGL.Triangle mesh
-  , style = style
   , radius = radius * scale
   , position = Vec3.fromTuple position |> Vec3.scale scale
   }
 
 
+empty : World
+empty =
+  world [] 0.0 (0.0, 0.0, 0.0)
+
+
 toEntity : World -> Camera -> WebGL.Renderable
 toEntity world uniform =
   let
-    fragmentShader =
-      case world.style of
-        Planet ->
-          planetShader
-        Moon ->
-          moonShader
-
     placement =
       Mat4.scale
             (Vec3.vec3 world.radius world.radius world.radius)
@@ -72,7 +65,7 @@ toEntity world uniform =
     newUniform =
       { uniform | placement = placement }      
   in
-    WebGL.render vertexShader fragmentShader world.mesh newUniform
+    WebGL.render vertexShader planetShader world.mesh newUniform
 
 
 vertexShader : WebGL.Shader Mesh.Vertex Geometry Varying
@@ -132,28 +125,6 @@ planetShader =
     } else {
       gl_FragColor = green;
     }
-
-    gl_FragColor *= cosAngleIncidence;
-    gl_FragColor.w = 1.0;
-  }
-  |]
-
-
-moonShader : WebGL.Shader {} Geometry Varying
-moonShader =
-  [glsl|
-  precision mediump float;
-  varying vec4 fragColor;
-  varying float cosAngleIncidence;
-
-  void main () {
-    float zone = length(step(0.8, fragColor));
-
-    if (zone < 1e-4) {
-      gl_FragColor = vec4(1, 1, 1, 1);
-    } else {
-      gl_FragColor = vec4(0.2, 0.1, 0.2, 1);
-    }    
 
     gl_FragColor *= cosAngleIncidence;
     gl_FragColor.w = 1.0;
