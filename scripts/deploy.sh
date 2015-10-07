@@ -17,6 +17,7 @@ function compile {
     echo "Successfully generated $min_out"
 
     sed "s/\$DOMAIN/$1/g" $min_out > $final_out;
+    if [ $? -ne 0 ]; then exit 1; fi;
     echo "Successfully generated $final_out"
 }
 
@@ -25,12 +26,12 @@ then
     echo "Usage: $0 [test|prod]";
 elif [ $1 == "prod" ];
 then
-    compile "intotheheavens.net";
+    compile "https:\/\/intotheheavens\.net";
     scripts/make-mesh.sh
     scp -r public_html intotheh@intotheheavens.net:.
 elif [ $1 == "test" ];
 then
-    compile "localhost:8080\/~vagrant";
+    compile "http:\/\/localhost:8080\/~vagrant";
 else
     echo "Invalid environment: $1"
     exit 1;

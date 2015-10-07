@@ -97,7 +97,7 @@ chooseView mode =
 port getResources : Task Http.Error ()
 port getResources =
   Dict.fromList
-        [ ("Sphere", "http://$DOMAIN/data/sphere.json")
-        , ("Background", "http://$DOMAIN/data/background.json")
+        [ ("Sphere", "$DOMAIN/data/sphere.json")
+        , ("Background", "$DOMAIN/data/background.json")
         ]
     |> Mesh.request
