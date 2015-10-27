@@ -20,9 +20,6 @@ import GameOver
 import Background
 import World
 
-
-port hasFocus : Signal Bool
-
         
 type alias Model =
   { mode : Mode
@@ -81,17 +78,17 @@ view model =
 chooseEngine : Mode -> Engine
 chooseEngine mode =
   case mode of
-    MenuMode -> Menu.engine
     GameMode -> Flight.engine
     GameOverMode -> GameOver.engine
+    MenuMode -> Menu.engine
 
 
 chooseView : Mode -> Data -> Layout.Element
 chooseView mode =
   case mode of
-    MenuMode -> Menu.view
     GameMode -> Flight.view
     GameOverMode -> GameOver.view
+    MenuMode -> Menu.view
 
 
 port getResources : Task Http.Error ()
@@ -101,3 +98,6 @@ port getResources =
         , ("Background", "$DOMAIN/data/background.json")
         ]
     |> Mesh.request
+
+
+port hasFocus : Signal Bool
