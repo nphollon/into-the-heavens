@@ -1,10 +1,13 @@
 module Main (..) where
 
-import Graphics.Element as Layout
+import Graphics.Element exposing (Element)
 import Keyboard
 import Dict exposing (Dict)
 import Time exposing (Time)
 import Task exposing (Task)
+import Html exposing (Html)
+import StartApp
+import Effects exposing (Effects)
 import Http
 import Mesh
 import Update exposing (..)
@@ -19,29 +22,39 @@ type alias Model =
     }
 
 
-main : Signal Layout.Element
+main : Signal Html
 main =
-    Signal.foldp update init inputs
-        |> Signal.map view
+    app.html
 
 
-inputs : Signal Update
+app : StartApp.App Model
+app =
+    StartApp.start
+        { init = init
+        , inputs = inputs
+        , update = update
+        , view = view
+        }
+
+
+inputs : List (Signal Update)
 inputs =
-    Signal.mergeMany
-        [ Signal.map Keys Keyboard.keysDown
-        , Signal.map FPS (Time.fpsWhen 60 hasFocus)
-        , Signal.map Meshes Mesh.response
-        ]
+    [ Signal.map Keys Keyboard.keysDown
+    , Signal.map FPS (Time.fpsWhen 60 hasFocus)
+    , Signal.map Meshes Mesh.response
+    ]
 
 
-init : Model
+init : ( Model, Effects a )
 init =
-    { mode = MenuMode
-    , data = defaultData
-    }
+    (,)
+        { mode = MenuMode
+        , data = defaultData
+        }
+        Effects.none
 
 
-update : Update -> Model -> Model
+update : Update -> Model -> ( Model, Effects a )
 update up model =
     let
         engine =
@@ -52,20 +65,25 @@ update up model =
 
         transition =
             engine.transition data
+
+        newModel =
+            case transition of
+                Nothing ->
+                    { model | data = data }
+
+                Just mode ->
+                    { mode = mode
+                    , data = .init (chooseEngine mode) data
+                    }
     in
-        case transition of
-            Nothing ->
-                { model | data = data }
-
-            Just mode ->
-                { mode = mode
-                , data = .init (chooseEngine mode) data
-                }
+        ( newModel, Effects.none )
 
 
-view : Model -> Layout.Element
-view model =
-    model.data |> chooseView model.mode
+view : Signal.Address Update -> Model -> Html
+view address model =
+    model.data
+        |> chooseView model.mode
+        |> Html.fromElement
 
 
 chooseEngine : Mode -> Engine
@@ -81,7 +99,7 @@ chooseEngine mode =
             Menu.engine
 
 
-chooseView : Mode -> Data -> Layout.Element
+chooseView : Mode -> Data -> Element
 chooseView mode =
     case mode of
         GameMode ->
