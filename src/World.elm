@@ -51,7 +51,7 @@ empty =
 
 
 toEntity : World -> Camera -> WebGL.Renderable
-toEntity world uniform =
+toEntity world camera =
   let
     placement =
       Mat4.scale
@@ -59,7 +59,10 @@ toEntity world uniform =
             (Mat4.makeTranslate world.position)
 
     newUniform =
-      { uniform | placement = placement }      
+      { perspective = camera.perspective
+      , cameraOrientation = camera.cameraOrientation
+      , cameraPosition = camera.cameraPosition
+      , placement = placement }      
   in
     WebGL.render vertexShader planetShader world.mesh newUniform
 

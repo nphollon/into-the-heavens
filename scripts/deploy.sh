@@ -3,16 +3,15 @@
 elm_out="temp/elm.js"
 min_out="temp/elm.js.min"
 final_out="public_html/heavens.js"
-compiler_jar="scripts/compiler.jar"
 main_elm="src/Main.elm"
 
 function compile {
     echo "Hostname: $1";
 
-    elm make $main_elm --output $elm_out --yes
+    elm make $main_elm --output $elm_out --yes --warn
     if [ $? -ne 0 ]; then exit 1; fi;
 
-    java -jar $compiler_jar --js $elm_out --js_output_file $min_out --language_in=ECMASCRIPT5
+    cp $elm_out $min_out
     if [ $? -ne 0 ]; then exit 1; fi;
     echo "Successfully generated $min_out"
 

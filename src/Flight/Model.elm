@@ -1,13 +1,10 @@
-module Flight.Model where
+module Flight.Model (..) where
 
-import Keyboard
 import Char
 import Set exposing (Set)
 import Time exposing (Time)
-
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
-
 import Update exposing (Update(..), Action)
 import World exposing (World)
 import Infix exposing (..)
@@ -17,122 +14,138 @@ import Background exposing (Background)
 
 init : Update.Data -> Update.Data
 init model =
-  case model.resources of
-    Mesh.Success lib ->
-      initFromLib lib model
-                  
-    otherwise ->
-      model
+    case model.resources of
+        Mesh.Success lib ->
+            initFromLib lib model
 
-      
+        otherwise ->
+            model
+
+
 initFromLib : Mesh.Library -> Update.Data -> Update.Data
 initFromLib lib model =
-  let
-    sphere = lib.sphere
+    let
+        sphere = lib.sphere
 
-    stars = lib.background
-  in
-    { model | orientation <- Mat4.identity
-            , position <- Vec3.vec3 0 0 0
-            , speed <- 1
-            , action <- Update.inaction
-            , world <- World.world sphere 7E7 (0, -4E8, -4E8)
-            , background <- Background.background stars
-    }
+        stars = lib.background
+    in
+        { model
+            | orientation = Mat4.identity
+            , position = Vec3.vec3 0 0 0
+            , speed = 1
+            , action = Update.inaction
+            , world = World.world sphere 7.0e7 ( 0, -4.0e8, -4.0e8 )
+            , background = Background.background stars
+        }
 
 
 update : Update -> Update.Data -> Update.Data
 update input model =
-  case input of
-    FPS dt ->
-      timeUpdate dt model
-                 
-    Keys keysDown ->
-      controlUpdate keysDown model
+    case input of
+        FPS dt ->
+            timeUpdate dt model
 
-    otherwise ->
-      model                
+        Keys keysDown ->
+            controlUpdate keysDown model
 
-      
+        otherwise ->
+            model
+
+
 timeUpdate : Time -> Update.Data -> Update.Data
 timeUpdate dt model =
-  let
-    perSecond =
-      Time.inSeconds dt
-  in
-    model
-      |> turn (degrees 135 * perSecond)
-      |> thrust (1E7 * perSecond)
-    
-              
+    let
+        perSecond =
+            Time.inSeconds dt
+    in
+        model
+            |> turn (degrees 135 * perSecond)
+            |> thrust (1.0e7 * perSecond)
+
+
 turn : Float -> Update.Data -> Update.Data
 turn delta model =
-  { model | orientation <-
+    { model
+        | orientation =
             model.orientation
-              |> Mat4.rotate (model.action.pitch .* delta) (Vec3.vec3 1 0 0)
-              |> Mat4.rotate (model.action.yaw .* delta) (Vec3.vec3 0 1 0)
-              |> Mat4.rotate (model.action.roll .* delta) (Vec3.vec3 0 0 1)
-  }
+                |> Mat4.rotate (model.action.pitch .* delta) (Vec3.vec3 1 0 0)
+                |> Mat4.rotate (model.action.yaw .* delta) (Vec3.vec3 0 1 0)
+                |> Mat4.rotate (model.action.roll .* delta) (Vec3.vec3 0 0 1)
+    }
 
 
 thrust : Float -> Update.Data -> Update.Data
 thrust delta model =
-  { model | position <-
+    { model
+        | position =
             Vec3.vec3 0 0 (model.action.thrust .* model.speed * delta)
-              |> Mat4.transform model.orientation
-              |> Vec3.add model.position
-  }
-                 
+                |> Mat4.transform model.orientation
+                |> Vec3.add model.position
+    }
+
+
 transition : Update.Data -> Maybe Update.Mode
 transition model =
-  let
-    distance =
-      Vec3.distance model.position model.world.position
+    let
+        distance =
+            Vec3.distance model.position model.world.position
 
-    altitude =
-      model.world.radius
-  in
-    if | distance < altitude -> Just Update.GameOverMode
-       | otherwise -> Nothing
-    
-  
-controlUpdate : Set Keyboard.KeyCode -> Update.Data -> Update.Data
+        altitude =
+            model.world.radius
+    in
+        if distance < altitude then
+            Just Update.GameOverMode
+        else
+            Nothing
+
+
+controlUpdate : Set Char.KeyCode -> Update.Data -> Update.Data
 controlUpdate keysDown model =
-  let
-    keyAct key action =
-      case (Char.fromCode key) of
-        'D' ->
-          { action | yaw <- action.yaw - 1 }
-        'A' ->
-          { action | yaw <- action.yaw + 1 }
-        'S' ->
-          { action | pitch <- action.pitch - 1 }
-        'W' ->
-          { action | pitch <- action.pitch + 1 }
-        'Q' ->
-          { action | roll <- action.roll - 1 }
-        'E' ->
-          { action | roll <- action.roll + 1 }
-        'I' ->
-          { action | thrust <- action.thrust - 1 }
-        'M' ->
-          { action | thrust <- action.thrust + 1 }
-        otherwise ->
-          action
+    let
+        keyAct key action =
+            case (Char.fromCode key) of
+                'D' ->
+                    { action | yaw = action.yaw - 1 }
 
-    keySet key m =
-      case (Char.fromCode key) of
-        'B' ->
-          { m | speed <- 1 }
-        'N' ->
-          { m | speed <- 100 }
-        otherwise ->
-          m
-          
-    newAction =
-      Set.foldl keyAct Update.inaction keysDown
+                'A' ->
+                    { action | yaw = action.yaw + 1 }
 
-    newModel =
-      Set.foldl keySet model keysDown
-  in
-    { newModel | action <- newAction }
+                'S' ->
+                    { action | pitch = action.pitch - 1 }
+
+                'W' ->
+                    { action | pitch = action.pitch + 1 }
+
+                'Q' ->
+                    { action | roll = action.roll - 1 }
+
+                'E' ->
+                    { action | roll = action.roll + 1 }
+
+                'I' ->
+                    { action | thrust = action.thrust - 1 }
+
+                'M' ->
+                    { action | thrust = action.thrust + 1 }
+
+                otherwise ->
+                    action
+
+        keySet key m =
+            case (Char.fromCode key) of
+                'B' ->
+                    { m | speed = 1 }
+
+                'N' ->
+                    { m | speed = 100 }
+
+                otherwise ->
+                    m
+
+        newAction =
+            Set.foldl keyAct Update.inaction keysDown
+
+        newModel =
+            Set.foldl keySet model keysDown
+    in
+        { newModel | action = newAction }
