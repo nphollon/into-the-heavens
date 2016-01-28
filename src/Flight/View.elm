@@ -1,10 +1,9 @@
 module Flight.View (..) where
 
-import Graphics.Element as Layout
-import Html exposing (Html)
+import Html exposing (..)
+import Html.Attributes exposing (class)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL
-import Graphics.Palette as Palette
 import Background
 import World
 import Update exposing (Update, Data)
@@ -13,10 +12,26 @@ import Infix exposing (..)
 
 view : Signal.Address Update -> Data -> Html
 view address model =
-    scene 900 600 model |> Html.fromElement
+    div
+        []
+        [ scene 900 600 model
+        , div
+            [ class "dashboard" ]
+            [ h4
+                []
+                [ text "Keyboard Controls"
+                ]
+            ]
+        , ul
+            []
+            [ li [] [ text "Forward : I" ]
+            , li [] [ text "Slow / Fast : B / N" ]
+            , li [] [ text "Turn Camera : A / D / W / S / Q / E" ]
+            ]
+        ]
 
 
-scene : Int -> Int -> Update.Data -> Layout.Element
+scene : Int -> Int -> Update.Data -> Html
 scene width height model =
     let
         aspect =
@@ -35,5 +50,4 @@ scene width height model =
             World.toEntity model.world camera
     in
         WebGL.webgl ( width, height ) [ background, foreground ]
-            |> Layout.container width height Layout.middle
-            |> Layout.color Palette.black
+            |> Html.fromElement
