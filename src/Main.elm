@@ -1,6 +1,5 @@
 module Main (..) where
 
-import Graphics.Element exposing (Element)
 import Keyboard
 import Dict exposing (Dict)
 import Time exposing (Time)
@@ -81,9 +80,19 @@ update up model =
 
 view : Signal.Address Update -> Model -> Html
 view address model =
-    model.data
-        |> chooseView model.mode
-        |> Html.fromElement
+    let
+        v =
+            case model.mode of
+                GameMode ->
+                    Flight.view
+
+                GameOverMode ->
+                    GameOver.view
+
+                MenuMode ->
+                    Menu.view
+    in
+        v address model.data
 
 
 chooseEngine : Mode -> Engine
@@ -97,19 +106,6 @@ chooseEngine mode =
 
         MenuMode ->
             Menu.engine
-
-
-chooseView : Mode -> Data -> Element
-chooseView mode =
-    case mode of
-        GameMode ->
-            Flight.view
-
-        GameOverMode ->
-            GameOver.view
-
-        MenuMode ->
-            Menu.view
 
 
 port getResources : Task Http.Error ()

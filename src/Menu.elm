@@ -1,15 +1,15 @@
 module Menu (engine, view) where
 
-import Graphics.Element as Element
+import Html exposing (Html)
 import Update exposing (Engine)
 import Menu.View as View
 import Char
 import Set
 import Mesh
-import Update exposing (Update(..))
+import Update exposing (Update(..), Engine, Data, Mode)
 
 
-engine : Update.Engine
+engine : Engine
 engine =
     { init = init
     , update = update
@@ -17,12 +17,12 @@ engine =
     }
 
 
-view : Update.Data -> Element.Element
+view : Signal.Address Update -> Data -> Html
 view =
     View.view
 
 
-init : Update.Data -> Update.Data
+init : Data -> Data
 init model =
     { model
         | time = 0
@@ -31,7 +31,7 @@ init model =
     }
 
 
-update : Update -> Update.Data -> Update.Data
+update : Update -> Data -> Data
 update input model =
     case input of
         FPS dt ->
@@ -44,7 +44,7 @@ update input model =
             { model | continue = Set.member (Char.toCode 'N') keySet }
 
 
-transition : Update.Data -> Maybe Update.Mode
+transition : Data -> Maybe Mode
 transition data =
     if data.continue then
         Just Update.GameMode

@@ -3,26 +3,28 @@ module Menu.View (view) where
 import Array
 import Graphics.Collage as Collage
 import Graphics.Element as Layout
+import Html exposing (Html)
 import Time exposing (Time)
 import Http
 import Mesh
 import Graphics.Flat as Flat
 import Graphics.Palette as Palette
-import Update
+import Update exposing (Update, Data)
 import Infix exposing (..)
 
 
-view : Update.Data -> Layout.Element
-view model =
-    case model.resources of
-        Mesh.Waiting ->
-            loading model.time
+view : Signal.Address Update -> Data -> Html
+view address model =
+    Html.fromElement
+        <| case model.resources of
+            Mesh.Waiting ->
+                loading model.time
 
-        Mesh.Error e ->
-            resourceFailure e
+            Mesh.Error e ->
+                resourceFailure e
 
-        Mesh.Success lib ->
-            ready model.time
+            Mesh.Success lib ->
+                ready model.time
 
 
 ready : Time -> Layout.Element

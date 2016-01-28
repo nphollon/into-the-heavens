@@ -1,7 +1,7 @@
 module Flight (engine, view) where
 
-import Graphics.Element as Element
-import Update exposing (Engine)
+import Html exposing (Html)
+import Update exposing (Update, Engine, Data)
 import Flight.Model as Model
 import Flight.View as View
 
@@ -14,6 +14,6 @@ engine =
     }
 
 
-view : Update.Data -> Element.Element
+view : Signal.Address Update -> Data -> Html
 view =
     View.view

@@ -1,18 +1,19 @@
 module Flight.View (..) where
 
 import Graphics.Element as Layout
+import Html exposing (Html)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL
 import Graphics.Palette as Palette
 import Background
 import World
-import Update
+import Update exposing (Update, Data)
 import Infix exposing (..)
 
 
-view : Update.Data -> Layout.Element
-view model =
-    scene 900 600 model
+view : Signal.Address Update -> Data -> Html
+view address model =
+    scene 900 600 model |> Html.fromElement
 
 
 scene : Int -> Int -> Update.Data -> Layout.Element
