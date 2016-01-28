@@ -9,24 +9,29 @@ body {
 }
 
 #app {
-    margin: 2rem;
+    margin: 2em;
 }
 
 h3 {
     font-family: 'Fira Sans', sans-serif;
     font-style: italic;
-    font-size: 1rem;
-    padding-left: 3rem;
-    word-spacing: 1rem;
-    margin-bottom: 2rem;
+    font-size: 1em;
+    padding-left: 3em;
+    word-spacing: 1em;
+    margin-bottom: 2em;
 }
 
 p {
-    padding-left: 5rem;
-    width: 35rem;
+    padding-left: 5em;
+    width: 35em;
 }
 
 a {
     color: inherit;
     text-decoration: inherit;
+}
+
+.footnote {
+    font-style: italic;
+    font-size: 0.8em;
 }
