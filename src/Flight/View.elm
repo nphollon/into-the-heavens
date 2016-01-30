@@ -3,9 +3,11 @@ module Flight.View (..) where
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Math.Matrix4 as Mat4 exposing (Mat4)
+import Math.Vector3 as Vec3
 import WebGL
 import Background
 import World
+import String
 import Update exposing (Update, Data)
 import Infix exposing (..)
 
@@ -46,9 +48,15 @@ scene width height model =
 
 dashboard : Data -> Html
 dashboard model =
-    div
-        [ class "dashboard" ]
-        [ text ("Time: " ++ toString model.time) ]
+    let
+        printAU label value =
+            [ label, ": ", toString value ]
+                |> String.concat
+                |> text
+    in
+        div
+            [ class "dashboard" ]
+            [ printAU "X" (Vec3.getX model.position) ]
 
 
 instructions : Html
