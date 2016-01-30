@@ -13,25 +13,16 @@ import Infix exposing (..)
 view : Signal.Address Update -> Data -> Html
 view address model =
     div
-        []
-        [ scene 900 600 model
-        , div
-            [ class "dashboard" ]
-            [ h4
-                []
-                [ text "Keyboard Controls"
-                ]
-            ]
-        , ul
-            []
-            [ li [] [ text "Forward : I" ]
-            , li [] [ text "Slow / Fast : B / N" ]
-            , li [] [ text "Turn Camera : A / D / W / S / Q / E" ]
-            ]
+        [ class "app" ]
+        [ div
+            [ class "top" ]
+            [ scene 900 600 model ]
+        , dashboard model
+        , instructions
         ]
 
 
-scene : Int -> Int -> Update.Data -> Html
+scene : Int -> Int -> Data -> Html
 scene width height model =
     let
         aspect =
@@ -51,3 +42,27 @@ scene width height model =
     in
         WebGL.webgl ( width, height ) [ background, foreground ]
             |> Html.fromElement
+
+
+dashboard : Data -> Html
+dashboard model =
+    div
+        [ class "dashboard" ]
+        [ text ("Time: " ++ toString model.time) ]
+
+
+instructions : Html
+instructions =
+    div
+        [ class "dashboard" ]
+        [ h4
+            []
+            [ text "Keyboard Controls"
+            ]
+        , ul
+            []
+            [ li [] [ text "Forward : I" ]
+            , li [] [ text "Slow / Fast : B / N" ]
+            , li [] [ text "Turn Camera : A / D / W / S / Q / E" ]
+            ]
+        ]

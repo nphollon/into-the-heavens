@@ -1,15 +1,32 @@
+/* colours:
+
+black = #340a0b;
+red = #7d1a0c
+*/
+
 body {
-    background-color: #000055;
+    background-color: #33273B;
     font-family: 'PT Serif', serif;
     font-weight: normal;
     font-size: 13pt;
     line-height: 1.4;
-    color: #CCFFEE;
+    color: #F2F2CB;
     padding-left: 10%
 }
 
-#app {
+.app {
     margin: 2em;
+    background-color: #1A1319;
+    width: 910px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    border-radius: 1em;
+}
+
+.dashboard {
+    width: 440px;
+    border-top: thin double #0B78B3;
 }
 
 h3 {

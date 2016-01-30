@@ -58,7 +58,7 @@ timeUpdate dt model =
         perSecond =
             Time.inSeconds dt
     in
-        model
+        { model | time = model.time + dt }
             |> turn (degrees 135 * perSecond)
             |> thrust (1.0e7 * perSecond)
 
