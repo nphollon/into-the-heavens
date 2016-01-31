@@ -10,16 +10,14 @@ import World
 import String
 import Update exposing (Update, Data)
 import Infix exposing (..)
+import Frame
 
 
 view : Signal.Address Update -> Data -> Html
 view address model =
-    div
-        [ class "app" ]
-        [ div
-            [ class "top" ]
-            [ scene 900 600 model ]
-        , dashboard model
+    Frame.view
+        [ scene 900 600 model ]
+        [ dashboard model
         , instructions
         ]
 
@@ -49,10 +47,10 @@ scene width height model =
 dashboard : Data -> Html
 dashboard model =
     let
-        printAU label value =
+        printNumber label value =
             let
                 sign =
-                    if value > 0 then
+                    if value > -5.0e-3 then
                         "+"
                     else
                         "-"
@@ -73,14 +71,17 @@ dashboard model =
     in
         div
             [ class "dashboard" ]
-            [ printAU "X" (Vec3.getX model.position) ]
+            [ p [] [ printNumber "X" (Vec3.getX model.position) ]
+            , p [] [ printNumber "Y" (Vec3.getY model.position) ]
+            , p [] [ printNumber "Z" (Vec3.getZ model.position) ]
+            ]
 
 
 instructions : Html
 instructions =
     div
         [ class "dashboard" ]
-        [ h4
+        [ h3
             []
             [ text "Keyboard Controls"
             ]

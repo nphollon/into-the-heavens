@@ -4,6 +4,7 @@ import Color
 import Html exposing (Html)
 import Set
 import Char
+import Frame
 import Time exposing (Time)
 import Graphics.Flat as Flat
 import Graphics.Palette as Palette
@@ -57,11 +58,14 @@ view address model =
             Palette.yellow |> Color.toHsl |> .hue
 
         color =
-            Color.hsl hue 1 lightness
+            Color.hsla hue 1 lightness lightness
     in
-        Flat.screen
-            color
-            [ Flat.text Palette.titleStyle ( 0, 0 ) "You crashed"
-            , Flat.text Palette.subtitleStyle ( 0, -70 ) "Press 'N'"
+        Frame.view
+            [ Flat.screen
+                color
+                [ Flat.text Palette.titleStyle ( 0, 0 ) "You crashed"
+                , Flat.text Palette.subtitleStyle ( 0, -70 ) "Press 'N'"
+                ]
+                |> Html.fromElement
             ]
-            |> Html.fromElement
+            []

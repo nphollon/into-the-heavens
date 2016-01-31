@@ -16,12 +16,18 @@ body {
 
 .app {
     margin: 2em;
+    width: 950px;
     background-color: #1A1319;
-    width: 910px;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     border-radius: 1em;
+}
+
+.top, .bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .dashboard {
@@ -29,13 +35,24 @@ body {
     border-top: thin double #0B78B3;
 }
 
+h1 {
+    font-family: 'Bitter', serif;
+    font-size: 3em;
+    font-style: italic;
+    font-weight: normal;
+}
+
+h2 {
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 2em;
+    font-weight: normal;
+}
+
 h3 {
     font-family: 'Fira Sans', sans-serif;
-    font-style: italic;
     font-size: 1em;
     padding-left: 3em;
-    word-spacing: 1em;
-    margin-bottom: 2em;
+    margin-bottom: 0.5em;
 }
 
 p {

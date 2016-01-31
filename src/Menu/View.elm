@@ -11,20 +11,25 @@ import Graphics.Flat as Flat
 import Graphics.Palette as Palette
 import Update exposing (Update, Data)
 import Infix exposing (..)
+import Frame
 
 
 view : Signal.Address Update -> Data -> Html
 view address model =
-    Html.fromElement
-        <| case model.resources of
-            Mesh.Waiting ->
-                loading model.time
+    let
+        top =
+            Html.fromElement
+                <| case model.resources of
+                    Mesh.Waiting ->
+                        loading model.time
 
-            Mesh.Error e ->
-                resourceFailure e
+                    Mesh.Error e ->
+                        resourceFailure e
 
-            Mesh.Success lib ->
-                ready model.time
+                    Mesh.Success lib ->
+                        ready model.time
+    in
+        Frame.view [ top ] []
 
 
 ready : Time -> Layout.Element
