@@ -1,13 +1,10 @@
 module GameOver (engine, view) where
 
-import Color
-import Html exposing (Html)
+import Html exposing (..)
+import Html.Attributes exposing (..)
 import Set
 import Char
 import Frame
-import Time exposing (Time)
-import Graphics.Flat as Flat
-import Graphics.Palette as Palette
 import Update exposing (Update(..), Data, Engine, Mode)
 
 
@@ -50,6 +47,27 @@ transition data =
 
 view : Signal.Address Update -> Data -> Html
 view address model =
+    Frame.view
+        [ div
+            []
+            [ h1 [ class "title" ] [ text "You crashed" ]
+            , h2 [ class "subtitle" ] [ text "Press 'N'" ]
+            ]
+        ]
+        [ p
+            []
+            [ text
+                ("\"Even our misfortunes are a part of our belongings.\""
+                    ++ " ~ Antoine de St. Exupéry"
+                )
+            ]
+        ]
+
+
+
+{-
+view : Signal.Address Update -> Data -> Html
+view address model =
     let
         lightness =
             1 - Time.inSeconds model.time
@@ -69,3 +87,4 @@ view address model =
                 |> Html.fromElement
             ]
             []
+-}

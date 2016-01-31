@@ -18,13 +18,18 @@ body {
     margin: 2em;
     width: 950px;
     background-color: #1A1319;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
     border-radius: 1em;
 }
 
-.top, .bottom {
+.top {
+    height: 600px;
+    display: flex;
+    justify-content: center;
+}
+
+.bottom {
+    border-top: thin double #0B78B3;
+    min-height: 200px;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -32,7 +37,6 @@ body {
 
 .dashboard {
     width: 440px;
-    border-top: thin double #0B78B3;
 }
 
 h1 {
@@ -40,6 +44,10 @@ h1 {
     font-size: 3em;
     font-style: italic;
     font-weight: normal;
+}
+
+.title {
+    margin-top: 200px;
 }
 
 h2 {
