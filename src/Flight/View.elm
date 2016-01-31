@@ -50,9 +50,26 @@ dashboard : Data -> Html
 dashboard model =
     let
         printAU label value =
-            [ label, ": ", toString value ]
-                |> String.concat
-                |> text
+            let
+                sign =
+                    if value > 0 then
+                        "+"
+                    else
+                        "-"
+
+                intPart = floor (abs value)
+
+                centPart = round (100 * abs value) - (100 * intPart)
+
+                decimal =
+                    if centPart < 10 then
+                        ".0"
+                    else
+                        "."
+            in
+                [ label, ": ", sign, toString intPart, decimal, toString centPart ]
+                    |> String.concat
+                    |> text
     in
         div
             [ class "dashboard" ]
