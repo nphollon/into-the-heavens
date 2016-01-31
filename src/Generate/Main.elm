@@ -1,33 +1,31 @@
-module Main where
+module Main (..) where
 
-import IO.IO as IO exposing (IO, (>>>))
-import IO.Runner exposing (Request, Response)
-
+import Task exposing (Task)
+import Console exposing (IO, (>>>))
 import Mesh exposing (Mesh)
 import Generate.Json as Json
 import Generate.Sphere as Sphere
 import Generate.Background as Background
 
 
-writeModels: IO ()
+writeModels : IO ()
 writeModels =
-  List.foldl
+    List.foldl
         (\x io -> io >>> (uncurry write x))
-        (IO.pure ())
-        [ (Sphere.sphere, "sphere.json")
-        , (Background.mesh, "background.json")
+        (Console.pure ())
+        [ ( Sphere.sphere, "sphere.json" )
+        , ( Background.mesh, "background.json" )
         ]
 
 
 write : Mesh -> String -> IO ()
 write model filename =
-  IO.writeFile
-      { file = "public_html/data/" ++ filename
-      , content = Json.encode model
-      }
+    Console.writeFile
+        { file = "public_html/data/" ++ filename
+        , content = Json.encode model
+        }
 
-  
-port requests : Signal Request
-port requests = IO.Runner.run responses writeModels
 
-port responses : Signal Response
+port runner : Signal (Task x ())
+port runner =
+    Console.run writeModels

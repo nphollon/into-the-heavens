@@ -2,14 +2,14 @@
 
 elm_out="temp/make-mesh-raw.js"
 io_out="temp/make-mesh.js"
-io_sh="elm-stuff/packages/maxsnew/IO/1.0.1/elm-io.sh"
+io_sh="elm-stuff/packages/laszlopandy/elm-console/1.1.0/elm-io.sh"
 main_elm="src/Generate/Main.elm"
 
 elm make $main_elm --output $elm_out --yes
 
 if [ $? -ne 0 ]; then exit 1; fi;
 
-sh $io_sh $elm_out $io_out
+bash $io_sh $elm_out $io_out
 if [ $? -ne 0 ]; then exit 1; fi;
 
 echo "Successfully generated $io_out"

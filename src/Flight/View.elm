@@ -31,7 +31,7 @@ scene width height model =
             width ./. height
 
         camera =
-            { perspective = Mat4.makePerspective 60 aspect 100000.0 1.0e10
+            { perspective = Mat4.makePerspective 60 aspect 0.1 1000.0
             , cameraPosition = model.position
             , cameraOrientation = Mat4.transpose model.orientation
             }
@@ -69,7 +69,7 @@ instructions =
             ]
         , ul
             []
-            [ li [] [ text "Forward : I" ]
+            [ li [] [ text "Forward / Backward : I / M" ]
             , li [] [ text "Slow / Fast : B / N" ]
             , li [] [ text "Turn Camera : A / D / W / S / Q / E" ]
             ]

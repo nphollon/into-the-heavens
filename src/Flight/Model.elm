@@ -34,7 +34,7 @@ initFromLib lib model =
             , position = Vec3.vec3 0 0 0
             , speed = 1
             , action = Update.inaction
-            , world = World.world sphere 7.0e7 ( 0, -4.0e8, -4.0e8 )
+            , world = World.world sphere 1 ( 0, -40, -40 )
             , background = Background.background stars
         }
 
@@ -60,7 +60,7 @@ timeUpdate dt model =
     in
         { model | time = model.time + dt }
             |> turn (degrees 135 * perSecond)
-            |> thrust (1.0e7 * perSecond)
+            |> thrust (1.0 * perSecond)
 
 
 turn : Float -> Update.Data -> Update.Data
@@ -137,7 +137,7 @@ controlUpdate keysDown model =
                     { m | speed = 1 }
 
                 'N' ->
-                    { m | speed = 100 }
+                    { m | speed = 70 }
 
                 otherwise ->
                     m
