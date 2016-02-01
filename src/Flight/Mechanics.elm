@@ -1,4 +1,4 @@
-module Flight.Mechanics (State, evolve, vector, initialize, recenter, particle, Particle) where
+module Flight.Mechanics (State, evolve, vector, initialize, recenter, particle, scale, Particle) where
 
 import Dict exposing (Dict)
 

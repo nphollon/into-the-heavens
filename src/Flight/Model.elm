@@ -33,7 +33,6 @@ initFromLib lib model =
     in
         { model
             | orientation = Mat4.identity
-            , speed = 1
             , ship = Update.defaultShip
             , action = Update.inaction
             , world = World.world sphere 1 ( 0, -40, -40 )
@@ -80,24 +79,16 @@ thrust : Float -> Update.Data -> Update.Data
 thrust delta model =
     let
         rule ship _ =
-            Vec3.vec3 0 0 (model.action.thrust .* model.speed)
-                |> Mat4.transform model.orientation
-                |> Vec3.toRecord
+            if model.action.thrust >= 0 then
+                Vec3.vec3 0 0 (toFloat model.action.thrust * -10)
+                    |> Mat4.transform model.orientation
+                    |> Vec3.toRecord
+            else
+                Mech.scale -3 ship.velocity
     in
         { model
             | ship = Mech.evolve (Dict.singleton "ship" rule) delta model.ship
         }
-
-
-
-{-
-{ model
-    | position =
-        Vec3.vec3 0 0 (model.action.thrust .* model.speed * delta)
-            |> Mat4.transform model.orientation
-            |> Vec3.add model.position
-}
--}
 
 
 transition : Update.Data -> Maybe Update.Mode
@@ -144,29 +135,15 @@ controlUpdate keysDown model =
                     { action | roll = action.roll + 1 }
 
                 'I' ->
-                    { action | thrust = action.thrust - 1 }
+                    { action | thrust = action.thrust + 1 }
 
                 'M' ->
-                    { action | thrust = action.thrust + 1 }
+                    { action | thrust = action.thrust - 1 }
 
                 otherwise ->
                     action
 
-        keySet key m =
-            case (Char.fromCode key) of
-                'B' ->
-                    { m | speed = 1 }
-
-                'N' ->
-                    { m | speed = 70 }
-
-                otherwise ->
-                    m
-
         newAction =
             Set.foldl keyAct Update.inaction keysDown
-
-        newModel =
-            Set.foldl keySet model keysDown
     in
-        { newModel | action = newAction }
+        { model | action = newAction }

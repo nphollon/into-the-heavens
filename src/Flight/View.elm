@@ -91,8 +91,8 @@ instructions =
             ]
         , ul
             []
-            [ li [] [ text "Forward / Backward : I / M" ]
-            , li [] [ text "Slow / Fast : B / N" ]
+            [ li [] [ text "Thrust Forward : I" ]
+            , li [] [ text "Brake : M" ]
             , li [] [ text "Turn Camera : A / D / W / S / Q / E" ]
             ]
         ]

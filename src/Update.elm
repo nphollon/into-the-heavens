@@ -28,7 +28,6 @@ type alias Data =
     , ship : Mech.State
     , resources : Mesh.Response
     , orientation : Mat4
-    , speed : Float
     , action : Action
     , world : World
     , background : Background
@@ -80,6 +79,5 @@ defaultData =
     , continue = False
     , orientation = Mat4.identity
     , resources = Mesh.Waiting
-    , speed = 0
     , world = World.empty
     }
