@@ -59,19 +59,23 @@ inaction =
     }
 
 
+defaultShip : Mech.State
+defaultShip =
+    { time = 0
+    , particles =
+        Dict.singleton
+            "ship"
+            { position = Mech.vector 0 0 0
+            , velocity = Mech.vector 0 0 0
+            , mass = 1
+            }
+    }
+
+
 defaultData : Data
 defaultData =
     { action = inaction
-    , ship =
-        { time = 0
-        , particles =
-            Dict.singleton
-                "ship"
-                { position = Mech.vector 0 0 0
-                , velocity = Mech.vector 0 0 0
-                , mass = 1
-                }
-        }
+    , ship = defaultShip
     , background = Background.empty
     , continue = False
     , orientation = Mat4.identity

@@ -11,6 +11,7 @@ import World exposing (World)
 import Infix exposing (..)
 import Mesh exposing (Mesh)
 import Background exposing (Background)
+import Flight.Mechanics as Mech
 
 
 init : Update.Data -> Update.Data
@@ -33,6 +34,7 @@ initFromLib lib model =
         { model
             | orientation = Mat4.identity
             , speed = 1
+            , ship = Update.defaultShip
             , action = Update.inaction
             , world = World.world sphere 1 ( 0, -40, -40 )
             , background = Background.background stars
@@ -76,7 +78,15 @@ turn delta model =
 
 thrust : Float -> Update.Data -> Update.Data
 thrust delta model =
-    model
+    let
+        rule ship _ =
+            Vec3.vec3 0 0 (model.action.thrust .* model.speed)
+                |> Mat4.transform model.orientation
+                |> Vec3.toRecord
+    in
+        { model
+            | ship = Mech.evolve (Dict.singleton "ship" rule) delta model.ship
+        }
 
 
 
