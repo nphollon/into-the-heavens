@@ -19,17 +19,13 @@ engine =
 init : Data -> Data
 init model =
     { model
-        | time = 0
-        , continue = False
+        | continue = False
     }
 
 
 update : Update -> Data -> Data
 update input model =
     case input of
-        FPS dt ->
-            { model | time = dt + model.time }
-
         Keys keySet ->
             { model | continue = Set.member (Char.toCode 'N') keySet }
 

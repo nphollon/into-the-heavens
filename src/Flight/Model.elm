@@ -1,6 +1,7 @@
 module Flight.Model (..) where
 
 import Char
+import Dict
 import Set exposing (Set)
 import Time exposing (Time)
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -31,7 +32,6 @@ initFromLib lib model =
     in
         { model
             | orientation = Mat4.identity
-            , position = Vec3.vec3 0 0 0
             , speed = 1
             , action = Update.inaction
             , world = World.world sphere 1 ( 0, -40, -40 )
@@ -58,7 +58,7 @@ timeUpdate dt model =
         perSecond =
             Time.inSeconds dt
     in
-        { model | time = model.time + dt }
+        model
             |> turn (degrees 135 * perSecond)
             |> thrust (1.0 * perSecond)
 
@@ -76,19 +76,30 @@ turn delta model =
 
 thrust : Float -> Update.Data -> Update.Data
 thrust delta model =
-    { model
-        | position =
-            Vec3.vec3 0 0 (model.action.thrust .* model.speed * delta)
-                |> Mat4.transform model.orientation
-                |> Vec3.add model.position
-    }
+    model
+
+
+
+{-
+{ model
+    | position =
+        Vec3.vec3 0 0 (model.action.thrust .* model.speed * delta)
+            |> Mat4.transform model.orientation
+            |> Vec3.add model.position
+}
+-}
 
 
 transition : Update.Data -> Maybe Update.Mode
 transition model =
     let
+        shipPosition =
+            Dict.get "ship" model.ship.particles
+                |> Maybe.map (.position >> Vec3.fromRecord)
+                |> Maybe.withDefault (Vec3.vec3 0 0 0)
+
         distance =
-            Vec3.distance model.position model.world.position
+            Vec3.distance shipPosition model.world.position
 
         altitude =
             model.world.radius

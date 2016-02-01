@@ -2,12 +2,13 @@ module Update (..) where
 
 import Set exposing (Set)
 import Time exposing (Time)
+import Dict
 import Char
 import Mesh
-import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import World exposing (World)
 import Background exposing (Background)
+import Flight.Mechanics as Mech
 
 
 type Update
@@ -24,10 +25,9 @@ type Mode
 
 type alias Data =
     { continue : Bool
-    , time : Time
+    , ship : Mech.State
     , resources : Mesh.Response
     , orientation : Mat4
-    , position : Vec3
     , speed : Float
     , action : Action
     , world : World
@@ -62,12 +62,20 @@ inaction =
 defaultData : Data
 defaultData =
     { action = inaction
+    , ship =
+        { time = 0
+        , particles =
+            Dict.singleton
+                "ship"
+                { position = Mech.vector 0 0 0
+                , velocity = Mech.vector 0 0 0
+                , mass = 1
+                }
+        }
     , background = Background.empty
     , continue = False
     , orientation = Mat4.identity
-    , position = Vec3.vec3 0 0 0
     , resources = Mesh.Waiting
     , speed = 0
-    , time = 0
     , world = World.empty
     }

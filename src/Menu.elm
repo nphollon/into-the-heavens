@@ -25,8 +25,7 @@ view =
 init : Data -> Data
 init model =
     { model
-        | time = 0
-        , resources = Mesh.Waiting
+        | resources = Mesh.Waiting
         , continue = False
     }
 
@@ -35,7 +34,7 @@ update : Update -> Data -> Data
 update input model =
     case input of
         FPS dt ->
-            { model | time = dt + model.time }
+            model
 
         Meshes response ->
             { model | resources = response }

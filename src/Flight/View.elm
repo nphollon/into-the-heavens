@@ -1,9 +1,10 @@
 module Flight.View (..) where
 
+import Dict
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Math.Matrix4 as Mat4 exposing (Mat4)
-import Math.Vector3 as Vec3
+import Math.Vector3 as Vec3 exposing (Vec3)
 import WebGL
 import Background
 import World
@@ -30,7 +31,7 @@ scene width height model =
 
         camera =
             { perspective = Mat4.makePerspective 60 aspect 0.1 1000.0
-            , cameraPosition = model.position
+            , cameraPosition = shipPosition model
             , cameraOrientation = Mat4.transpose model.orientation
             }
 
@@ -47,6 +48,9 @@ scene width height model =
 dashboard : Data -> Html
 dashboard model =
     let
+        position =
+            shipPosition model
+
         printNumber label value =
             let
                 sign =
@@ -71,9 +75,9 @@ dashboard model =
     in
         div
             [ class "dashboard" ]
-            [ p [] [ printNumber "X" (Vec3.getX model.position) ]
-            , p [] [ printNumber "Y" (Vec3.getY model.position) ]
-            , p [] [ printNumber "Z" (Vec3.getZ model.position) ]
+            [ p [] [ printNumber "X" (Vec3.getX position) ]
+            , p [] [ printNumber "Y" (Vec3.getY position) ]
+            , p [] [ printNumber "Z" (Vec3.getZ position) ]
             ]
 
 
@@ -92,3 +96,10 @@ instructions =
             , li [] [ text "Turn Camera : A / D / W / S / Q / E" ]
             ]
         ]
+
+
+shipPosition : Data -> Vec3
+shipPosition model =
+    Dict.get "ship" model.ship.particles
+        |> Maybe.map (.position >> Vec3.fromRecord)
+        |> Maybe.withDefault (Vec3.vec3 0 0 0)
