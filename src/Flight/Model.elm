@@ -35,7 +35,7 @@ initFromLib lib model =
             | orientation = Mat4.identity
             , ship = Update.defaultShip
             , action = Update.inaction
-            , world = World.world sphere 1 ( 0, -40, -40 )
+            , world = World.world sphere 1 ( 1, -2, -5 )
             , background = Background.background stars
         }
 
