@@ -1,7 +1,8 @@
 #! /usr/bin/env bash
 
-elm_out="temp/elm.js"
-min_out="temp/elm.js.min"
+temp_dir=${TMPDIR:-"/tmp"}
+elm_out="$temp_dir/elm.js"
+min_out="$temp_dir/elm.js.min"
 final_out="public_html/heavens.js"
 main_elm="src/Main.elm"
 
