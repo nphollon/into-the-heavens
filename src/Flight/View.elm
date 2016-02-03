@@ -100,6 +100,6 @@ instructions =
 
 shipPosition : Data -> Vec3
 shipPosition model =
-    Dict.get "ship" model.ship.particles
+    Dict.get "ship" model.ship.bodies
         |> Maybe.map (.position >> Vec3.fromRecord)
         |> Maybe.withDefault (Vec3.vec3 0 0 0)

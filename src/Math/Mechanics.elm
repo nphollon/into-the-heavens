@@ -1,40 +1,44 @@
-module Math.Mechanics (State, evolve, initialize, recenter, particle, Particle) where
+module Math.Mechanics (State, evolve, initialize, recenter, body, Body) where
 
 import Dict exposing (Dict)
 import Math.Vector as Vector exposing (Vector)
+import Math.Orientation as Orientation exposing (Orientation)
 
 
 type alias State =
     { time : Float
-    , particles : Dict String Particle
+    , bodies : Dict String Body
     }
 
 
-type alias Particle =
+type alias Body =
     { position : Vector
     , velocity : Vector
+    , orientation : Orientation
+    , angVelocity : Vector
     , mass : Float
+    , inertia : Vector
     }
 
 
-initialize : Dict String Particle -> State
+initialize : Dict String Body -> State
 initialize dataDict =
     { time = 0
-    , particles = dataDict
+    , bodies = dataDict
     }
 
 
-particle : String -> State -> Maybe Particle
-particle key state =
-    Dict.get key state.particles
+body : String -> State -> Maybe Body
+body key state =
+    Dict.get key state.bodies
 
 
 totalMass : State -> Float
 totalMass =
-    .particles >> Dict.foldl (\_ p -> (+) p.mass) 0
+    .bodies >> Dict.foldl (\_ p -> (+) p.mass) 0
 
 
-recenter : Particle -> Particle -> Particle
+recenter : Body -> Body -> Body
 recenter origin object =
     { object
         | position = Vector.sub object.position origin.position
@@ -82,16 +86,16 @@ nudge dt derivative state =
                         Vector.add p.velocity (Vector.scale dt dpdt.velocity)
                 }
 
-        particles =
+        bodies =
             List.map2
                 combine
-                (Dict.toList derivative.particles)
-                (Dict.toList state.particles)
+                (Dict.toList derivative.bodies)
+                (Dict.toList state.bodies)
                 |> Dict.fromList
     in
         { state
             | time = state.time + dt * derivative.time
-            , particles = particles
+            , bodies = bodies
         }
 
 
@@ -99,7 +103,7 @@ stateDerivative : Rules -> State -> State
 stateDerivative accels state =
     { state
         | time = 1
-        , particles =
+        , bodies =
             Dict.map
                 (\key particle ->
                     case Dict.get key accels of
@@ -112,9 +116,9 @@ stateDerivative accels state =
                         Nothing ->
                             particle
                 )
-                state.particles
+                state.bodies
     }
 
 
 type alias Rules =
-    Dict String (Particle -> State -> Vector)
+    Dict String (Body -> State -> Vector)
