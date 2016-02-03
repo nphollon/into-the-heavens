@@ -10,7 +10,6 @@ import Background
 import World
 import String
 import Update exposing (Update, Data)
-import Infix exposing (..)
 import Frame
 
 
@@ -27,12 +26,12 @@ scene : Int -> Int -> Data -> Html
 scene width height model =
     let
         aspect =
-            width ./. height
+            (toFloat width) / (toFloat height)
 
         camera =
             { perspective = Mat4.makePerspective 60 aspect 0.1 1000.0
             , cameraPosition = shipPosition model
-            , cameraOrientation = Mat4.transpose model.orientation
+            , cameraOrientation = shipOrientation model
             }
 
         background =
@@ -43,6 +42,30 @@ scene width height model =
     in
         WebGL.webgl ( width, height ) [ background, foreground ]
             |> Html.fromElement
+
+
+shipOrientation : Data -> Mat4
+shipOrientation model =
+    Dict.get "ship" model.ship.bodies
+        |> Maybe.map (.orientation >> Debug.log "orientation" >> Vec3.fromRecord)
+        |> Maybe.withDefault (Vec3.vec3 0 0 0)
+        |> rotMatrix
+
+
+rotMatrix : Vec3 -> Mat4
+rotMatrix v =
+    if Vec3.length v == 0 then
+        Mat4.identity
+    else
+        Mat4.makeRotate (Vec3.length v) v
+            |> Mat4.transpose
+
+
+shipPosition : Data -> Vec3
+shipPosition model =
+    Dict.get "ship" model.ship.bodies
+        |> Maybe.map (.position >> Vec3.fromRecord)
+        |> Maybe.withDefault (Vec3.vec3 0 0 0)
 
 
 dashboard : Data -> Html
@@ -96,10 +119,3 @@ instructions =
             , li [] [ text "Turn Camera : A / D / W / S / Q / E" ]
             ]
         ]
-
-
-shipPosition : Data -> Vec3
-shipPosition model =
-    Dict.get "ship" model.ship.bodies
-        |> Maybe.map (.position >> Vec3.fromRecord)
-        |> Maybe.withDefault (Vec3.vec3 0 0 0)

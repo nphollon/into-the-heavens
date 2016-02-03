@@ -5,12 +5,10 @@ import Time exposing (Time)
 import Dict
 import Char
 import Mesh
-import Math.Matrix4 as Mat4 exposing (Mat4)
 import World exposing (World)
 import Background exposing (Background)
 import Math.Mechanics as Mech
 import Math.Vector exposing (vector)
-import Math.Orientation exposing (fromVector)
 
 
 type Update
@@ -29,7 +27,6 @@ type alias Data =
     { continue : Bool
     , ship : Mech.State
     , resources : Mesh.Response
-    , orientation : Mat4
     , action : Action
     , world : World
     , background : Background
@@ -68,7 +65,7 @@ defaultShip =
             "ship"
             { position = vector 0 0 0
             , velocity = vector 0 0 0
-            , orientation = fromVector (vector 0 0 0)
+            , orientation = vector 0 0 0
             , angVelocity = vector 0 0 0
             , inertia = vector 1 1 1
             , mass = 1
@@ -82,7 +79,6 @@ defaultData =
     , ship = defaultShip
     , background = Background.empty
     , continue = False
-    , orientation = Mat4.identity
     , resources = Mesh.Waiting
     , world = World.empty
     }

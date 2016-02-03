@@ -2,7 +2,6 @@ module Math.Mechanics (State, evolve, initialize, recenter, body, Body) where
 
 import Dict exposing (Dict)
 import Math.Vector as Vector exposing (Vector)
-import Math.Orientation as Orientation exposing (Orientation)
 
 
 type alias State =
@@ -14,7 +13,7 @@ type alias State =
 type alias Body =
     { position : Vector
     , velocity : Vector
-    , orientation : Orientation
+    , orientation : Vector
     , angVelocity : Vector
     , mass : Float
     , inertia : Vector
@@ -84,6 +83,10 @@ nudge dt derivative state =
                         Vector.add p.position (Vector.scale dt dpdt.position)
                     , velocity =
                         Vector.add p.velocity (Vector.scale dt dpdt.velocity)
+                    , orientation =
+                        Vector.orient p.orientation (Vector.scale dt dpdt.orientation)
+                    , angVelocity =
+                        Vector.add p.angVelocity (Vector.scale dt dpdt.angVelocity)
                 }
 
         bodies =
@@ -108,10 +111,15 @@ stateDerivative accels state =
                 (\key particle ->
                     case Dict.get key accels of
                         Just accel ->
-                            { particle
-                                | position = particle.velocity
-                                , velocity = accel particle state
-                            }
+                            let
+                                a = accel particle state
+                            in
+                                { particle
+                                    | position = particle.velocity
+                                    , velocity = a.linear
+                                    , orientation = particle.angVelocity
+                                    , angVelocity = a.angular
+                                }
 
                         Nothing ->
                             particle
@@ -120,5 +128,11 @@ stateDerivative accels state =
     }
 
 
+type alias Acceleration =
+    { linear : Vector
+    , angular : Vector
+    }
+
+
 type alias Rules =
-    Dict String (Body -> State -> Vector)
+    Dict String (Body -> State -> Acceleration)

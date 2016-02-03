@@ -1,4 +1,4 @@
-module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared) where
+module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, orient) where
 
 
 type alias Vector =
@@ -98,3 +98,52 @@ distance u v =
 distanceSquared : Vector -> Vector -> Float
 distanceSquared u v =
     lengthSquared (u `sub` v)
+
+
+orient : Vector -> Vector -> Vector
+orient u v =
+    compose (toQuaternion v) (toQuaternion u)
+        |> fromQuaternion
+
+
+type alias Quaternion =
+    { vector : Vector
+    , scalar : Float
+    }
+
+
+toQuaternion : Vector -> Quaternion
+toQuaternion v =
+    let
+        angle = length v
+    in
+        if angle == 0 then
+            { vector = v
+            , scalar = 1
+            }
+        else
+            { vector = scale (sin (0.5 * angle) / angle) v
+            , scalar = cos (0.5 * angle)
+            }
+
+
+fromQuaternion : Quaternion -> Vector
+fromQuaternion q =
+    let
+        halfSin = length q.vector
+    in
+        if halfSin == 0 then
+            q.vector
+        else
+            scale (2 * acos q.scalar / halfSin) q.vector
+
+
+compose : Quaternion -> Quaternion -> Quaternion
+compose p q =
+    { vector =
+        (scale q.scalar p.vector)
+            `add` (scale p.scalar q.vector)
+            `add` (q.vector `cross` p.vector)
+    , scalar =
+        (q.scalar * p.scalar) - (q.vector `dot` p.vector)
+    }

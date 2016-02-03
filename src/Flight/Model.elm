@@ -8,39 +8,25 @@ import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Update exposing (Update(..), Action)
 import World exposing (World)
-import Infix exposing (..)
 import Mesh exposing (Mesh)
 import Background exposing (Background)
 import Math.Mechanics as Mech
-import Math.Vector as Vector
+import Math.Vector as Vector exposing (Vector)
 
 
 init : Update.Data -> Update.Data
 init model =
     case model.resources of
         Mesh.Success lib ->
-            initFromLib lib model
+            { model
+                | ship = Update.defaultShip
+                , action = Update.inaction
+                , world = World.world lib.sphere 1 ( 1, -2, -5 )
+                , background = Background.background lib.background
+            }
 
         otherwise ->
             model
-
-
-initFromLib : Mesh.Library -> Update.Data -> Update.Data
-initFromLib lib model =
-    let
-        sphere =
-            lib.sphere
-
-        stars =
-            lib.background
-    in
-        { model
-            | orientation = Mat4.identity
-            , ship = Update.defaultShip
-            , action = Update.inaction
-            , world = World.world sphere 1 ( 1, -2, -5 )
-            , background = Background.background stars
-        }
 
 
 update : Update -> Update.Data -> Update.Data
@@ -62,32 +48,52 @@ timeUpdate dt model =
         perSecond =
             Time.inSeconds dt
     in
-        model
-            |> turn (degrees 135 * perSecond)
-            |> thrust (1.0 * perSecond)
+        thrust (1.0 * perSecond) model
 
 
-turn : Float -> Update.Data -> Update.Data
-turn delta model =
-    { model
-        | orientation =
-            model.orientation
-                |> Mat4.rotate (model.action.pitch .* delta) (Vec3.vec3 1 0 0)
-                |> Mat4.rotate (model.action.yaw .* delta) (Vec3.vec3 0 1 0)
-                |> Mat4.rotate (model.action.roll .* delta) (Vec3.vec3 0 0 1)
-    }
+rotMatrix : Vector -> Mat4
+rotMatrix v =
+    if Vector.length v == 0 then
+        Mat4.identity
+    else
+        Mat4.makeRotate
+            (Vector.length v)
+            (Vec3.fromRecord v)
 
 
 thrust : Float -> Update.Data -> Update.Data
 thrust delta model =
     let
-        rule ship _ =
+        forwardThrust ship =
+            Vec3.vec3 0 0 (toFloat model.action.thrust * -10)
+                |> Mat4.transform (rotMatrix ship.orientation)
+                |> Vec3.toRecord
+
+        brake ship =
+            Vector.scale -3 ship.velocity
+
+        linear ship =
             if model.action.thrust >= 0 then
-                Vec3.vec3 0 0 (toFloat model.action.thrust * -10)
-                    |> Mat4.transform model.orientation
-                    |> Vec3.toRecord
+                forwardThrust ship
             else
-                Vector.scale -3 ship.velocity
+                brake ship
+
+        comp a b =
+            if a /= 0 then
+                200 * delta * a
+            else
+                -6 * b
+
+        angular ship =
+            Vector.vector
+                (comp (toFloat model.action.pitch) (ship.angVelocity.x))
+                (comp (toFloat model.action.yaw) (ship.angVelocity.y))
+                (comp (toFloat model.action.roll) (ship.angVelocity.z))
+
+        rule ship _ =
+            { linear = linear ship
+            , angular = angular ship
+            }
     in
         { model
             | ship = Mech.evolve (Dict.singleton "ship" rule) delta model.ship
