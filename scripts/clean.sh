@@ -1,5 +1,11 @@
 #! /usr/bin/env bash
 
 rm -rf temp
-rm -rf elm-stuff
 rm public_html/heavens.js
+
+if [[ $1 == "--full" ]];
+then
+    rm -rf elm-stuff
+else
+    rm -rf elm-stuff/build-artifacts
+fi;
