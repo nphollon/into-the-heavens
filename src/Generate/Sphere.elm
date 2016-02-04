@@ -32,7 +32,7 @@ sphere =
     rectIcosaFaces =
       List.map (\( a, b, c ) -> ( toRect a, toRect b, toRect c )) sphereIcosaFaces
   in
-    List.concatMap (recurse 5) rectIcosaFaces
+    List.concatMap (recurse 4) rectIcosaFaces
 
 
 lookup : Int -> Maybe TupPoint
