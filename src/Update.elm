@@ -5,7 +5,6 @@ import Time exposing (Time)
 import Dict
 import Char
 import Mesh exposing (Vertex)
-import WebGL exposing (Drawable)
 import Math.Mechanics as Mech
 
 
@@ -26,8 +25,6 @@ type alias Data =
   , ship : Mech.State
   , resources : Mesh.Response
   , action : Action
-  , world : Drawable Vertex
-  , background : Drawable Vertex
   }
 
 
@@ -66,8 +63,6 @@ defaultData : Data
 defaultData =
   { action = inaction
   , ship = defaultShip
-  , world = Mesh.drawable []
-  , background = Mesh.drawable []
   , continue = False
   , resources = Mesh.Waiting
   }

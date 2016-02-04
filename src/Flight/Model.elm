@@ -7,24 +7,16 @@ import Time exposing (Time)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Update exposing (Update(..), Action)
-import Mesh exposing (Mesh)
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
 
 
 init : Update.Data -> Update.Data
 init model =
-  case model.resources of
-    Mesh.Success lib ->
-      { model
-        | ship = levelData
-        , action = Update.inaction
-        , world = Mesh.drawable lib.sphere
-        , background = Mesh.drawable lib.background
-      }
-
-    otherwise ->
-      model
+  { model
+    | ship = levelData
+    , action = Update.inaction
+  }
 
 
 levelData : Mech.State

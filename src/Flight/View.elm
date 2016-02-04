@@ -10,6 +10,7 @@ import Flight.Background as Background
 import Flight.World as World
 import String
 import Update exposing (Update, Data)
+import Mesh
 import Frame
 
 
@@ -34,13 +35,17 @@ scene width height model =
       , cameraOrientation = shipOrientation model
       }
 
-    background =
-      Background.toEntity model.background camera
+    entities =
+      case model.resources of
+        Mesh.Success lib ->
+          [ Background.toEntity lib.background camera
+          , World.toEntity lib.sphere (worldPlacement model) camera
+          ]
 
-    foreground =
-      World.toEntity model.world (worldPlacement model) camera
+        otherwise ->
+          []
   in
-    WebGL.webgl ( width, height ) [ background, foreground ]
+    WebGL.webgl ( width, height ) entities
       |> Html.fromElement
 
 
