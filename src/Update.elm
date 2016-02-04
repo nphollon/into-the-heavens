@@ -4,9 +4,8 @@ import Set exposing (Set)
 import Time exposing (Time)
 import Dict
 import Char
-import Mesh
-import Flight.World as World exposing (World)
-import Flight.Background as Background exposing (Background)
+import Mesh exposing (Vertex)
+import WebGL exposing (Drawable)
 import Math.Mechanics as Mech
 
 
@@ -27,8 +26,8 @@ type alias Data =
   , ship : Mech.State
   , resources : Mesh.Response
   , action : Action
-  , world : World
-  , background : Background
+  , world : Drawable Vertex
+  , background : Drawable Vertex
   }
 
 
@@ -67,8 +66,8 @@ defaultData : Data
 defaultData =
   { action = inaction
   , ship = defaultShip
-  , world = World.empty
-  , background = Background.empty
+  , world = Mesh.drawable []
+  , background = Mesh.drawable []
   , continue = False
   , resources = Mesh.Waiting
   }

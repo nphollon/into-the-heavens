@@ -7,9 +7,7 @@ import Time exposing (Time)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Update exposing (Update(..), Action)
-import Flight.World as World exposing (World)
 import Mesh exposing (Mesh)
-import Flight.Background as Background exposing (Background)
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
 
@@ -21,8 +19,8 @@ init model =
       { model
         | ship = levelData
         , action = Update.inaction
-        , world = World.world lib.sphere 1
-        , background = Background.background lib.background
+        , world = Mesh.drawable lib.sphere
+        , background = Mesh.drawable lib.background
       }
 
     otherwise ->

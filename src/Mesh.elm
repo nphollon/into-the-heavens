@@ -1,4 +1,4 @@
-module Mesh (Mesh, Vertex, Library, Response(..), response, request) where
+module Mesh (Mesh, Vertex, Library, Response(..), response, request, drawable) where
 
 import Dict exposing (Dict)
 import Task exposing (Task)
@@ -7,6 +7,7 @@ import Json.Decode as Json exposing (Decoder, Value, (:=))
 import Http
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
+import WebGL
 
 
 type alias Vertex =
@@ -18,6 +19,11 @@ type alias Vertex =
 
 type alias Mesh =
   List ( Vertex, Vertex, Vertex )
+
+
+drawable : Mesh -> WebGL.Drawable Vertex
+drawable =
+  WebGL.Triangle
 
 
 type alias Library =

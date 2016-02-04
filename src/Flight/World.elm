@@ -1,15 +1,10 @@
-module Flight.World (World, empty, world, toEntity) where
+module Flight.World (toEntity) where
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
-import WebGL
-import Mesh exposing (Mesh)
-
-
-type alias World =
-  { mesh : WebGL.Drawable Mesh.Vertex
-  }
+import WebGL exposing (Drawable, Renderable, Shader)
+import Mesh exposing (Vertex)
 
 
 type alias Camera =
@@ -33,18 +28,7 @@ type alias Varying =
   }
 
 
-world : Mesh -> Float -> World
-world mesh radius =
-  { mesh = WebGL.Triangle mesh
-  }
-
-
-empty : World
-empty =
-  world [] 0.0
-
-
-toEntity : World -> Mat4 -> Camera -> WebGL.Renderable
+toEntity : Drawable Vertex -> Mat4 -> Camera -> Renderable
 toEntity world placement camera =
   let
     newUniform =
@@ -54,10 +38,10 @@ toEntity world placement camera =
       , placement = placement
       }
   in
-    WebGL.render vertexShader planetShader world.mesh newUniform
+    WebGL.render vertexShader planetShader world newUniform
 
 
-vertexShader : WebGL.Shader Mesh.Vertex Geometry Varying
+vertexShader : Shader Vertex Geometry Varying
 vertexShader =
   [glsl|
   precision mediump float;
@@ -92,7 +76,7 @@ vertexShader =
   |]
 
 
-planetShader : WebGL.Shader {} Geometry Varying
+planetShader : Shader {} Geometry Varying
 planetShader =
   [glsl|
   precision mediump float;
