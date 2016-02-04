@@ -9,7 +9,6 @@ import Mesh exposing (Mesh)
 
 type alias World =
   { mesh : WebGL.Drawable Mesh.Vertex
-  , radius : Float
   }
 
 
@@ -37,7 +36,6 @@ type alias Varying =
 world : Mesh -> Float -> World
 world mesh radius =
   { mesh = WebGL.Triangle mesh
-  , radius = radius
   }
 
 
@@ -46,14 +44,9 @@ empty =
   world [] 0.0
 
 
-toEntity : World -> Vec3 -> Camera -> WebGL.Renderable
-toEntity world position camera =
+toEntity : World -> Mat4 -> Camera -> WebGL.Renderable
+toEntity world placement camera =
   let
-    placement =
-      Mat4.scale
-        (Vec3.vec3 world.radius world.radius world.radius)
-        (Mat4.makeTranslate position)
-
     newUniform =
       { perspective = camera.perspective
       , cameraOrientation = camera.cameraOrientation

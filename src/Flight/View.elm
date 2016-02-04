@@ -38,7 +38,7 @@ scene width height model =
       Background.toEntity model.background camera
 
     foreground =
-      World.toEntity model.world (worldPosition model) camera
+      World.toEntity model.world (worldPlacement model) camera
   in
     WebGL.webgl ( width, height ) [ background, foreground ]
       |> Html.fromElement
@@ -46,26 +46,17 @@ scene width height model =
 
 shipOrientation : Data -> Mat4
 shipOrientation model =
-  Dict.get "ship" model.ship.bodies
-    |> Maybe.map (.orientation >> Debug.log "orientation" >> Vec3.fromRecord)
-    |> Maybe.withDefault (Vec3.vec3 0 0 0)
-    |> rotMatrix
-
-
-rotMatrix : Vec3 -> Mat4
-rotMatrix v =
-  if Vec3.length v == 0 then
-    Mat4.identity
-  else
-    Mat4.makeRotate (Vec3.length v) v
-      |> Mat4.transpose
-
-
-worldPosition : Data -> Vec3
-worldPosition model =
-  Dict.get "planet" model.ship.bodies
-    |> Maybe.map (.position >> Vec3.fromRecord)
-    |> Maybe.withDefault (Vec3.vec3 0 0 0)
+  let
+    v =
+      Dict.get "ship" model.ship.bodies
+        |> Maybe.map (.orientation >> Vec3.fromRecord)
+        |> Maybe.withDefault (Vec3.vec3 0 0 0)
+  in
+    if Vec3.length v == 0 then
+      Mat4.identity
+    else
+      Mat4.makeRotate (Vec3.length v) v
+        |> Mat4.transpose
 
 
 shipPosition : Data -> Vec3
@@ -73,6 +64,26 @@ shipPosition model =
   Dict.get "ship" model.ship.bodies
     |> Maybe.map (.position >> Vec3.fromRecord)
     |> Maybe.withDefault (Vec3.vec3 0 0 0)
+
+
+worldPlacement : Data -> Mat4
+worldPlacement model =
+  let
+    orientation =
+      Dict.get "planet" model.ship.bodies
+        |> Maybe.map (.orientation >> Vec3.fromRecord)
+        |> Maybe.withDefault (Vec3.vec3 0 0 0)
+
+    position =
+      Dict.get "planet" model.ship.bodies
+        |> Maybe.map (.position >> Vec3.fromRecord)
+        |> Maybe.withDefault (Vec3.vec3 0 0 0)
+  in
+    if Vec3.length orientation == 0 then
+      Mat4.makeTranslate position
+    else
+      Mat4.makeTranslate position
+        |> Mat4.rotate (Vec3.length orientation) orientation
 
 
 dashboard : Data -> Html
