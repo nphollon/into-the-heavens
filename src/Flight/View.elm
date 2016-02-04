@@ -6,7 +6,7 @@ import Html.Attributes exposing (class)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import WebGL
-import Background
+import Flight.Background as Background
 import Flight.World as World
 import String
 import Update exposing (Update, Data)

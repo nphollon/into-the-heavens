@@ -9,7 +9,7 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Update exposing (Update(..), Action)
 import Flight.World as World exposing (World)
 import Mesh exposing (Mesh)
-import Background exposing (Background)
+import Flight.Background as Background exposing (Background)
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
 

@@ -6,7 +6,7 @@ import Dict
 import Char
 import Mesh
 import Flight.World as World exposing (World)
-import Background exposing (Background)
+import Flight.Background as Background exposing (Background)
 import Math.Mechanics as Mech
 
 

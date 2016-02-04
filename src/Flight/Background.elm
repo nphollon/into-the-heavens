@@ -1,10 +1,9 @@
-module Background where
+module Flight.Background (..) where
 
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL
-
 import Mesh exposing (Mesh)
 
 
@@ -19,12 +18,12 @@ type alias Camera =
   , cameraPosition : Vec3
   }
 
-                  
+
 type alias Varying =
   { fragColor : Vec4
   }
 
-                   
+
 background : Mesh -> Background
 background mesh =
   { mesh = WebGL.Triangle mesh
@@ -35,7 +34,7 @@ empty : Background
 empty =
   background []
 
-             
+
 toEntity : Background -> Camera -> WebGL.Renderable
 toEntity bkg =
   WebGL.render vertexShader fragmentShader bkg.mesh
@@ -63,7 +62,7 @@ vertexShader =
   |]
 
 
-fragmentShader :   WebGL.Shader {} Camera Varying
+fragmentShader : WebGL.Shader {} Camera Varying
 fragmentShader =
   [glsl|
   precision mediump float;
