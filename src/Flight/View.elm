@@ -7,7 +7,7 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import WebGL
 import Background
-import World
+import Flight.World as World
 import String
 import Update exposing (Update, Data)
 import Frame

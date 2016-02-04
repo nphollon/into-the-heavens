@@ -7,7 +7,7 @@ import Time exposing (Time)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Update exposing (Update(..), Action)
-import World exposing (World)
+import Flight.World as World exposing (World)
 import Mesh exposing (Mesh)
 import Background exposing (Background)
 import Math.Mechanics as Mech
@@ -47,7 +47,7 @@ levelData =
           , { position = Vector.vector 1 -2 -5
             , velocity = Vector.vector 0 0 0
             , orientation = Vector.vector 0 0 0
-            , angVelocity = Vector.vector 0 1 0
+            , angVelocity = Vector.vector 0 0.3 0
             , inertia = Vector.vector 1 1 1
             , mass = 1
             }
@@ -97,7 +97,7 @@ thrust delta model =
         |> Vec3.toRecord
 
     brake ship =
-      Vector.scale -3 ship.velocity
+      Vector.scale -10 ship.velocity
 
     linear ship =
       if model.action.thrust >= 0 then

@@ -1,4 +1,4 @@
-module World (World, empty, world, toEntity) where
+module Flight.World (World, empty, world, toEntity) where
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)

@@ -5,7 +5,7 @@ import Time exposing (Time)
 import Dict
 import Char
 import Mesh
-import World exposing (World)
+import Flight.World as World exposing (World)
 import Background exposing (Background)
 import Math.Mechanics as Mech
 
