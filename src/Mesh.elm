@@ -1,18 +1,12 @@
-module Mesh (
-             Mesh, Vertex, Library, Response(..),
-             response, request
-            ) where
+module Mesh (Mesh, Vertex, Library, Response(..), response, request) where
 
 import Dict exposing (Dict)
 import Task exposing (Task)
 import Json.Encode as Encode
 import Json.Decode as Json exposing (Decoder, Value, (:=))
-
 import Http
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
-
-import Triple exposing (Triple)
 
 
 type alias Vertex =
@@ -21,20 +15,23 @@ type alias Vertex =
   , normal : Vec3
   }
 
-                  
+
 type alias Mesh =
-  List (Triple Vertex)
-                
-       
+  List ( Vertex, Vertex, Vertex )
+
+
 type alias Library =
-  { sphere: Mesh
-  , background: Mesh
+  { sphere : Mesh
+  , background : Mesh
   }
 
-                   
-type Response = Waiting | Error Http.Error | Success Library
 
-              
+type Response
+  = Waiting
+  | Error Http.Error
+  | Success Library
+
+
 response : Signal Response
 response =
   libraryMailbox.signal
@@ -43,9 +40,9 @@ response =
 request : Dict String String -> Task Http.Error ()
 request requests =
   let
-    get (id, url) =
+    get ( id, url ) =
       Task.map ((,) id) (Http.get Json.value url)
-          
+
     fetch =
       Dict.toList requests
         |> List.map get
@@ -54,24 +51,28 @@ request requests =
 
     resolve r =
       case r of
-        Ok a -> Success a
-        Err a -> Error a
-                 
+        Ok a ->
+          Success a
+
+        Err a ->
+          Error a
+
     notify r =
-      r `Result.andThen` toLibrary
+      r
+        `Result.andThen` toLibrary
         |> resolve
         |> Signal.send libraryMailbox.address
   in
     fetch `Task.andThen` notify
 
 
-toLibrary : List (String, Value) -> Result Http.Error Library
+toLibrary : List ( String, Value ) -> Result Http.Error Library
 toLibrary list =
   Encode.object list
     |> Json.decodeValue decode
     |> Result.formatError Http.UnexpectedPayload
-  
-         
+
+
 libraryMailbox : Signal.Mailbox Response
 libraryMailbox =
   Signal.mailbox Waiting
@@ -86,9 +87,9 @@ decode =
       }
   in
     Json.succeed init
-          `andMap` ("Sphere" := mesh)
-          `andMap` ("Background" := mesh)
-        
+      `andMap` ("Sphere" := mesh)
+      `andMap` ("Background" := mesh)
+
 
 andMap : Decoder (a -> b) -> Decoder a -> Decoder b
 andMap partial next =
@@ -98,7 +99,7 @@ andMap partial next =
 mesh : Json.Decoder Mesh
 mesh =
   Json.tuple3 (,,) vertex vertex vertex |> Json.list
-      
+
 
 vertex : Json.Decoder Vertex
 vertex =
@@ -109,10 +110,11 @@ vertex =
       , normal = c
       }
   in
-    Json.object3 init
-        ("position" := vec3)
-        ("color" := vec4)
-        ("normal" := vec3)
+    Json.object3
+      init
+      ("position" := vec3)
+      ("color" := vec4)
+      ("normal" := vec3)
 
 
 vec3 : Json.Decoder Vec3
@@ -123,4 +125,3 @@ vec3 =
 vec4 : Json.Decoder Vec4
 vec4 =
   Json.tuple4 Vec4.vec4 Json.float Json.float Json.float Json.float
-

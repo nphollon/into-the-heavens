@@ -7,6 +7,8 @@ final_out="public_html/heavens.js"
 main_elm="src/Main.elm"
 
 function compile {
+    scripts/make-mesh.sh;
+    
     echo "Hostname: $1";
 
     elm make $main_elm --output $elm_out --yes --warn
