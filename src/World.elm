@@ -1,19 +1,15 @@
-module World ( World
-             , empty, world, toEntity) where
+module World (World, empty, world, toEntity) where
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import WebGL
-
 import Mesh exposing (Mesh)
-import Triple exposing (Triple)
 
 
 type alias World =
   { mesh : WebGL.Drawable Mesh.Vertex
   , radius : Float
-  , position : Vec3
   }
 
 
@@ -23,46 +19,47 @@ type alias Camera =
   , cameraPosition : Vec3
   }
 
-                  
+
 type alias Placed u =
   { u | placement : Mat4 }
 
-  
-type alias Geometry = Placed Camera
 
-                       
+type alias Geometry =
+  Placed Camera
+
+
 type alias Varying =
   { fragColor : Vec4
   , cosAngleIncidence : Float
   }
 
 
-world : Mesh -> Float -> Triple Float -> World
-world mesh radius position =
+world : Mesh -> Float -> World
+world mesh radius =
   { mesh = WebGL.Triangle mesh
   , radius = radius
-  , position = Vec3.fromTuple position
   }
 
 
 empty : World
 empty =
-  world [] 0.0 (0.0, 0.0, 0.0)
+  world [] 0.0
 
 
-toEntity : World -> Camera -> WebGL.Renderable
-toEntity world camera =
+toEntity : World -> Vec3 -> Camera -> WebGL.Renderable
+toEntity world position camera =
   let
     placement =
       Mat4.scale
-            (Vec3.vec3 world.radius world.radius world.radius)
-            (Mat4.makeTranslate world.position)
+        (Vec3.vec3 world.radius world.radius world.radius)
+        (Mat4.makeTranslate position)
 
     newUniform =
       { perspective = camera.perspective
       , cameraOrientation = camera.cameraOrientation
       , cameraPosition = camera.cameraPosition
-      , placement = placement }      
+      , placement = placement
+      }
   in
     WebGL.render vertexShader planetShader world.mesh newUniform
 
@@ -100,7 +97,7 @@ vertexShader =
   }
   |]
 
-              
+
 planetShader : WebGL.Shader {} Geometry Varying
 planetShader =
   [glsl|
@@ -112,7 +109,7 @@ planetShader =
     vec4 blue = vec4(0.2265625,0.28515625,0.84375,1);
     vec4 green = vec4(0.2734375,0.57421875,0.37109375,1);
 
-    bool border = length(fragColor.xy) < 1e-1 
+    bool border = length(fragColor.xy) < 1e-1
       || length(fragColor.xz) < 1e-1
       || length(fragColor.xw) < 1e-1
       || length(fragColor.yz) < 1e-1
