@@ -84,8 +84,9 @@ vertexShader =
       perspective * (cameraOrientation * cameraFrame - projectionOffset);
 
     vec3 dirToLight = vec3(1, 0, 0);
+    vec3 placedNormal = (placement * vec4(normal, 0)).xyz;
 
-    cosAngleIncidence = dot(normal, dirToLight);
+    cosAngleIncidence = dot(placedNormal, dirToLight);
     fragColor = vertColor;
   }
   |]

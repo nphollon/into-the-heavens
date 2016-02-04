@@ -144,7 +144,7 @@ transition model =
       Vec3.distance shipPosition worldPosition
 
     altitude =
-      model.world.radius
+      1
   in
     if distance < altitude then
       Just Update.GameOverMode
