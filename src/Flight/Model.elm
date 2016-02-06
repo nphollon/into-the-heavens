@@ -6,15 +6,15 @@ import Set exposing (Set)
 import Time exposing (Time)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
-import Update exposing (Update(..), Action)
+import Update exposing (Update(..), Action, Data)
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
 
 
-init : Update.Data -> Update.Data
+init : Data -> Data
 init model =
   { model
-    | ship = levelData
+    | universe = levelData
     , action = Update.inaction
   }
 
@@ -46,7 +46,7 @@ levelData =
   }
 
 
-update : Update -> Update.Data -> Update.Data
+update : Update -> Data -> Data
 update input model =
   case input of
     FPS dt ->
@@ -59,7 +59,7 @@ update input model =
       model
 
 
-timeUpdate : Time -> Update.Data -> Update.Data
+timeUpdate : Time -> Data -> Data
 timeUpdate dt model =
   let
     perSecond =
@@ -78,7 +78,7 @@ rotMatrix v =
       (Vec3.fromRecord v)
 
 
-thrust : Float -> Update.Data -> Update.Data
+thrust : Float -> Data -> Data
 thrust delta model =
   let
     forwardThrust ship =
@@ -113,20 +113,20 @@ thrust delta model =
       }
   in
     { model
-      | ship = Mech.evolve (Dict.singleton "ship" rule) delta model.ship
+      | universe = Mech.evolve (Dict.singleton "ship" rule) delta model.universe
     }
 
 
-transition : Update.Data -> Maybe Update.Mode
+transition : Data -> Maybe Update.Mode
 transition model =
   let
     shipPosition =
-      Dict.get "ship" model.ship.bodies
+      Dict.get "ship" model.universe.bodies
         |> Maybe.map (.position >> Vec3.fromRecord)
         |> Maybe.withDefault (Vec3.vec3 0 0 0)
 
     worldPosition =
-      Dict.get "planet" model.ship.bodies
+      Dict.get "planet" model.universe.bodies
         |> Maybe.map (.position >> Vec3.fromRecord)
         |> Maybe.withDefault (Vec3.vec3 0 0 0)
 
@@ -142,7 +142,7 @@ transition model =
       Nothing
 
 
-controlUpdate : Set Char.KeyCode -> Update.Data -> Update.Data
+controlUpdate : Set Char.KeyCode -> Data -> Data
 controlUpdate keysDown model =
   let
     keyAct key action =

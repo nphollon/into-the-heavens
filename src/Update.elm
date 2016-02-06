@@ -22,7 +22,7 @@ type Mode
 
 type alias Data =
   { continue : Bool
-  , ship : Mech.State
+  , universe : Mech.State
   , resources : Mesh.Response
   , action : Action
   }
@@ -52,17 +52,13 @@ inaction =
   }
 
 
-defaultShip : Mech.State
-defaultShip =
-  { time = 0
-  , bodies = Dict.empty
-  }
-
-
 defaultData : Data
 defaultData =
   { action = inaction
-  , ship = defaultShip
+  , universe =
+      { time = 0
+      , bodies = Dict.empty
+      }
   , continue = False
   , resources = Mesh.Waiting
   }

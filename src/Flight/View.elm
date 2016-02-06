@@ -53,7 +53,7 @@ shipOrientation : Data -> Mat4
 shipOrientation model =
   let
     v =
-      Dict.get "ship" model.ship.bodies
+      Dict.get "ship" model.universe.bodies
         |> Maybe.map (.orientation >> Vec3.fromRecord)
         |> Maybe.withDefault (Vec3.vec3 0 0 0)
   in
@@ -66,7 +66,7 @@ shipOrientation model =
 
 shipPosition : Data -> Vec3
 shipPosition model =
-  Dict.get "ship" model.ship.bodies
+  Dict.get "ship" model.universe.bodies
     |> Maybe.map (.position >> Vec3.fromRecord)
     |> Maybe.withDefault (Vec3.vec3 0 0 0)
 
@@ -75,12 +75,12 @@ worldPlacement : Data -> Mat4
 worldPlacement model =
   let
     orientation =
-      Dict.get "planet" model.ship.bodies
+      Dict.get "planet" model.universe.bodies
         |> Maybe.map (.orientation >> Vec3.fromRecord)
         |> Maybe.withDefault (Vec3.vec3 0 0 0)
 
     position =
-      Dict.get "planet" model.ship.bodies
+      Dict.get "planet" model.universe.bodies
         |> Maybe.map (.position >> Vec3.fromRecord)
         |> Maybe.withDefault (Vec3.vec3 0 0 0)
   in
