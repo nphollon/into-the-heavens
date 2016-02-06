@@ -9,37 +9,60 @@ import WebGL
 import Flight.Background as Background
 import Flight.World as World
 import String
+import Maybe.Extra as MaybeX
 import Update exposing (Update, Data)
+import Math.Mechanics exposing (Body)
 import Mesh
 import Frame
 
 
 view : Signal.Address Update -> Data -> Html
 view address model =
-  Frame.view
-    [ scene 900 600 model ]
-    [ dashboard model
-    , instructions
-    ]
+  let
+    bodies =
+      MaybeX.map2
+        (,)
+        (Dict.get "ship" model.universe.bodies)
+        (Dict.get "planet" model.universe.bodies)
+  in
+    case bodies of
+      Just ( ship, planet ) ->
+        Frame.view
+          [ scene 900 600 ship planet model.resources ]
+          [ dashboard planet
+          , instructions
+          ]
+
+      Nothing ->
+        Frame.view [] []
 
 
-scene : Int -> Int -> Data -> Html
-scene width height model =
+scene : Int -> Int -> Body -> Body -> Mesh.Response -> Html
+scene width height ship planet resources =
   let
     aspect =
       (toFloat width) / (toFloat height)
 
+    worldPlacement =
+      placement
+        (Vec3.fromRecord planet.position)
+        (Vec3.fromRecord planet.orientation)
+
+    cameraOrientation =
+      placement (Vec3.vec3 0 0 0) (Vec3.fromRecord ship.orientation)
+        |> Mat4.transpose
+
     camera =
       { perspective = Mat4.makePerspective 60 aspect 0.1 1000.0
-      , cameraPosition = shipPosition model
-      , cameraOrientation = shipOrientation model
+      , cameraPosition = Vec3.fromRecord ship.position
+      , cameraOrientation = cameraOrientation
       }
 
     entities =
-      case model.resources of
+      case resources of
         Mesh.Success lib ->
           [ Background.toEntity lib.background camera
-          , World.toEntity lib.sphere (worldPlacement model) camera
+          , World.toEntity lib.sphere worldPlacement camera
           ]
 
         otherwise ->
@@ -49,54 +72,18 @@ scene width height model =
       |> Html.fromElement
 
 
-shipOrientation : Data -> Mat4
-shipOrientation model =
+placement : Vec3 -> Vec3 -> Mat4
+placement position orientation =
+  if Vec3.length orientation == 0 then
+    Mat4.makeTranslate position
+  else
+    Mat4.makeTranslate position
+      |> Mat4.rotate (Vec3.length orientation) orientation
+
+
+dashboard : Body -> Html
+dashboard ship =
   let
-    v =
-      Dict.get "ship" model.universe.bodies
-        |> Maybe.map (.orientation >> Vec3.fromRecord)
-        |> Maybe.withDefault (Vec3.vec3 0 0 0)
-  in
-    if Vec3.length v == 0 then
-      Mat4.identity
-    else
-      Mat4.makeRotate (Vec3.length v) v
-        |> Mat4.transpose
-
-
-shipPosition : Data -> Vec3
-shipPosition model =
-  Dict.get "ship" model.universe.bodies
-    |> Maybe.map (.position >> Vec3.fromRecord)
-    |> Maybe.withDefault (Vec3.vec3 0 0 0)
-
-
-worldPlacement : Data -> Mat4
-worldPlacement model =
-  let
-    orientation =
-      Dict.get "planet" model.universe.bodies
-        |> Maybe.map (.orientation >> Vec3.fromRecord)
-        |> Maybe.withDefault (Vec3.vec3 0 0 0)
-
-    position =
-      Dict.get "planet" model.universe.bodies
-        |> Maybe.map (.position >> Vec3.fromRecord)
-        |> Maybe.withDefault (Vec3.vec3 0 0 0)
-  in
-    if Vec3.length orientation == 0 then
-      Mat4.makeTranslate position
-    else
-      Mat4.makeTranslate position
-        |> Mat4.rotate (Vec3.length orientation) orientation
-
-
-dashboard : Data -> Html
-dashboard model =
-  let
-    position =
-      shipPosition model
-
     printNumber label value =
       let
         sign =
@@ -123,9 +110,9 @@ dashboard model =
   in
     div
       [ class "dashboard" ]
-      [ p [] [ printNumber "X" (Vec3.getX position) ]
-      , p [] [ printNumber "Y" (Vec3.getY position) ]
-      , p [] [ printNumber "Z" (Vec3.getZ position) ]
+      [ p [] [ printNumber "X" ship.position.x ]
+      , p [] [ printNumber "Y" ship.position.y ]
+      , p [] [ printNumber "Z" ship.position.z ]
       ]
 
 
