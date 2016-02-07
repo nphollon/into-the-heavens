@@ -24,6 +24,7 @@ type alias Mesh =
 type alias Library =
   { sphere : Drawable Vertex
   , background : Drawable Vertex
+  , ship : Drawable Vertex
   }
 
 
@@ -82,14 +83,16 @@ libraryMailbox =
 decode : Json.Decoder Library
 decode =
   let
-    init a b =
+    init a b c =
       { sphere = WebGL.Triangle a
       , background = WebGL.Triangle b
+      , ship = WebGL.Triangle c
       }
   in
     Json.succeed init
       `andMap` ("Sphere" := mesh)
       `andMap` ("Background" := mesh)
+      `andMap` ("Ship" := mesh)
 
 
 andMap : Decoder (a -> b) -> Decoder a -> Decoder b

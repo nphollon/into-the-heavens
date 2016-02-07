@@ -20,15 +20,16 @@ view : Signal.Address Update -> Data -> Html
 view address model =
   let
     bodies =
-      MaybeX.map2
-        (,)
+      MaybeX.map3
+        (,,)
         (Dict.get "ship" model.universe.bodies)
         (Dict.get "planet" model.universe.bodies)
+        (Dict.get "other" model.universe.bodies)
   in
     case bodies of
-      Just ( ship, planet ) ->
+      Just ( ship, planet, other ) ->
         Frame.view
-          [ scene 900 600 ship planet model.resources ]
+          [ scene 900 600 ship planet other model.resources ]
           [ dashboard planet
           , instructions
           ]
@@ -37,16 +38,16 @@ view address model =
         Frame.view [] []
 
 
-scene : Int -> Int -> Body -> Body -> Mesh.Response -> Html
-scene width height ship planet resources =
+scene : Int -> Int -> Body -> Body -> Body -> Mesh.Response -> Html
+scene width height ship planet other resources =
   let
     aspect =
       (toFloat width) / (toFloat height)
 
-    worldPlacement =
+    objectPlacement object =
       placement
-        (Vec3.fromRecord planet.position)
-        (Vec3.fromRecord planet.orientation)
+        (Vec3.fromRecord object.position)
+        (Vec3.fromRecord object.orientation)
 
     cameraOrientation =
       placement (Vec3.vec3 0 0 0) (Vec3.fromRecord ship.orientation)
@@ -62,7 +63,8 @@ scene width height ship planet resources =
       case resources of
         Mesh.Success lib ->
           [ Background.toEntity lib.background camera
-          , World.toEntity lib.sphere worldPlacement camera
+          , World.toEntity lib.sphere (objectPlacement planet) camera
+          , World.toEntity lib.ship (objectPlacement other) camera
           ]
 
         otherwise ->

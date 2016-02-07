@@ -16,105 +16,106 @@ import GameOver
 
 
 type alias Model =
-    { mode : Mode
-    , data : Data
-    }
+  { mode : Mode
+  , data : Data
+  }
 
 
 main : Signal Html
 main =
-    app.html
+  app.html
 
 
 app : StartApp.App Model
 app =
-    StartApp.start
-        { init = init
-        , inputs = inputs
-        , update = update
-        , view = view
-        }
+  StartApp.start
+    { init = init
+    , inputs = inputs
+    , update = update
+    , view = view
+    }
 
 
 inputs : List (Signal Update)
 inputs =
-    [ Signal.map Keys Keyboard.keysDown
-    , Signal.map FPS (Time.fpsWhen 60 hasFocus)
-    , Signal.map Meshes Mesh.response
-    ]
+  [ Signal.map Keys Keyboard.keysDown
+  , Signal.map FPS (Time.fpsWhen 60 hasFocus)
+  , Signal.map Meshes Mesh.response
+  ]
 
 
 init : ( Model, Effects a )
 init =
-    (,)
-        { mode = MenuMode
-        , data = defaultData
-        }
-        Effects.none
+  (,)
+    { mode = MenuMode
+    , data = defaultData
+    }
+    Effects.none
 
 
 update : Update -> Model -> ( Model, Effects a )
 update up model =
-    let
-        engine =
-            chooseEngine model.mode
+  let
+    engine =
+      chooseEngine model.mode
 
-        data =
-            engine.update up model.data
+    data =
+      engine.update up model.data
 
-        transition =
-            engine.transition data
+    transition =
+      engine.transition data
 
-        newModel =
-            case transition of
-                Nothing ->
-                    { model | data = data }
+    newModel =
+      case transition of
+        Nothing ->
+          { model | data = data }
 
-                Just mode ->
-                    { mode = mode
-                    , data = .init (chooseEngine mode) data
-                    }
-    in
-        ( newModel, Effects.none )
+        Just mode ->
+          { mode = mode
+          , data = .init (chooseEngine mode) data
+          }
+  in
+    ( newModel, Effects.none )
 
 
 view : Signal.Address Update -> Model -> Html
 view address model =
-    let
-        v =
-            case model.mode of
-                GameMode ->
-                    Flight.view
+  let
+    v =
+      case model.mode of
+        GameMode ->
+          Flight.view
 
-                GameOverMode ->
-                    GameOver.view
+        GameOverMode ->
+          GameOver.view
 
-                MenuMode ->
-                    Menu.view
-    in
-        v address model.data
+        MenuMode ->
+          Menu.view
+  in
+    v address model.data
 
 
 chooseEngine : Mode -> Engine
 chooseEngine mode =
-    case mode of
-        GameMode ->
-            Flight.engine
+  case mode of
+    GameMode ->
+      Flight.engine
 
-        GameOverMode ->
-            GameOver.engine
+    GameOverMode ->
+      GameOver.engine
 
-        MenuMode ->
-            Menu.engine
+    MenuMode ->
+      Menu.engine
 
 
 port getResources : Task Http.Error ()
 port getResources =
-    Dict.fromList
-        [ ( "Sphere", "$DOMAIN/data/sphere.json" )
-        , ( "Background", "$DOMAIN/data/background.json" )
-        ]
-        |> Mesh.request
+  Dict.fromList
+    [ ( "Sphere", "$DOMAIN/data/sphere.json" )
+    , ( "Background", "$DOMAIN/data/background.json" )
+    , ( "Ship", "$DOMAIN/data/ship.json" )
+    ]
+    |> Mesh.request
 
 
 port hasFocus : Signal Bool

@@ -42,6 +42,15 @@ levelData =
             , mass = 1
             }
           )
+        , ( "other"
+          , { position = Vector.vector 0 0 -20
+            , velocity = Vector.vector 0 0 0
+            , orientation = Vector.vector 0 0 0
+            , angVelocity = Vector.vector 0.1 0.3 0.4
+            , inertia = Vector.vector 1 1 1
+            , mass = 1
+            }
+          )
         ]
   }
 
