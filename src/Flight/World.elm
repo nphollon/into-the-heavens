@@ -15,7 +15,10 @@ type alias Camera =
 
 
 type alias Placed u =
-  { u | placement : Mat4 }
+  { u
+    | placement : Mat4
+    , inversePlacement : Mat4
+  }
 
 
 type alias Geometry =
@@ -36,6 +39,7 @@ toEntity world placement camera =
       , cameraOrientation = camera.cameraOrientation
       , cameraPosition = camera.cameraPosition
       , placement = placement
+      , inversePlacement = Mat4.inverseOrthonormal placement
       }
   in
     WebGL.render vertexShader planetShader world newUniform
@@ -54,6 +58,7 @@ vertexShader =
   uniform mat4 perspective;
   uniform mat4 cameraOrientation;
   uniform mat4 placement;
+  uniform mat4 inversePlacement;
 
   varying vec4 fragColor;
   varying float cosAngleIncidence;
@@ -68,7 +73,7 @@ vertexShader =
       perspective * (cameraOrientation * cameraFrame - projectionOffset);
 
     vec3 dirToLight = vec3(1, 0, 0);
-    vec3 placedNormal = (placement * vec4(normal, 0)).xyz;
+    vec3 placedNormal = vec3(vec4(normal, 0) * inversePlacement);
 
     cosAngleIncidence = dot(placedNormal, dirToLight);
     fragColor = vertColor;
