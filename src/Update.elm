@@ -2,37 +2,29 @@ module Update (..) where
 
 import Set exposing (Set)
 import Time exposing (Time)
-import Dict exposing (Dict)
 import Char
-import Http
-import Mesh exposing (Vertex)
-import WebGL exposing (Drawable)
+import Dict
+import Math.Vector as Vector
+import Mesh exposing (Vertex, Response, Library)
 import Math.Mechanics as Mech
 
 
 type Update
-  = Meshes (Maybe (Result Http.Error (Dict String (Drawable Vertex))))
+  = Meshes Mesh.Response
   | FPS Time
   | Keys (Set Char.KeyCode)
 
 
-type MenuState
-  = Waiting
-  | Failure Http.Error
-  | Ready
-
-
 type Mode
-  = GameMode
-  | MenuMode
-  | GameOverMode
+  = GameMode GameState
+  | MenuMode MenuState
+  | GameOverMode GameOverState
 
 
-type alias Data =
+type alias GameState =
   { continue : Bool
   , universe : Mech.State
-  , resources : MenuState
-  , lib : Dict String (Drawable Vertex)
+  , library : Library
   , action : Action
   }
 
@@ -45,11 +37,14 @@ type alias Action =
   }
 
 
-type alias Engine =
-  { init : Data -> Data
-  , update : Update -> Data -> Data
-  , transition : Data -> Maybe Mode
-  }
+game : Library -> Mode
+game library =
+  GameMode
+    { library = library
+    , continue = False
+    , universe = levelData
+    , action = inaction
+    }
 
 
 inaction : Action
@@ -61,14 +56,65 @@ inaction =
   }
 
 
-defaultData : Data
-defaultData =
-  { action = inaction
-  , universe =
-      { time = 0
-      , bodies = Dict.empty
-      }
-  , lib = Dict.empty
-  , continue = False
-  , resources = Waiting
+levelData : Mech.State
+levelData =
+  { time = 0
+  , bodies =
+      Dict.fromList
+        [ ( "ship"
+          , { position = Vector.vector 0 0 0
+            , velocity = Vector.vector 0 0 0
+            , orientation = Vector.vector 0 0 0
+            , angVelocity = Vector.vector 0 0 0
+            , inertia = Vector.vector 1 1 1
+            , mass = 1
+            }
+          )
+        , ( "planet"
+          , { position = Vector.vector 1 -2 -5
+            , velocity = Vector.vector 0 0 0
+            , orientation = Vector.vector 0 0 0
+            , angVelocity = Vector.vector 0 0.3 0
+            , inertia = Vector.vector 1 1 1
+            , mass = 1
+            }
+          )
+        , ( "other"
+          , { position = Vector.vector 0 0 -20
+            , velocity = Vector.vector 0 0 0
+            , orientation = Vector.vector 0 0 0
+            , angVelocity = Vector.vector 0.1 0.3 0.4
+            , inertia = Vector.vector 1 1 1
+            , mass = 1
+            }
+          )
+        ]
   }
+
+
+type alias MenuState =
+  { response : Response
+  , continue : Bool
+  }
+
+
+menu : Mode
+menu =
+  MenuMode
+    { response = Nothing
+    , continue = False
+    }
+
+
+type alias GameOverState =
+  { continue : Bool
+  , library : Library
+  }
+
+
+gameOver : Library -> Mode
+gameOver library =
+  GameOverMode
+    { continue = False
+    , library = library
+    }

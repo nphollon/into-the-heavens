@@ -1,4 +1,4 @@
-module Flight.Model (..) where
+module Flight.Model (update, transition) where
 
 import Char
 import Dict
@@ -6,60 +6,16 @@ import Set exposing (Set)
 import Time exposing (Time)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
-import Update exposing (Update(..), Action, Data)
+import Update exposing (Update(..), Action, GameState, Mode(..))
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
 
 
-init : Data -> Data
-init model =
-  { model
-    | universe = levelData
-    , action = Update.inaction
-  }
-
-
-levelData : Mech.State
-levelData =
-  { time = 0
-  , bodies =
-      Dict.fromList
-        [ ( "ship"
-          , { position = Vector.vector 0 0 0
-            , velocity = Vector.vector 0 0 0
-            , orientation = Vector.vector 0 0 0
-            , angVelocity = Vector.vector 0 0 0
-            , inertia = Vector.vector 1 1 1
-            , mass = 1
-            }
-          )
-        , ( "planet"
-          , { position = Vector.vector 1 -2 -5
-            , velocity = Vector.vector 0 0 0
-            , orientation = Vector.vector 0 0 0
-            , angVelocity = Vector.vector 0 0.3 0
-            , inertia = Vector.vector 1 1 1
-            , mass = 1
-            }
-          )
-        , ( "other"
-          , { position = Vector.vector 0 0 -20
-            , velocity = Vector.vector 0 0 0
-            , orientation = Vector.vector 0 0 0
-            , angVelocity = Vector.vector 0.1 0.3 0.4
-            , inertia = Vector.vector 1 1 1
-            , mass = 1
-            }
-          )
-        ]
-  }
-
-
-update : Update -> Data -> Data
+update : Update -> GameState -> GameState
 update input model =
   case input of
     FPS dt ->
-      timeUpdate dt model
+      thrust (1 * Time.inSeconds dt) model
 
     Keys keysDown ->
       controlUpdate keysDown model
@@ -68,26 +24,7 @@ update input model =
       model
 
 
-timeUpdate : Time -> Data -> Data
-timeUpdate dt model =
-  let
-    perSecond =
-      Time.inSeconds dt
-  in
-    thrust (1.0 * perSecond) model
-
-
-rotMatrix : Vector -> Mat4
-rotMatrix v =
-  if Vector.length v == 0 then
-    Mat4.identity
-  else
-    Mat4.makeRotate
-      (Vector.length v)
-      (Vec3.fromRecord v)
-
-
-thrust : Float -> Data -> Data
+thrust : Float -> GameState -> GameState
 thrust delta model =
   let
     forwardThrust ship =
@@ -126,7 +63,17 @@ thrust delta model =
     }
 
 
-transition : Data -> Maybe Update.Mode
+rotMatrix : Vector -> Mat4
+rotMatrix v =
+  if Vector.length v == 0 then
+    Mat4.identity
+  else
+    Mat4.makeRotate
+      (Vector.length v)
+      (Vec3.fromRecord v)
+
+
+transition : GameState -> Maybe Mode
 transition model =
   let
     shipPosition =
@@ -146,12 +93,12 @@ transition model =
       1
   in
     if distance < altitude then
-      Just Update.GameOverMode
+      Just (Update.gameOver model.library)
     else
       Nothing
 
 
-controlUpdate : Set Char.KeyCode -> Data -> Data
+controlUpdate : Set Char.KeyCode -> GameState -> GameState
 controlUpdate keysDown model =
   let
     keyAct key action =

@@ -1,29 +1,14 @@
-module GameOver (engine, view) where
+module GameOver (update, transition, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Set
 import Char
 import Frame
-import Update exposing (Update(..), Data, Engine, Mode)
+import Update exposing (Update(..), Mode, GameOverState)
 
 
-engine : Engine
-engine =
-  { init = init
-  , update = update
-  , transition = transition
-  }
-
-
-init : Data -> Data
-init model =
-  { model
-    | continue = False
-  }
-
-
-update : Update -> Data -> Data
+update : Update -> GameOverState -> GameOverState
 update input model =
   case input of
     Keys keySet ->
@@ -33,15 +18,15 @@ update input model =
       model
 
 
-transition : Data -> Maybe Mode
+transition : GameOverState -> Maybe Mode
 transition data =
   if data.continue then
-    Just Update.GameMode
+    Just (Update.game data.library)
   else
     Nothing
 
 
-view : Signal.Address Update -> Data -> Html
+view : Signal.Address Update -> GameOverState -> Html
 view address model =
   Frame.view
     [ div
@@ -58,29 +43,3 @@ view address model =
             )
         ]
     ]
-
-
-
-{-
-view : Signal.Address Update -> Data -> Html
-view address model =
-    let
-        lightness =
-            1 - Time.inSeconds model.time
-
-        hue =
-            Palette.yellow |> Color.toHsl |> .hue
-
-        color =
-            Color.hsla hue 1 lightness lightness
-    in
-        Frame.view
-            [ Flat.screen
-                color
-                [ Flat.text Palette.titleStyle ( 0, 0 ) "You crashed"
-                , Flat.text Palette.subtitleStyle ( 0, -70 ) "Press 'N'"
-                ]
-                |> Html.fromElement
-            ]
-            []
--}

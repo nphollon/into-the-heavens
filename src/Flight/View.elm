@@ -10,17 +10,17 @@ import Flight.Background as Background
 import Flight.World as World exposing (Object(..), Camera)
 import String
 import Maybe.Extra as MaybeX
-import Update exposing (Update, Data)
+import Update exposing (Update, GameState)
 import Math.Mechanics as Mech exposing (Body, State)
 import Mesh exposing (Vertex)
 import Frame
 import Math.Vector as Vector
 
 
-view : Signal.Address Update -> Data -> Html
+view : Signal.Address Update -> GameState -> Html
 view address model =
   Frame.view
-    [ scene 900 600 model.universe model.lib ]
+    [ scene 900 600 model.universe model.library ]
     [ dashboard model.universe
     , instructions
     ]

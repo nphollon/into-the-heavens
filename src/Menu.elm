@@ -1,58 +1,98 @@
-module Menu (engine, view) where
+module Menu (update, transition, view) where
 
-import Html exposing (Html)
-import Update exposing (Engine)
-import Menu.View as View
+import Html exposing (..)
 import Char
 import Set
-import Update exposing (Update(..), Engine, Data, Mode, MenuState(..))
+import Update exposing (..)
+import Html.Attributes exposing (..)
+import Http
+import Frame
 
 
-engine : Engine
-engine =
-  { init = init
-  , update = update
-  , transition = transition
-  }
-
-
-view : Signal.Address Update -> Data -> Html
-view =
-  View.view
-
-
-init : Data -> Data
-init model =
-  { model | continue = False }
-
-
-update : Update -> Data -> Data
+update : Update -> MenuState -> MenuState
 update input model =
   case input of
     FPS dt ->
       model
 
     Meshes response ->
-      case response of
-        Just (Ok lib) ->
-          { model
-            | resources = Ready
-            , lib = lib
-          }
-
-        Just (Err err) ->
-          { model | resources = Failure err }
-
-        Nothing ->
-          { model | resources = Waiting }
+      { model | response = response }
 
     Keys keySet ->
       { model | continue = Set.member (Char.toCode 'N') keySet }
 
 
-transition : Data -> Maybe Mode
+transition : MenuState -> Maybe Mode
 transition data =
-  if data.continue then
-    Just Update.GameMode
-  else
-    Nothing
+  case ( data.response, data.continue ) of
+    ( Just (Ok library), True ) ->
+      Just (Update.game library)
+
+    otherwise ->
+      Nothing
+
+
+view : Signal.Address Update -> MenuState -> Html
+view address state =
+  let
+    top =
+      case state.response of
+        Nothing ->
+          loading
+
+        Just (Err e) ->
+          resourceFailure e
+
+        Just (Ok lib) ->
+          ready
+  in
+    Frame.view
+      [ top ]
+      [ p
+          []
+          [ text
+              "\"Your task is not to foresee the future, but to enable it.\" ~ Antoine de St. Exupéry"
+          ]
+      ]
+
+
+ready : Html
+ready =
+  div
+    []
+    [ h1 [ class "title" ] [ text "Into the Heavens" ]
+    , h2 [ class "subtitle" ] [ text "Press 'N'" ]
+    ]
+
+
+loading : Html
+loading =
+  div
+    []
+    [ h1 [ class "title" ] [ text "Into the Heavens" ]
+    , h2 [ class "subtitle" ] [ text "Loading..." ]
+    ]
+
+
+resourceFailure : Http.Error -> Html
+resourceFailure e =
+  let
+    message =
+      case e of
+        Http.Timeout ->
+          "Nobody is listening to me."
+
+        Http.NetworkError ->
+          "I can't find what I am looking for."
+
+        Http.UnexpectedPayload _ ->
+          "I am hearing things I just don't understand."
+
+        Http.BadResponse code _ ->
+          "HTTP Error Code: " ++ toString code
+  in
+    div
+      []
+      [ h1 [ class "title" ] [ text "Error" ]
+      , h2 [ class "subtitle" ] [ text message ]
+      ]

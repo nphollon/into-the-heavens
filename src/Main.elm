@@ -15,18 +15,12 @@ import Flight
 import GameOver
 
 
-type alias Model =
-  { mode : Mode
-  , data : Data
-  }
-
-
 main : Signal Html
 main =
   app.html
 
 
-app : StartApp.App Model
+app : StartApp.App Mode
 app =
   StartApp.start
     { init = init
@@ -44,68 +38,43 @@ inputs =
   ]
 
 
-init : ( Model, Effects a )
+init : ( Mode, Effects a )
 init =
-  (,)
-    { mode = MenuMode
-    , data = defaultData
-    }
-    Effects.none
+  ( Update.menu, Effects.none )
 
 
-update : Update -> Model -> ( Model, Effects a )
-update up model =
+update : Update -> Mode -> ( Mode, Effects a )
+update up mode =
   let
-    engine =
-      chooseEngine model.mode
-
-    data =
-      engine.update up model.data
-
-    transition =
-      engine.transition data
-
-    newModel =
-      case transition of
-        Nothing ->
-          { model | data = data }
-
-        Just mode ->
-          { mode = mode
-          , data = .init (chooseEngine mode) data
-          }
+    check transition default state =
+      Maybe.withDefault (default state) (transition state)
+        |> flip (,) Effects.none
   in
-    ( newModel, Effects.none )
+    case mode of
+      GameMode data ->
+        Flight.update up data
+          |> check Flight.transition GameMode
+
+      GameOverMode data ->
+        GameOver.update up data
+          |> check GameOver.transition GameOverMode
+
+      MenuMode data ->
+        Menu.update up data
+          |> check Menu.transition MenuMode
 
 
-view : Signal.Address Update -> Model -> Html
-view address model =
-  let
-    v =
-      case model.mode of
-        GameMode ->
-          Flight.view
-
-        GameOverMode ->
-          GameOver.view
-
-        MenuMode ->
-          Menu.view
-  in
-    v address model.data
-
-
-chooseEngine : Mode -> Engine
-chooseEngine mode =
+view : Signal.Address Update -> Mode -> Html
+view address mode =
   case mode of
-    GameMode ->
-      Flight.engine
+    GameMode data ->
+      Flight.view address data
 
-    GameOverMode ->
-      GameOver.engine
+    GameOverMode data ->
+      GameOver.view address data
 
-    MenuMode ->
-      Menu.engine
+    MenuMode data ->
+      Menu.view address data
 
 
 port getResources : Task Http.Error ()
