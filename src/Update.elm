@@ -2,16 +2,24 @@ module Update (..) where
 
 import Set exposing (Set)
 import Time exposing (Time)
-import Dict
+import Dict exposing (Dict)
 import Char
+import Http
 import Mesh exposing (Vertex)
+import WebGL exposing (Drawable)
 import Math.Mechanics as Mech
 
 
 type Update
-  = Meshes Mesh.Response
+  = Meshes (Maybe (Result Http.Error (Dict String (Drawable Vertex))))
   | FPS Time
   | Keys (Set Char.KeyCode)
+
+
+type MenuState
+  = Waiting
+  | Failure Http.Error
+  | Ready
 
 
 type Mode
@@ -23,7 +31,8 @@ type Mode
 type alias Data =
   { continue : Bool
   , universe : Mech.State
-  , resources : Mesh.Response
+  , resources : MenuState
+  , lib : Dict String (Drawable Vertex)
   , action : Action
   }
 
@@ -59,6 +68,7 @@ defaultData =
       { time = 0
       , bodies = Dict.empty
       }
+  , lib = Dict.empty
   , continue = False
-  , resources = Mesh.Waiting
+  , resources = Waiting
   }

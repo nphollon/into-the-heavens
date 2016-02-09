@@ -19,16 +19,11 @@ import Math.Vector as Vector
 
 view : Signal.Address Update -> Data -> Html
 view address model =
-  case model.resources of
-    Mesh.Success lib ->
-      Frame.view
-        [ scene 900 600 model.universe lib ]
-        [ dashboard model.universe
-        , instructions
-        ]
-
-    otherwise ->
-      Frame.view [] []
+  Frame.view
+    [ scene 900 600 model.universe model.lib ]
+    [ dashboard model.universe
+    , instructions
+    ]
 
 
 scene : Int -> Int -> State -> Dict String (Drawable Vertex) -> Html

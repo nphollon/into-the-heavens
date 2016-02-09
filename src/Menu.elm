@@ -5,8 +5,7 @@ import Update exposing (Engine)
 import Menu.View as View
 import Char
 import Set
-import Mesh
-import Update exposing (Update(..), Engine, Data, Mode)
+import Update exposing (Update(..), Engine, Data, Mode, MenuState(..))
 
 
 engine : Engine
@@ -24,10 +23,7 @@ view =
 
 init : Data -> Data
 init model =
-  { model
-    | resources = Mesh.Waiting
-    , continue = False
-  }
+  { model | continue = False }
 
 
 update : Update -> Data -> Data
@@ -37,7 +33,18 @@ update input model =
       model
 
     Meshes response ->
-      { model | resources = response }
+      case response of
+        Just (Ok lib) ->
+          { model
+            | resources = Ready
+            , lib = lib
+          }
+
+        Just (Err err) ->
+          { model | resources = Failure err }
+
+        Nothing ->
+          { model | resources = Waiting }
 
     Keys keySet ->
       { model | continue = Set.member (Char.toCode 'N') keySet }

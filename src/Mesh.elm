@@ -1,4 +1,4 @@
-module Mesh (Mesh, Vertex, Response(..), response, request) where
+module Mesh (Mesh, Vertex, response, request) where
 
 import Dict exposing (Dict)
 import Task exposing (Task)
@@ -25,10 +25,8 @@ type alias Library =
   Dict String (Drawable Vertex)
 
 
-type Response
-  = Waiting
-  | Error Http.Error
-  | Success Library
+type alias Response =
+  Maybe (Result Http.Error Library)
 
 
 response : Signal Response
@@ -41,40 +39,26 @@ request requests =
   let
     get ( id, url ) =
       Task.map ((,) id) (Http.get Json.value url)
-
-    fetch =
-      Dict.toList requests
-        |> List.map get
-        |> Task.sequence
-        |> Task.toResult
-
-    resolve r =
-      case r of
-        Ok a ->
-          Success a
-
-        Err a ->
-          Error a
-
-    notify r =
-      r
-        `Result.andThen` toLibrary
-        |> resolve
-        |> Signal.send libraryMailbox.address
   in
-    fetch `Task.andThen` notify
+    Dict.toList requests
+      |> List.map get
+      |> Task.sequence
+      |> Task.map toLibrary
+      |> flip Task.onError (\err -> Task.succeed (Just (Err err)))
+      |> flip Task.andThen (Signal.send libraryMailbox.address)
 
 
-toLibrary : List ( String, Value ) -> Result Http.Error Library
+toLibrary : List ( String, Value ) -> Response
 toLibrary list =
   Encode.object list
     |> Json.decodeValue decode
     |> Result.formatError Http.UnexpectedPayload
+    |> Just
 
 
 libraryMailbox : Signal.Mailbox Response
 libraryMailbox =
-  Signal.mailbox Waiting
+  Signal.mailbox Nothing
 
 
 decode : Json.Decoder Library

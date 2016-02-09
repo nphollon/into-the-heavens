@@ -3,8 +3,7 @@ module Menu.View (view) where
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
-import Mesh
-import Update exposing (Update, Data)
+import Update exposing (Update, Data, MenuState(..))
 import Frame
 
 
@@ -13,13 +12,13 @@ view address model =
   let
     top =
       case model.resources of
-        Mesh.Waiting ->
+        Waiting ->
           loading
 
-        Mesh.Error e ->
+        Failure e ->
           resourceFailure e
 
-        Mesh.Success lib ->
+        Ready ->
           ready
   in
     Frame.view
