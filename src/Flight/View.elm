@@ -7,7 +7,7 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import WebGL
 import Flight.Background as Background
-import Flight.World as World
+import Flight.World as World exposing (Object (..))
 import String
 import Maybe.Extra as MaybeX
 import Update exposing (Update, Data)
@@ -63,8 +63,8 @@ scene width height ship planet other resources =
       case resources of
         Mesh.Success lib ->
           [ Background.toEntity lib.background camera
-          , World.toEntity lib.sphere (objectPlacement planet) camera
-          , World.toEntity lib.ship (objectPlacement other) camera
+          , World.toEntity Planet lib.sphere (objectPlacement planet) camera
+          , World.toEntity Ship lib.ship (objectPlacement other) camera
           ]
 
         otherwise ->

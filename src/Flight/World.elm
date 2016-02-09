@@ -1,4 +1,4 @@
-module Flight.World (toEntity) where
+module Flight.World (toEntity, Object(..)) where
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -24,6 +24,9 @@ type alias Placed u =
 type alias Geometry =
   Placed Camera
 
+type Object =
+  Planet | Ship
+
 
 type alias Varying =
   { fragColor : Vec4
@@ -31,8 +34,8 @@ type alias Varying =
   }
 
 
-toEntity : Drawable Vertex -> Mat4 -> Camera -> Renderable
-toEntity world placement camera =
+toEntity : Object -> Drawable Vertex -> Mat4 -> Camera -> Renderable
+toEntity objectType world placement camera =
   let
     newUniform =
       { perspective = camera.perspective
@@ -41,8 +44,15 @@ toEntity world placement camera =
       , placement = placement
       , inversePlacement = Mat4.inverseOrthonormal placement
       }
+
+    fragmentShader =
+      case objectType of
+        Planet ->
+          planetShader
+        Ship ->
+          shipShader
   in
-    WebGL.render vertexShader planetShader world newUniform
+    WebGL.render vertexShader fragmentShader world newUniform
 
 
 vertexShader : Shader Vertex Geometry Varying
@@ -75,10 +85,25 @@ vertexShader =
     vec3 dirToLight = vec3(1, 0, 0);
     vec3 placedNormal = vec3(vec4(normal, 0) * inversePlacement);
 
-    cosAngleIncidence = dot(placedNormal, dirToLight);
+    cosAngleIncidence = dot(placedNormal/length(placedNormal), dirToLight);
     fragColor = vertColor;
   }
   |]
+
+
+shipShader : Shader {} Geometry Varying
+shipShader =
+  [glsl|
+  precision mediump float;
+  varying vec4 fragColor;
+  varying float cosAngleIncidence;
+
+  void main () {
+    gl_FragColor = fragColor * cosAngleIncidence;
+    gl_FragColor.w = 1.0;
+  }
+  |]
+
 
 
 planetShader : Shader {} Geometry Varying
