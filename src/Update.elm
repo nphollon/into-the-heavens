@@ -1,5 +1,6 @@
 module Update (..) where
 
+import Effects exposing (Effects)
 import Set exposing (Set)
 import Time exposing (Time)
 import Char
@@ -37,14 +38,17 @@ type alias Action =
   }
 
 
-game : Library -> Mode
+game : Library -> ( Mode, Effects a )
 game library =
-  GameMode
-    { library = library
-    , continue = False
-    , universe = levelData
-    , action = inaction
-    }
+  (,)
+    (GameMode
+      { library = library
+      , continue = False
+      , universe = levelData
+      , action = inaction
+      }
+    )
+    Effects.none
 
 
 inaction : Action
@@ -94,27 +98,19 @@ levelData =
 
 type alias MenuState =
   { response : Response
-  , continue : Bool
   }
 
 
-menu : Mode
+menu : ( Mode, Effects a )
 menu =
-  MenuMode
-    { response = Nothing
-    , continue = False
-    }
+  ( MenuMode { response = Nothing }, Effects.none )
 
 
 type alias GameOverState =
-  { continue : Bool
-  , library : Library
+  { library : Library
   }
 
 
-gameOver : Library -> Mode
+gameOver : Library -> ( Mode, Effects a )
 gameOver library =
-  GameOverMode
-    { continue = False
-    , library = library
-    }
+  ( GameOverMode { library = library }, Effects.none )

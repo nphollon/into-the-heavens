@@ -1,7 +1,8 @@
-module Flight.Model (update, transition) where
+module Flight.Model (update) where
 
 import Char
 import Dict
+import Effects exposing (Effects)
 import Set exposing (Set)
 import Time exposing (Time)
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -11,17 +12,24 @@ import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
 
 
-update : Update -> GameState -> GameState
+update : Update -> GameState -> ( Mode, Effects a )
 update input model =
-  case input of
-    FPS dt ->
-      thrust (1 * Time.inSeconds dt) model
+  let
+    noEffects =
+      flip (,) Effects.none
+  in
+    case input of
+      FPS dt ->
+        thrust (1 * Time.inSeconds dt) model
+          |> transition
 
-    Keys keysDown ->
-      controlUpdate keysDown model
+      Keys keysDown ->
+        controlUpdate keysDown model
+          |> GameMode
+          |> noEffects
 
-    otherwise ->
-      model
+      otherwise ->
+        noEffects (GameMode model)
 
 
 thrust : Float -> GameState -> GameState
@@ -73,7 +81,7 @@ rotMatrix v =
       (Vec3.fromRecord v)
 
 
-transition : GameState -> Maybe Mode
+transition : GameState -> ( Mode, Effects a )
 transition model =
   let
     shipPosition =
@@ -93,9 +101,9 @@ transition model =
       1
   in
     if distance < altitude then
-      Just (Update.gameOver model.library)
+      Update.gameOver model.library
     else
-      Nothing
+      ( GameMode model, Effects.none )
 
 
 controlUpdate : Set Char.KeyCode -> GameState -> GameState

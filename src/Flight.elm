@@ -1,19 +1,15 @@
-module Flight (update, transition, view) where
+module Flight (update, view) where
 
 import Html exposing (Html)
+import Effects exposing (Effects)
 import Update exposing (Update, GameState, Mode)
 import Flight.Model as Model
 import Flight.View as View
 
 
-update : Update -> GameState -> GameState
+update : Update -> GameState -> ( Mode, Effects a )
 update =
   Model.update
-
-
-transition : GameState -> Maybe Mode
-transition =
-  Model.transition
 
 
 view : Signal.Address Update -> GameState -> Html

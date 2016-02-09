@@ -1,29 +1,29 @@
-module GameOver (update, transition, view) where
+module GameOver (update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Effects exposing (Effects)
 import Set
 import Char
 import Frame
-import Update exposing (Update(..), Mode, GameOverState)
+import Update exposing (Update(..), Mode(..), GameOverState)
 
 
-update : Update -> GameOverState -> GameOverState
+update : Update -> GameOverState -> ( Mode, Effects a )
 update input model =
-  case input of
-    Keys keySet ->
-      { model | continue = Set.member (Char.toCode 'N') keySet }
+  let
+    continue =
+      case input of
+        Keys keySet ->
+          Set.member (Char.toCode 'N') keySet
 
-    otherwise ->
-      model
-
-
-transition : GameOverState -> Maybe Mode
-transition data =
-  if data.continue then
-    Just (Update.game data.library)
-  else
-    Nothing
+        otherwise ->
+          False
+  in
+    if continue then
+      Update.game model.library
+    else
+      ( GameOverMode model, Effects.none )
 
 
 view : Signal.Address Update -> GameOverState -> Html

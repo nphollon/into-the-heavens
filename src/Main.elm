@@ -23,7 +23,7 @@ main =
 app : StartApp.App Mode
 app =
   StartApp.start
-    { init = init
+    { init = Update.menu
     , inputs = inputs
     , update = update
     , view = view
@@ -38,30 +38,17 @@ inputs =
   ]
 
 
-init : ( Mode, Effects a )
-init =
-  ( Update.menu, Effects.none )
-
-
 update : Update -> Mode -> ( Mode, Effects a )
 update up mode =
-  let
-    check transition default state =
-      Maybe.withDefault (default state) (transition state)
-        |> flip (,) Effects.none
-  in
-    case mode of
-      GameMode data ->
-        Flight.update up data
-          |> check Flight.transition GameMode
+  case mode of
+    GameMode data ->
+      Flight.update up data
 
-      GameOverMode data ->
-        GameOver.update up data
-          |> check GameOver.transition GameOverMode
+    GameOverMode data ->
+      GameOver.update up data
 
-      MenuMode data ->
-        Menu.update up data
-          |> check Menu.transition MenuMode
+    MenuMode data ->
+      Menu.update up data
 
 
 view : Signal.Address Update -> Mode -> Html

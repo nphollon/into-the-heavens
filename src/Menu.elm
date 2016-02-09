@@ -1,35 +1,35 @@
-module Menu (update, transition, view) where
+module Menu (update, view) where
 
 import Html exposing (..)
 import Char
 import Set
-import Update exposing (..)
+import Update exposing (Update(..), Mode(..), MenuState)
 import Html.Attributes exposing (..)
 import Http
+import Effects exposing (Effects)
 import Frame
 
 
-update : Update -> MenuState -> MenuState
+update : Update -> MenuState -> ( Mode, Effects a )
 update input model =
-  case input of
-    FPS dt ->
-      model
+  let
+    noEffects =
+      flip (,) Effects.none
+  in
+    case input of
+      FPS dt ->
+        noEffects (MenuMode model)
 
-    Meshes response ->
-      { model | response = response }
+      Meshes response ->
+        noEffects (MenuMode { model | response = response })
 
-    Keys keySet ->
-      { model | continue = Set.member (Char.toCode 'N') keySet }
+      Keys keySet ->
+        case ( model.response, Set.member (Char.toCode 'N') keySet ) of
+          ( Just (Ok library), True ) ->
+            Update.game library
 
-
-transition : MenuState -> Maybe Mode
-transition data =
-  case ( data.response, data.continue ) of
-    ( Just (Ok library), True ) ->
-      Just (Update.game library)
-
-    otherwise ->
-      Nothing
+          ( _, _ ) ->
+            noEffects (MenuMode model)
 
 
 view : Signal.Address Update -> MenuState -> Html
