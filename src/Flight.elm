@@ -8,12 +8,12 @@ import Flight.View as View
 
 engine : Engine
 engine =
-    { init = Model.init
-    , update = Model.update
-    , transition = Model.transition
-    }
+  { init = Model.init
+  , update = Model.update
+  , transition = Model.transition
+  }
 
 
 view : Signal.Address Update -> Data -> Html
 view =
-    View.view
+  View.view

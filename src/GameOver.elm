@@ -10,54 +10,54 @@ import Update exposing (Update(..), Data, Engine, Mode)
 
 engine : Engine
 engine =
-    { init = init
-    , update = update
-    , transition = transition
-    }
+  { init = init
+  , update = update
+  , transition = transition
+  }
 
 
 init : Data -> Data
 init model =
-    { model
-        | continue = False
-    }
+  { model
+    | continue = False
+  }
 
 
 update : Update -> Data -> Data
 update input model =
-    case input of
-        Keys keySet ->
-            { model | continue = Set.member (Char.toCode 'N') keySet }
+  case input of
+    Keys keySet ->
+      { model | continue = Set.member (Char.toCode 'N') keySet }
 
-        otherwise ->
-            model
+    otherwise ->
+      model
 
 
 transition : Data -> Maybe Mode
 transition data =
-    if data.continue then
-        Just Update.GameMode
-    else
-        Nothing
+  if data.continue then
+    Just Update.GameMode
+  else
+    Nothing
 
 
 view : Signal.Address Update -> Data -> Html
 view address model =
-    Frame.view
-        [ div
-            []
-            [ h1 [ class "title" ] [ text "You crashed" ]
-            , h2 [ class "subtitle" ] [ text "Press 'N'" ]
-            ]
+  Frame.view
+    [ div
+        []
+        [ h1 [ class "title" ] [ text "You crashed" ]
+        , h2 [ class "subtitle" ] [ text "Press 'N'" ]
         ]
-        [ p
-            []
-            [ text
-                ("\"Even our misfortunes are a part of our belongings.\""
-                    ++ " ~ Antoine de St. Exupéry"
-                )
-            ]
+    ]
+    [ p
+        []
+        [ text
+            ("\"Even our misfortunes are a part of our belongings.\""
+              ++ " ~ Antoine de St. Exupéry"
+            )
         ]
+    ]
 
 
 

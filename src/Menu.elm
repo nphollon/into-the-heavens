@@ -11,41 +11,41 @@ import Update exposing (Update(..), Engine, Data, Mode)
 
 engine : Engine
 engine =
-    { init = init
-    , update = update
-    , transition = transition
-    }
+  { init = init
+  , update = update
+  , transition = transition
+  }
 
 
 view : Signal.Address Update -> Data -> Html
 view =
-    View.view
+  View.view
 
 
 init : Data -> Data
 init model =
-    { model
-        | resources = Mesh.Waiting
-        , continue = False
-    }
+  { model
+    | resources = Mesh.Waiting
+    , continue = False
+  }
 
 
 update : Update -> Data -> Data
 update input model =
-    case input of
-        FPS dt ->
-            model
+  case input of
+    FPS dt ->
+      model
 
-        Meshes response ->
-            { model | resources = response }
+    Meshes response ->
+      { model | resources = response }
 
-        Keys keySet ->
-            { model | continue = Set.member (Char.toCode 'N') keySet }
+    Keys keySet ->
+      { model | continue = Set.member (Char.toCode 'N') keySet }
 
 
 transition : Data -> Maybe Mode
 transition data =
-    if data.continue then
-        Just Update.GameMode
-    else
-        Nothing
+  if data.continue then
+    Just Update.GameMode
+  else
+    Nothing

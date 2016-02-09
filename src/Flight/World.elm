@@ -24,8 +24,10 @@ type alias Placed u =
 type alias Geometry =
   Placed Camera
 
-type Object =
-  Planet | Ship
+
+type Object
+  = Planet
+  | Ship
 
 
 type alias Varying =
@@ -49,6 +51,7 @@ toEntity objectType world placement camera =
       case objectType of
         Planet ->
           planetShader
+
         Ship ->
           shipShader
   in
@@ -103,7 +106,6 @@ shipShader =
     gl_FragColor.w = 1.0;
   }
   |]
-
 
 
 planetShader : Shader {} Geometry Varying
