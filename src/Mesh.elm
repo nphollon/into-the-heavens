@@ -1,4 +1,4 @@
-module Mesh (Mesh, Vertex, Library, Response(..), response, request) where
+module Mesh (Mesh, Vertex, Response(..), response, request) where
 
 import Dict exposing (Dict)
 import Task exposing (Task)
