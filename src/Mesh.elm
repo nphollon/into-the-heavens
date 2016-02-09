@@ -22,10 +22,7 @@ type alias Mesh =
 
 
 type alias Library =
-  { sphere : Drawable Vertex
-  , background : Drawable Vertex
-  , ship : Drawable Vertex
-  }
+  Dict String (Drawable Vertex)
 
 
 type Response
@@ -82,27 +79,11 @@ libraryMailbox =
 
 decode : Json.Decoder Library
 decode =
-  let
-    init a b c =
-      { sphere = WebGL.Triangle a
-      , background = WebGL.Triangle b
-      , ship = WebGL.Triangle c
-      }
-  in
-    Json.succeed init
-      `andMap` ("Sphere" := mesh)
-      `andMap` ("Background" := mesh)
-      `andMap` ("Ship" := mesh)
-
-
-andMap : Decoder (a -> b) -> Decoder a -> Decoder b
-andMap partial next =
-  partial `Json.andThen` (Json.map `flip` next)
-
-
-mesh : Json.Decoder Mesh
-mesh =
-  Json.tuple3 (,,) vertex vertex vertex |> Json.list
+  Json.tuple3 (,,) vertex vertex vertex
+    |> Json.list
+    |> Json.dict
+    |> Json.object1
+        (Dict.map (\k v -> WebGL.Triangle v))
 
 
 vertex : Json.Decoder Vertex
