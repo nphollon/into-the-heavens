@@ -19,9 +19,9 @@ type alias Varying =
   }
 
 
-toEntity : Drawable Vertex -> Camera -> Renderable
-toEntity bkg =
-  WebGL.render vertexShader fragmentShader bkg
+toEntity : Camera -> Drawable Vertex -> Renderable
+toEntity camera bkg =
+  WebGL.render vertexShader fragmentShader bkg camera
 
 
 vertexShader : Shader Vertex Camera Varying

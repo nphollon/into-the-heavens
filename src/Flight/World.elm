@@ -1,4 +1,4 @@
-module Flight.World (toEntity, Object(..)) where
+module Flight.World (toEntity, Object(..), Camera) where
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -36,8 +36,8 @@ type alias Varying =
   }
 
 
-toEntity : Object -> Drawable Vertex -> Mat4 -> Camera -> Renderable
-toEntity objectType world placement camera =
+toEntity : Object -> Mat4 -> Camera -> Drawable Vertex -> Renderable
+toEntity objectType placement camera world =
   let
     newUniform =
       { perspective = camera.perspective

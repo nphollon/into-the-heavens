@@ -1,83 +1,80 @@
 module Flight.View (..) where
 
-import Dict
+import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
-import WebGL
+import WebGL exposing (Drawable)
 import Flight.Background as Background
-import Flight.World as World exposing (Object(..))
+import Flight.World as World exposing (Object(..), Camera)
 import String
 import Maybe.Extra as MaybeX
 import Update exposing (Update, Data)
-import Math.Mechanics exposing (Body)
-import Mesh
+import Math.Mechanics as Mech exposing (Body, State)
+import Mesh exposing (Vertex)
 import Frame
+import Math.Vector as Vector
 
 
 view : Signal.Address Update -> Data -> Html
 view address model =
-  let
-    bodies =
-      MaybeX.map3
-        (,,)
-        (Dict.get "ship" model.universe.bodies)
-        (Dict.get "planet" model.universe.bodies)
-        (Dict.get "other" model.universe.bodies)
-  in
-    case bodies of
-      Just ( ship, planet, other ) ->
-        Frame.view
-          [ scene 900 600 ship planet other model.resources ]
-          [ dashboard ship
-          , instructions
-          ]
+  case model.resources of
+    Mesh.Success lib ->
+      Frame.view
+        [ scene 900 600 model.universe lib ]
+        [ dashboard model.universe
+        , instructions
+        ]
 
-      Nothing ->
-        Frame.view [] []
+    otherwise ->
+      Frame.view [] []
 
 
-scene : Int -> Int -> Body -> Body -> Body -> Mesh.Response -> Html
-scene width height ship planet other resources =
+scene : Int -> Int -> State -> Dict String (Drawable Vertex) -> Html
+scene width height universe lib =
   let
     aspect =
       (toFloat width) / (toFloat height)
 
-    objectPlacement object =
-      placement
-        (Vec3.fromRecord object.position)
-        (Vec3.fromRecord object.orientation)
-
-    cameraOrientation =
-      placement (Vec3.vec3 0 0 0) (Vec3.fromRecord ship.orientation)
-        |> Mat4.transpose
-
     camera =
-      { perspective = Mat4.makePerspective 60 aspect 0.1 1000.0
-      , cameraPosition = Vec3.fromRecord ship.position
-      , cameraOrientation = cameraOrientation
-      }
+      Maybe.map (cameraAt aspect) (Mech.body "ship" universe)
 
-    entities =
-      case resources of
-        Mesh.Success lib ->
-          Dict.toList lib
-            |> List.map
-                (\( name, mesh ) ->
-                  if name == "Background" then
-                    Background.toEntity mesh camera
-                  else if name == "Sphere" then
-                    World.toEntity Planet mesh (objectPlacement planet) camera
-                  else
-                    World.toEntity Ship mesh (objectPlacement other) camera
-                )
+    background meshName =
+      MaybeX.map2 Background.toEntity camera (Dict.get meshName lib)
 
-        otherwise ->
-          []
+    model bodyName meshName shader =
+      MaybeX.map3
+        (objectPlacement >> World.toEntity shader)
+        (Mech.body bodyName universe)
+        camera
+        (Dict.get meshName lib)
   in
-    WebGL.webgl ( width, height ) entities
+    List.filterMap
+      identity
+      [ background "Background"
+      , model "other" "Ship" Ship
+      , model "planet" "Sphere" Planet
+      ]
+      |> WebGL.webgl ( width, height )
       |> Html.fromElement
+
+
+objectPlacement : Body -> Mat4
+objectPlacement object =
+  placement
+    (Vec3.fromRecord object.position)
+    (Vec3.fromRecord object.orientation)
+
+
+cameraAt : Float -> Body -> Camera
+cameraAt aspect object =
+  { perspective = Mat4.makePerspective 60 aspect 0.1 1000.0
+  , cameraPosition = Vec3.fromRecord object.position
+  , cameraOrientation =
+      placement (Vec3.vec3 0 0 0) (Vec3.fromRecord object.orientation)
+        |> Mat4.transpose
+  }
 
 
 placement : Vec3 -> Vec3 -> Mat4
@@ -89,8 +86,8 @@ placement position orientation =
       |> Mat4.rotate (Vec3.length orientation) orientation
 
 
-dashboard : Body -> Html
-dashboard ship =
+dashboard : State -> Html
+dashboard universe =
   let
     printNumber label value =
       let
@@ -115,12 +112,16 @@ dashboard ship =
         [ label, ": ", sign, toString intPart, decimal, toString centPart ]
           |> String.concat
           |> text
+
+    shipPosition =
+      Mech.body "ship" universe
+        |> MaybeX.mapDefault (Vector.vector 0 0 0) .position
   in
     div
       [ class "dashboard" ]
-      [ p [] [ printNumber "X" ship.position.x ]
-      , p [] [ printNumber "Y" ship.position.y ]
-      , p [] [ printNumber "Z" ship.position.z ]
+      [ p [] [ printNumber "X" shipPosition.x ]
+      , p [] [ printNumber "Y" shipPosition.y ]
+      , p [] [ printNumber "Z" shipPosition.z ]
       ]
 
 
