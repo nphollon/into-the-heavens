@@ -21,7 +21,7 @@ update input model =
         noEffects (MenuMode model)
 
       Meshes response ->
-        noEffects (MenuMode { model | response = response })
+        noEffects (MenuMode { model | response = Just response })
 
       Keys keySet ->
         case ( model.response, Set.member (Char.toCode 'N') keySet ) of

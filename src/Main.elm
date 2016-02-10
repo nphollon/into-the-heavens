@@ -3,11 +3,10 @@ module Main (..) where
 import Keyboard
 import Dict exposing (Dict)
 import Time exposing (Time)
-import Task exposing (Task)
 import Html exposing (Html)
 import StartApp
-import Effects exposing (Effects)
-import Http
+import Effects exposing (Effects, Never)
+import Task exposing (Task)
 import Mesh
 import Update exposing (..)
 import Menu
@@ -23,7 +22,7 @@ main =
 app : StartApp.App Mode
 app =
   StartApp.start
-    { init = Update.menu
+    { init = init
     , inputs = inputs
     , update = update
     , view = view
@@ -34,7 +33,6 @@ inputs : List (Signal Update)
 inputs =
   [ Signal.map Keys Keyboard.keysDown
   , Signal.map FPS (Time.fpsWhen 60 hasFocus)
-  , Signal.map Meshes Mesh.response
   ]
 
 
@@ -64,14 +62,20 @@ view address mode =
       Menu.view address data
 
 
-port getResources : Task Http.Error ()
-port getResources =
-  Dict.fromList
-    [ ( "Sphere", "$DOMAIN/data/sphere.json" )
-    , ( "Background", "$DOMAIN/data/background.json" )
-    , ( "Ship", "$DOMAIN/data/ship.json" )
-    ]
-    |> Mesh.request
+init : ( Mode, Effects Update )
+init =
+  let
+    resources =
+      Dict.fromList
+        [ ( "Sphere", "$DOMAIN/data/sphere.json" )
+        , ( "Background", "$DOMAIN/data/background.json" )
+        , ( "Ship", "$DOMAIN/data/ship.json" )
+        ]
+  in
+    ( Update.menu, Mesh.request resources )
 
 
 port hasFocus : Signal Bool
+port tasks : Signal (Task Never ())
+port tasks =
+  app.tasks

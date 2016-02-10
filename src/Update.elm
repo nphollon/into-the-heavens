@@ -4,14 +4,17 @@ import Effects exposing (Effects)
 import Set exposing (Set)
 import Time exposing (Time)
 import Char
-import Dict
+import Dict exposing (Dict)
+import Math.Vector3 as Vec3 exposing (Vec3)
+import Math.Vector4 as Vec4 exposing (Vec4)
+import Http
+import WebGL exposing (Drawable)
 import Math.Vector as Vector
-import Mesh exposing (Vertex, Response, Library)
 import Math.Mechanics as Mech
 
 
 type Update
-  = Meshes Mesh.Response
+  = Meshes Response
   | FPS Time
   | Keys (Set Char.KeyCode)
 
@@ -97,13 +100,28 @@ levelData =
 
 
 type alias MenuState =
-  { response : Response
+  { response : Maybe Response
   }
 
 
-menu : ( Mode, Effects a )
+type alias Library =
+  Dict String (Drawable Vertex)
+
+
+type alias Response =
+  Result Http.Error Library
+
+
+type alias Vertex =
+  { vertPosition : Vec3
+  , vertColor : Vec4
+  , normal : Vec3
+  }
+
+
+menu : Mode
 menu =
-  ( MenuMode { response = Nothing }, Effects.none )
+  MenuMode { response = Nothing }
 
 
 type alias GameOverState =

@@ -1,4 +1,4 @@
-module Mesh (Mesh, Vertex, Library, Response, response, request) where
+module Mesh (Mesh, Vertex, request) where
 
 import Dict exposing (Dict)
 import Task exposing (Task)
@@ -8,57 +8,40 @@ import Http
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import WebGL exposing (Drawable)
+import Effects exposing (Effects)
+import Update exposing (Update(..), Response, Library)
 
 
 type alias Vertex =
-  { vertPosition : Vec3
-  , vertColor : Vec4
-  , normal : Vec3
-  }
+  Update.Vertex
 
 
 type alias Mesh =
   List ( Vertex, Vertex, Vertex )
 
 
-type alias Library =
-  Dict String (Drawable Vertex)
-
-
-type alias Response =
-  Maybe (Result Http.Error Library)
-
-
-response : Signal Response
-response =
-  libraryMailbox.signal
-
-
-request : Dict String String -> Task Http.Error ()
-request requests =
+request : Dict String String -> Effects Update
+request queries =
   let
     get ( id, url ) =
       Task.map ((,) id) (Http.get Json.value url)
   in
-    Dict.toList requests
+    Dict.toList queries
       |> List.map get
       |> Task.sequence
       |> Task.map toLibrary
-      |> flip Task.onError (\err -> Task.succeed (Just (Err err)))
-      |> flip Task.andThen (Signal.send libraryMailbox.address)
+      |> flip
+          Task.onError
+          (\e -> Task.succeed (Meshes (Err e)))
+      |> Effects.task
 
 
-toLibrary : List ( String, Value ) -> Response
+toLibrary : List ( String, Value ) -> Update
 toLibrary list =
   Encode.object list
     |> Json.decodeValue decode
     |> Result.formatError Http.UnexpectedPayload
-    |> Just
-
-
-libraryMailbox : Signal.Mailbox Response
-libraryMailbox =
-  Signal.mailbox Nothing
+    |> Meshes
 
 
 decode : Json.Decoder Library
