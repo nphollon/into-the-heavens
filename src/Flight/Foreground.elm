@@ -2,14 +2,19 @@ module Flight.Foreground (entity) where
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector4 as Vec4 exposing (Vec4)
+import Math.Vector3 as Vec3 exposing (Vec3)
 import WebGL exposing (Drawable, Renderable, Shader)
 import Update exposing (ShaderType(..), Camera, Vertex)
+import Math.Matrix as Matrix exposing (Matrix)
+import Math.Vector as Vector
 
 
-type alias Placed u =
-  { u
-    | placement : Mat4
-    , inversePlacement : Mat4
+type alias Uniform =
+  { perspective : Mat4
+  , cameraOrientation : Mat4
+  , cameraPosition : Vec3
+  , placement : Mat4
+  , inversePlacement : Mat4
   }
 
 
@@ -19,15 +24,15 @@ type alias Varying =
   }
 
 
-entity : ShaderType -> Mat4 -> Camera -> Drawable Vertex -> Renderable
+entity : ShaderType -> Matrix -> Camera -> Drawable Vertex -> Renderable
 entity objectType placement camera world =
   let
     newUniform =
-      { perspective = camera.perspective
-      , cameraOrientation = camera.cameraOrientation
-      , cameraPosition = camera.cameraPosition
-      , placement = placement
-      , inversePlacement = Mat4.inverseOrthonormal placement
+      { perspective = Matrix.toMat4 camera.perspective
+      , cameraOrientation = Matrix.toMat4 camera.orientation
+      , cameraPosition = Vector.toVec3 camera.position
+      , placement = Matrix.toMat4 placement
+      , inversePlacement = Matrix.toInverseMat4 placement
       }
 
     fragmentShader =
@@ -41,7 +46,7 @@ entity objectType placement camera world =
     WebGL.render vertexShader fragmentShader world newUniform
 
 
-vertexShader : Shader Vertex (Placed Camera) Varying
+vertexShader : Shader Vertex Uniform Varying
 vertexShader =
   [glsl|
   precision mediump float;
@@ -77,7 +82,7 @@ vertexShader =
   |]
 
 
-shipShader : Shader {} (Placed Camera) Varying
+shipShader : Shader {} Uniform Varying
 shipShader =
   [glsl|
   precision mediump float;
@@ -91,7 +96,7 @@ shipShader =
   |]
 
 
-planetShader : Shader {} (Placed Camera) Varying
+planetShader : Shader {} Uniform Varying
 planetShader =
   [glsl|
   precision mediump float;

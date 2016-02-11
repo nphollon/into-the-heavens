@@ -1,19 +1,18 @@
 module Flight.View (view) where
 
+import String
 import Dict exposing (Dict)
+import Maybe.Extra as MaybeX
 import Html exposing (..)
 import Html.Attributes exposing (class)
-import Math.Matrix4 as Mat4 exposing (Mat4)
-import Math.Vector3 as Vec3 exposing (Vec3)
 import WebGL exposing (Drawable)
-import Flight.Background as Background
-import Flight.Foreground as Foreground
-import String
-import Maybe.Extra as MaybeX
 import Update exposing (..)
 import Math.Mechanics as Mech exposing (Body, State)
-import Frame
 import Math.Vector as Vector
+import Math.Matrix as Matrix exposing (Matrix)
+import Flight.Background as Background
+import Flight.Foreground as Foreground
+import Frame
 
 
 view : Signal.Address Update -> GameState -> Html
@@ -50,30 +49,19 @@ scene width height { universe, library, graphics } =
       |> Html.fromElement
 
 
-objectPlacement : Body -> Mat4
+objectPlacement : Body -> Matrix
 objectPlacement object =
-  placement
-    (Vec3.fromRecord object.position)
-    (Vec3.fromRecord object.orientation)
+  Matrix.placement object.position object.orientation
 
 
 cameraAt : Float -> Body -> Camera
 cameraAt aspect object =
-  { perspective = Mat4.makePerspective 60 aspect 0.1 1000.0
-  , cameraPosition = Vec3.fromRecord object.position
-  , cameraOrientation =
-      placement (Vec3.vec3 0 0 0) (Vec3.fromRecord object.orientation)
-        |> Mat4.transpose
+  { perspective = Matrix.perspective aspect
+  , position = object.position
+  , orientation =
+      Matrix.placement (Vector.vector 0 0 0) object.orientation
+        |> Matrix.transpose
   }
-
-
-placement : Vec3 -> Vec3 -> Mat4
-placement position orientation =
-  if Vec3.length orientation == 0 then
-    Mat4.makeTranslate position
-  else
-    Mat4.makeTranslate position
-      |> Mat4.rotate (Vec3.length orientation) orientation
 
 
 dashboard : State -> Html

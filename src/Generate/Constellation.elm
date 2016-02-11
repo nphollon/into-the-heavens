@@ -5,7 +5,6 @@ import Color exposing (Color)
 import Math.Vector as Vector
 import Math.Matrix as Matrix
 import Math.Vector4 as Vec4 exposing (Vec4)
-import Math.Matrix4 as Mat4 exposing (Mat4)
 import Generate.Json exposing (Mesh, Vertex)
 
 
