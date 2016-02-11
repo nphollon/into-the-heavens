@@ -12,6 +12,7 @@ import Http
 import WebGL exposing (Drawable)
 import Math.Vector as Vector exposing (Vector)
 import Math.Mechanics as Mech
+import Math.Collision as Collision
 
 
 type Update
@@ -49,7 +50,7 @@ type Geometry
       { bodyName : String
       , meshName : String
       , shader : ShaderType
-      , hull : List ( Vector, Vector, Vector )
+      , hull : Collision.Hull
       }
 
 
