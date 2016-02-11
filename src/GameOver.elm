@@ -7,6 +7,7 @@ import Set
 import Char
 import Frame
 import Update exposing (Update(..), Mode(..), GameOverState)
+import Flight.Init
 
 
 update : Update -> GameOverState -> ( Mode, Effects a )
@@ -21,7 +22,7 @@ update input model =
           False
   in
     if continue then
-      Update.game model.library
+      Flight.Init.game model.library
     else
       ( GameOverMode model, Effects.none )
 

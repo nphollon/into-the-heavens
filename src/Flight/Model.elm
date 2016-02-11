@@ -10,6 +10,7 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Update exposing (Update(..), Action, GameState, Mode(..))
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
+import Flight.Init as Init
 
 
 update : Update -> GameState -> ( Mode, Effects a )
@@ -139,6 +140,6 @@ controlUpdate keysDown model =
           action
 
     newAction =
-      Set.foldl keyAct Update.inaction keysDown
+      Set.foldl keyAct Init.inaction keysDown
   in
     { model | action = newAction }
