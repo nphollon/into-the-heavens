@@ -7,6 +7,7 @@ import Char
 import Dict exposing (Dict)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
+import Math.Matrix4 as Mat4 exposing (Mat4)
 import Http
 import WebGL exposing (Drawable)
 import Math.Vector as Vector exposing (Vector)
@@ -55,6 +56,13 @@ type Geometry
 type ShaderType
   = Ship
   | Planet
+
+
+type alias Camera =
+  { perspective : Mat4
+  , cameraOrientation : Mat4
+  , cameraPosition : Vec3
+  }
 
 
 game : Library -> ( Mode, Effects a )

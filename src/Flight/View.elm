@@ -1,4 +1,4 @@
-module Flight.View (..) where
+module Flight.View (view) where
 
 import Dict exposing (Dict)
 import Html exposing (..)
@@ -7,10 +7,10 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import WebGL exposing (Drawable)
 import Flight.Background as Background
-import Flight.World as World exposing (Camera)
+import Flight.Foreground as Foreground
 import String
 import Maybe.Extra as MaybeX
-import Update exposing (Update, GameState, ShaderType(..), Geometry(..))
+import Update exposing (Update, Camera, GameState, ShaderType(..), Geometry(..))
 import Math.Mechanics as Mech exposing (Body, State)
 import Frame
 import Math.Vector as Vector
@@ -28,29 +28,22 @@ view address model =
 scene : Int -> Int -> GameState -> Html
 scene width height { universe, library, objects } =
   let
-    aspect =
-      (toFloat width) / (toFloat height)
-
     camera =
-      Maybe.map (cameraAt aspect) (Mech.body "ship" universe)
-
-    background meshName =
-      MaybeX.map2 Background.toEntity camera (Dict.get meshName library)
-
-    model bodyName meshName shader =
-      MaybeX.map3
-        (objectPlacement >> World.toEntity shader)
-        (Mech.body bodyName universe)
-        camera
-        (Dict.get meshName library)
+      Maybe.map
+        (cameraAt (toFloat width / toFloat height))
+        (Mech.body "ship" universe)
 
     draw object =
       case object of
         Background meshName ->
-          background meshName
+          MaybeX.map2 Background.entity camera (Dict.get meshName library)
 
         Object { bodyName, meshName, shader } ->
-          model bodyName meshName shader
+          MaybeX.map3
+            (objectPlacement >> Foreground.entity shader)
+            (Mech.body bodyName universe)
+            camera
+            (Dict.get meshName library)
   in
     List.filterMap draw objects
       |> WebGL.webgl ( width, height )

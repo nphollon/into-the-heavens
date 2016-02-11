@@ -1,17 +1,9 @@
-module Flight.Background (toEntity) where
+module Flight.Background (entity) where
 
-import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
-import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL exposing (Renderable, Drawable, Shader)
+import Update exposing (Camera)
 import Mesh exposing (Vertex)
-
-
-type alias Camera =
-  { perspective : Mat4
-  , cameraOrientation : Mat4
-  , cameraPosition : Vec3
-  }
 
 
 type alias Varying =
@@ -19,8 +11,8 @@ type alias Varying =
   }
 
 
-toEntity : Camera -> Drawable Vertex -> Renderable
-toEntity camera bkg =
+entity : Camera -> Drawable Vertex -> Renderable
+entity camera bkg =
   WebGL.render vertexShader fragmentShader bkg camera
 
 
