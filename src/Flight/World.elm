@@ -1,10 +1,11 @@
-module Flight.World (toEntity, Object(..), Camera) where
+module Flight.World (toEntity, Camera) where
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import WebGL exposing (Drawable, Renderable, Shader)
 import Mesh exposing (Vertex)
+import Update exposing (ShaderType(..))
 
 
 type alias Camera =
@@ -25,18 +26,13 @@ type alias Geometry =
   Placed Camera
 
 
-type Object
-  = Planet
-  | Ship
-
-
 type alias Varying =
   { fragColor : Vec4
   , cosAngleIncidence : Float
   }
 
 
-toEntity : Object -> Mat4 -> Camera -> Drawable Vertex -> Renderable
+toEntity : ShaderType -> Mat4 -> Camera -> Drawable Vertex -> Renderable
 toEntity objectType placement camera world =
   let
     newUniform =
