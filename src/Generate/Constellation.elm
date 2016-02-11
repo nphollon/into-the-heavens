@@ -1,10 +1,22 @@
-module Generate.Constellation (crux, ursaMajor, aquarius, star) where
+module Generate.Constellation (mesh) where
 
+import Random.PCG as Random
 import Color exposing (Color)
-import Math.Vector3 as Vec3 exposing (Vec3)
+import Math.Vector as Vector
+import Math.Matrix as Matrix
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 as Mat4 exposing (Mat4)
-import Mesh exposing (Mesh)
+import Generate.Json exposing (Mesh, Vertex)
+
+
+mesh : Mesh
+mesh =
+  List.concat
+    [ crux
+    , ursaMajor
+    , aquarius
+    , scatter 100
+    ]
 
 
 type alias Point =
@@ -105,22 +117,22 @@ star color phi theta =
     ]
 
 
-translate : Float -> Float -> Float -> Mesh.Vertex -> Mesh.Vertex
+translate : Float -> Float -> Float -> Vertex -> Vertex
 translate x y z vertex =
-  { vertex | vertPosition = Vec3.add vertex.vertPosition (Vec3.vec3 x y z) }
+  { vertex | vertPosition = Vector.add vertex.vertPosition (Vector.vector x y z) }
 
 
-rotate : Float -> Float -> Mesh.Vertex -> Mesh.Vertex
+rotate : Float -> Float -> Vertex -> Vertex
 rotate pitch yaw vertex =
   let
     rotation =
-      Mat4.makeRotate yaw Vec3.j
-        |> Mat4.rotate pitch Vec3.k
+      Vector.orient (Vector.vector 0 yaw 0) (Vector.vector 0 0 pitch)
+        |> Matrix.makeRotate
   in
-    { vertex | vertPosition = Mat4.transform rotation vertex.vertPosition }
+    { vertex | vertPosition = Matrix.transform rotation vertex.vertPosition }
 
 
-vertex : Color -> Float -> Float -> Float -> Mesh.Vertex
+vertex : Color -> Float -> Float -> Float -> Vertex
 vertex color x y z =
   let
     norm x =
@@ -136,7 +148,31 @@ vertex color x y z =
         (norm rgba.blue)
         rgba.alpha
   in
-    { vertPosition = Vec3.vec3 x y z
+    { vertPosition = Vector.vector x y z
     , vertColor = colorVector
-    , normal = Vec3.vec3 1 0 0
+    , normal = Vector.vector 1 0 0
     }
+
+
+scatter : Int -> Mesh
+scatter n =
+  let
+    seed =
+      Random.initialSeed 2
+
+    ( randomPoints, seed' ) =
+      Random.generate (Random.list n starPoint) seed
+  in
+    List.concatMap (uncurry (star Color.blue)) randomPoints
+
+
+starPoint : Random.Generator Point
+starPoint =
+  let
+    az =
+      Random.float 0 (turns 1)
+
+    alt =
+      Random.map acos (Random.float -1 1)
+  in
+    Random.pair az alt

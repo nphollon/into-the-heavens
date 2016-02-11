@@ -3,8 +3,7 @@ module Flight.Foreground (entity) where
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import WebGL exposing (Drawable, Renderable, Shader)
-import Mesh exposing (Vertex)
-import Update exposing (ShaderType(..), Camera)
+import Update exposing (ShaderType(..), Camera, Vertex)
 
 
 type alias Placed u =

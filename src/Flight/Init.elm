@@ -45,18 +45,18 @@ game library =
                   )
                 ]
           }
-      , objects =
+      , hulls =
+          [ [], [] ]
+      , graphics =
           [ Background "Background"
           , Object
               { bodyName = "other"
               , meshName = "Ship"
-              , hull = []
               , shader = Ship
               }
           , Object
               { bodyName = "planet"
               , meshName = "Sphere"
-              , hull = []
               , shader = Planet
               }
           ]

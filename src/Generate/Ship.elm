@@ -1,8 +1,8 @@
 module Generate.Ship (mesh) where
 
-import Mesh exposing (Mesh, Vertex)
+import Generate.Json exposing (Mesh, Vertex)
 import Array
-import Math.Vector3 as Vec3 exposing (Vec3)
+import Math.Vector as Vector exposing (Vector)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Maybe.Extra as MaybeX
 
@@ -21,15 +21,15 @@ mesh =
 
     cornerPositions =
       Array.fromList
-        [ Vec3.vec3 0 0 zPeak
-        , Vec3.vec3 rMid rMid zMid
-        , Vec3.vec3 rMid -rMid zMid
-        , Vec3.vec3 -rMid -rMid zMid
-        , Vec3.vec3 -rMid rMid zMid
-        , Vec3.vec3 1 0 -zPeak
-        , Vec3.vec3 0 -1 -zPeak
-        , Vec3.vec3 -1 0 -zPeak
-        , Vec3.vec3 0 1 -zPeak
+        [ Vector.vector 0 0 zPeak
+        , Vector.vector rMid rMid zMid
+        , Vector.vector rMid -rMid zMid
+        , Vector.vector -rMid -rMid zMid
+        , Vector.vector -rMid rMid zMid
+        , Vector.vector 1 0 -zPeak
+        , Vector.vector 0 -1 -zPeak
+        , Vector.vector -1 0 -zPeak
+        , Vector.vector 0 1 -zPeak
         ]
 
     cornerIndexes =
@@ -51,14 +51,14 @@ mesh =
       |> List.concatMap toTriangles
 
 
-toTriangles : List Vec3 -> List ( Vertex, Vertex, Vertex )
+toTriangles : List Vector -> List ( Vertex, Vertex, Vertex )
 toTriangles positions =
   case positions of
     i :: (j :: (k :: list)) ->
       let
         normal =
-          Vec3.cross (Vec3.sub j i) (Vec3.sub k i)
-            |> Vec3.normalize
+          Vector.cross (Vector.sub j i) (Vector.sub k i)
+            |> Vector.normalize
 
         toVertex p =
           { vertPosition = p

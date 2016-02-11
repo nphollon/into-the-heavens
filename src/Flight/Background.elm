@@ -2,8 +2,7 @@ module Flight.Background (entity) where
 
 import Math.Vector4 as Vec4 exposing (Vec4)
 import WebGL exposing (Renderable, Drawable, Shader)
-import Update exposing (Camera)
-import Mesh exposing (Vertex)
+import Update exposing (Camera, Vertex)
 
 
 type alias Varying =

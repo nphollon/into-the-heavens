@@ -10,7 +10,7 @@ import Flight.Background as Background
 import Flight.Foreground as Foreground
 import String
 import Maybe.Extra as MaybeX
-import Update exposing (Update, Camera, GameState, ShaderType(..), Geometry(..))
+import Update exposing (..)
 import Math.Mechanics as Mech exposing (Body, State)
 import Frame
 import Math.Vector as Vector
@@ -26,7 +26,7 @@ view address model =
 
 
 scene : Int -> Int -> GameState -> Html
-scene width height { universe, library, objects } =
+scene width height { universe, library, graphics } =
   let
     camera =
       Maybe.map
@@ -45,7 +45,7 @@ scene width height { universe, library, objects } =
             camera
             (Dict.get meshName library)
   in
-    List.filterMap draw objects
+    List.filterMap draw graphics
       |> WebGL.webgl ( width, height )
       |> Html.fromElement
 

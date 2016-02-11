@@ -5,12 +5,12 @@ import Dict
 import Effects exposing (Effects)
 import Set exposing (Set)
 import Time exposing (Time)
-import Math.Vector3 as Vec3 exposing (Vec3)
-import Math.Matrix4 as Mat4 exposing (Mat4)
 import Update exposing (Update(..), Action, GameState, Mode(..))
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
+import Math.Matrix as Matrix
 import Flight.Init as Init
+import Math.Collision as Collision
 
 
 update : Update -> GameState -> ( Mode, Effects a )
@@ -37,9 +37,8 @@ thrust : Float -> GameState -> GameState
 thrust delta model =
   let
     forwardThrust ship =
-      Vec3.vec3 0 0 (toFloat model.action.thrust * -10)
-        |> Mat4.transform (rotMatrix ship.orientation)
-        |> Vec3.toRecord
+      Vector.vector 0 0 (toFloat model.action.thrust * -10)
+        |> Matrix.transform (Matrix.makeRotate ship.orientation)
 
     brake ship =
       Vector.scale -10 ship.velocity
@@ -72,36 +71,18 @@ thrust delta model =
     }
 
 
-rotMatrix : Vector -> Mat4
-rotMatrix v =
-  if Vector.length v == 0 then
-    Mat4.identity
-  else
-    Mat4.makeRotate
-      (Vector.length v)
-      (Vec3.fromRecord v)
-
-
 transition : GameState -> ( Mode, Effects a )
 transition model =
   let
-    shipPosition =
+    hasCrashed body =
+      List.any (Collision.isInside body.position) model.hulls
+
+    shipCrashed =
       Dict.get "ship" model.universe.bodies
-        |> Maybe.map (.position >> Vec3.fromRecord)
-        |> Maybe.withDefault (Vec3.vec3 0 0 0)
-
-    worldPosition =
-      Dict.get "planet" model.universe.bodies
-        |> Maybe.map (.position >> Vec3.fromRecord)
-        |> Maybe.withDefault (Vec3.vec3 0 0 0)
-
-    distance =
-      Vec3.distance shipPosition worldPosition
-
-    altitude =
-      1
+        |> Maybe.map hasCrashed
+        |> Maybe.withDefault False
   in
-    if distance < altitude then
+    if shipCrashed then
       Update.gameOver model.library
     else
       ( GameMode model, Effects.none )

@@ -1,15 +1,14 @@
 module Main (..) where
 
 import Keyboard
-import Dict exposing (Dict)
 import Time exposing (Time)
 import Html exposing (Html)
 import StartApp
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
-import Mesh
 import Update exposing (..)
 import Menu
+import Menu.Init
 import Flight
 import GameOver
 
@@ -22,7 +21,7 @@ main =
 app : StartApp.App Mode
 app =
   StartApp.start
-    { init = init
+    { init = Menu.Init.menu
     , inputs = inputs
     , update = update
     , view = view
@@ -60,19 +59,6 @@ view address mode =
 
     MenuMode data ->
       Menu.view address data
-
-
-init : ( Mode, Effects Update )
-init =
-  let
-    resources =
-      Dict.fromList
-        [ ( "Sphere", "$DOMAIN/data/sphere.json" )
-        , ( "Background", "$DOMAIN/data/background.json" )
-        , ( "Ship", "$DOMAIN/data/ship.json" )
-        ]
-  in
-    ( Update.menu, Mesh.request resources )
 
 
 port hasFocus : Signal Bool

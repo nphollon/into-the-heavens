@@ -1,12 +1,11 @@
-module Generate.Json (encode) where
+module Generate.Json (encode, Mesh, Vertex) where
 
 import String
 import Graphics.Element as Layout
 import Json.Encode as Json
 import Text
-import Math.Vector3 as Vec3 exposing (Vec3)
+import Math.Vector as Vector exposing (Vector)
 import Math.Vector4 as Vec4 exposing (Vec4)
-import Mesh exposing (Mesh, Vertex)
 
 
 encode : Mesh -> String
@@ -24,9 +23,9 @@ encodeTriple ( a, b, c ) =
   encodeList encodeAttribute [ a, b, c ]
 
 
-encodeVec3 : Vec3 -> Json.Value
-encodeVec3 a =
-  encodeFloatList a [ Vec3.getX, Vec3.getY, Vec3.getZ ]
+encodeVector : Vector -> Json.Value
+encodeVector a =
+  encodeFloatList a [ Vector.getX, Vector.getY, Vector.getZ ]
 
 
 encodeVec4 : Vec4 -> Json.Value
@@ -47,7 +46,18 @@ encodeList f =
 encodeAttribute : Vertex -> Json.Value
 encodeAttribute att =
   Json.object
-    [ ( "position", encodeVec3 att.vertPosition )
+    [ ( "position", encodeVector att.vertPosition )
     , ( "color", encodeVec4 att.vertColor )
-    , ( "normal", encodeVec3 att.normal )
+    , ( "normal", encodeVector att.normal )
     ]
+
+
+type alias Vertex =
+  { vertPosition : Vector
+  , vertColor : Vec4
+  , normal : Vector
+  }
+
+
+type alias Mesh =
+  List ( Vertex, Vertex, Vertex )

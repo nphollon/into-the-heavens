@@ -2,10 +2,9 @@ module Main (..) where
 
 import Task exposing (Task)
 import Console exposing (IO, (>>>))
-import Mesh exposing (Mesh)
-import Generate.Json as Json
+import Generate.Json as Json exposing (Mesh)
 import Generate.Sphere as Sphere
-import Generate.Background as Background
+import Generate.Constellation as Constellation
 import Generate.Ship as Ship
 
 
@@ -15,7 +14,7 @@ writeModels =
     (\x io -> io >>> (uncurry write x))
     (Console.pure ())
     [ ( Sphere.sphere, "sphere.json" )
-    , ( Background.mesh, "background.json" )
+    , ( Constellation.mesh, "background.json" )
     , ( Ship.mesh, "ship.json" )
     ]
 

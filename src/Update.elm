@@ -10,7 +10,6 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Http
 import WebGL exposing (Drawable)
-import Math.Vector as Vector exposing (Vector)
 import Math.Mechanics as Mech
 import Math.Collision as Collision
 
@@ -30,7 +29,8 @@ type Mode
 type alias GameState =
   { continue : Bool
   , universe : Mech.State
-  , objects : List Geometry
+  , hulls : List Collision.Hull
+  , graphics : List GraphicsObject
   , library : Library
   , action : Action
   }
@@ -44,13 +44,12 @@ type alias Action =
   }
 
 
-type Geometry
+type GraphicsObject
   = Background String
   | Object
       { bodyName : String
       , meshName : String
       , shader : ShaderType
-      , hull : Collision.Hull
       }
 
 
@@ -89,11 +88,6 @@ type alias Vertex =
 type alias GameOverState =
   { library : Library
   }
-
-
-menu : Mode
-menu =
-  MenuMode { response = Nothing }
 
 
 gameOver : Library -> ( Mode, Effects a )

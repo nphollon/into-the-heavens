@@ -1,4 +1,6 @@
-module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, orient) where
+module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, orient, toVec3, fromVec3) where
+
+import Math.Vector3 as Vec3 exposing (Vec3)
 
 
 type alias Vector =
@@ -149,3 +151,13 @@ compose p q =
   , scalar =
       (q.scalar * p.scalar) - (q.vector `dot` p.vector)
   }
+
+
+toVec3 : Vector -> Vec3
+toVec3 =
+  Vec3.fromRecord
+
+
+fromVec3 : Vec3 -> Vector
+fromVec3 =
+  Vec3.toRecord

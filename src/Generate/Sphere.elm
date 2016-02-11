@@ -2,9 +2,9 @@ module Generate.Sphere (sphere) where
 
 import Color
 import Array exposing (Array)
-import Math.Vector3 as Vec3 exposing (Vec3)
+import Math.Vector as Vector exposing (Vector)
 import Math.Vector4 as Vec4 exposing (Vec4)
-import Mesh exposing (Mesh, Vertex)
+import Generate.Json exposing (Mesh, Vertex)
 import Maybe.Extra as MaybeX
 
 
@@ -50,11 +50,11 @@ toRect ( ( colatitude, longitude ), zone ) =
       degrees longitude
 
     position =
-      Vec3.vec3 (sin theta * cos phi) (sin theta * sin phi) (cos theta)
+      Vector.vector (sin theta * cos phi) (sin theta * sin phi) (cos theta)
   in
     { vertPosition = position
     , vertColor = toColor zone
-    , normal = Vec3.normalize position
+    , normal = Vector.normalize position
     }
 
 
@@ -70,7 +70,7 @@ split : ( Vertex, Vertex, Vertex ) -> Mesh
 split ( a, b, c ) =
   let
     normalMidpoint u v =
-      Vec3.add u v |> Vec3.normalize
+      Vector.add u v |> Vector.normalize
 
     meanMidpoint c d =
       Vec4.add c d |> Vec4.scale 0.5
