@@ -6,12 +6,12 @@ import Maybe.Extra as MaybeX
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import WebGL exposing (Drawable)
-import Update exposing (..)
-import Math.Mechanics as Mech exposing (Body, State)
+import Types exposing (..)
 import Math.Vector as Vector
 import Math.Matrix as Matrix exposing (Matrix)
 import Flight.Background as Background
 import Flight.Foreground as Foreground
+import Math.Mechanics as Mech
 import Frame
 
 

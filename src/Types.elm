@@ -1,6 +1,5 @@
-module Update (..) where
+module Types (..) where
 
-import Effects exposing (Effects)
 import Set exposing (Set)
 import Time exposing (Time)
 import Char
@@ -11,7 +10,6 @@ import Math.Matrix exposing (Matrix)
 import Math.Vector exposing (Vector)
 import Http
 import WebGL exposing (Drawable)
-import Math.Mechanics as Mech
 
 
 type Update
@@ -28,11 +26,35 @@ type Mode
 
 type alias GameState =
   { continue : Bool
-  , universe : Mech.State
+  , universe : State
   , graphics : List GraphicsObject
   , library : Library
   , action : Action
   }
+
+
+type alias State =
+  { time : Float
+  , bodies : Dict String Body
+  }
+
+
+type alias Body =
+  { position : Vector
+  , velocity : Vector
+  , orientation : Vector
+  , angVelocity : Vector
+  , mass : Float
+  , inertia : Vector
+  , hull : Hull
+  }
+
+
+type alias Hull =
+  List
+    { keyPoint : Vector
+    , normal : Vector
+    }
 
 
 type alias Action =
@@ -87,8 +109,3 @@ type alias Vertex =
 type alias GameOverState =
   { library : Library
   }
-
-
-gameOver : Library -> ( Mode, Effects a )
-gameOver library =
-  ( GameOverMode { library = library }, Effects.none )

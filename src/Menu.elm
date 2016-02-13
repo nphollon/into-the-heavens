@@ -3,7 +3,7 @@ module Menu (update, view) where
 import Html exposing (..)
 import Char
 import Set
-import Update exposing (Update(..), Mode(..), MenuState)
+import Types exposing (Update(..), Mode(..), MenuState)
 import Html.Attributes exposing (..)
 import Http
 import Effects exposing (Effects)

@@ -2,7 +2,7 @@ module Math.Collision (isOutside, isInside, hull) where
 
 import Math.Vector as Vector exposing (Vector)
 import Math.Matrix as Matrix exposing (Matrix)
-import Math.Mechanics exposing (Hull, Body)
+import Types exposing (Hull, Body)
 
 
 {-| Given a list of triangles, compute a hull. For a triangle of points (a,b,c),

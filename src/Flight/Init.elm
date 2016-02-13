@@ -1,6 +1,6 @@
 module Flight.Init (game, inaction) where
 
-import Update exposing (..)
+import Types exposing (..)
 import Math.Vector as Vector
 import Dict
 import Effects exposing (Effects)

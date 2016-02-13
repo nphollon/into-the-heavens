@@ -5,11 +5,12 @@ import Dict
 import Effects exposing (Effects)
 import Set exposing (Set)
 import Time exposing (Time)
-import Update exposing (Update(..), Action, GameState, Mode(..))
+import Types exposing (Update(..), Action, GameState, Mode(..))
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
 import Math.Matrix as Matrix
 import Flight.Init as Init
+import GameOver.Init
 import Math.Collision as Collision
 
 
@@ -99,7 +100,7 @@ transition model =
         |> List.any (Collision.isInside shipPosition)
   in
     if shipCrashed then
-      Update.gameOver model.library
+      GameOver.Init.gameOver model.library
     else
       ( GameMode model, Effects.none )
 

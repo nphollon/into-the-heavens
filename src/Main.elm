@@ -6,7 +6,7 @@ import Html exposing (Html)
 import StartApp
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
-import Update exposing (..)
+import Types exposing (..)
 import Menu
 import Menu.Init
 import Flight

@@ -1,6 +1,6 @@
 module Menu.Init (menu) where
 
-import Update exposing (Mode(..), Update(..), Library, Vertex)
+import Types exposing (Mode(..), Update(..), Library, Vertex)
 import Effects exposing (Effects)
 import Dict exposing (Dict)
 import Http

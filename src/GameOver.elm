@@ -6,7 +6,7 @@ import Effects exposing (Effects)
 import Set
 import Char
 import Frame
-import Update exposing (Update(..), Mode(..), GameOverState)
+import Types exposing (Update(..), Mode(..), GameOverState)
 import Flight.Init
 
 

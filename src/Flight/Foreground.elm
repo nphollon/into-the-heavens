@@ -4,7 +4,7 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import WebGL exposing (Drawable, Renderable, Shader)
-import Update exposing (ShaderType(..), Camera, Vertex)
+import Types exposing (ShaderType(..), Camera, Vertex)
 import Math.Matrix as Matrix exposing (Matrix)
 import Math.Vector as Vector
 
