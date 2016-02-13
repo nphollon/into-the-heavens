@@ -5,6 +5,7 @@ import Math.Vector as Vector
 import Dict
 import Effects exposing (Effects)
 import Generate.Ship as Ship
+import Generate.Sphere as Sphere
 import Math.Collision as Collision
 
 
@@ -35,7 +36,7 @@ game library =
                     , angVelocity = Vector.vector 0 0.3 0
                     , inertia = Vector.vector 1 1 1
                     , mass = 1
-                    , hull = []
+                    , hull = Collision.hull .position Sphere.mesh
                     }
                   )
                 , ( "other"

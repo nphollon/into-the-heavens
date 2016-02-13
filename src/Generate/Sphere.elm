@@ -1,4 +1,4 @@
-module Generate.Sphere (sphere) where
+module Generate.Sphere (mesh) where
 
 import Color
 import Array exposing (Array)
@@ -19,8 +19,8 @@ type Zone
   | Four
 
 
-sphere : Mesh
-sphere =
+mesh : Mesh
+mesh =
   let
     sphereIcosaFaces =
       List.filterMap

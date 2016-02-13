@@ -79,15 +79,9 @@ transition model =
         |> Maybe.map .position
         |> Maybe.withDefault (Vector.vector 0 0 0)
 
-    {-
     shipCrashed =
       Dict.values model.universe.bodies
         |> List.any (Collision.isInside shipPosition)
-    -}
-    shipCrashed =
-      Mech.body "other" model.universe
-        |> Maybe.map (Collision.isInside shipPosition)
-        |> Maybe.withDefault False
   in
     if shipCrashed then
       Update.gameOver model.library
