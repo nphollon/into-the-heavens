@@ -43,9 +43,16 @@ scene width height { universe, library, graphics } =
             (Mech.body bodyName universe)
             camera
             (Dict.get meshName library)
+
+    webgl =
+      WebGL.webglWithConfig
+        [ WebGL.Enable WebGL.CullFace
+        , WebGL.Enable WebGL.DepthTest
+        ]
+        ( width, height )
   in
     List.filterMap draw graphics
-      |> WebGL.webgl ( width, height )
+      |> webgl
       |> Html.fromElement
 
 
