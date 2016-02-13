@@ -7,8 +7,13 @@ final_out="public_html/heavens.js"
 main_elm="src/Main.elm"
 
 function compile {
+    test/run.sh;
+    if [ $? -ne 0 ]; then exit 1; fi;
+
     scripts/make-mesh.sh;
-    
+    if [ $? -ne 0 ]; then exit 1; fi;
+
+    echo; echo;
     echo "Hostname: $1";
 
     elm make $main_elm --output $elm_out --yes --warn
@@ -29,7 +34,6 @@ then
 elif [ $1 == "prod" ];
 then
     compile "https:\/\/intotheheavens\.net";
-    scripts/make-mesh.sh
     scp -r public_html intotheh@intotheheavens.net:.
 elif [ $1 == "test" ];
 then

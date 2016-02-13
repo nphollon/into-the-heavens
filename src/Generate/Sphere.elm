@@ -52,8 +52,8 @@ toRect ( ( colatitude, longitude ), zone ) =
     position =
       Vector.vector (sin theta * cos phi) (sin theta * sin phi) (cos theta)
   in
-    { vertPosition = position
-    , vertColor = toColor zone
+    { position = position
+    , color = toColor zone
     , normal = Vector.normalize position
     }
 
@@ -76,8 +76,8 @@ split ( a, b, c ) =
       Vec4.add c d |> Vec4.scale 0.5
 
     midpoint a b =
-      { vertPosition = normalMidpoint a.vertPosition b.vertPosition
-      , vertColor = meanMidpoint a.vertColor b.vertColor
+      { position = normalMidpoint a.position b.position
+      , color = meanMidpoint a.color b.color
       , normal = normalMidpoint a.normal b.normal
       }
 

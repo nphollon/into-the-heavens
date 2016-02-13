@@ -1,13 +1,8 @@
-module Math.Collision (Hull, isOutside, isInside, fromTriangles) where
+module Math.Collision (isOutside, isInside, hull) where
 
 import Math.Vector as Vector exposing (Vector)
-
-
-type alias Hull =
-  List
-    { keyPoint : Vector
-    , normal : Vector
-    }
+import Math.Matrix as Matrix exposing (Matrix)
+import Math.Mechanics exposing (Hull, Body)
 
 
 {-| Given a list of triangles, compute a hull. For a triangle of points (a,b,c),
@@ -19,9 +14,12 @@ The triangles passed to this function should form a polyhedron that is
 * convex (no dents)
 * closed (no holes)
 -}
-fromTriangles : List ( Vector, Vector, Vector ) -> Hull
-fromTriangles triangles =
+hull : (a -> Vector) -> List ( a, a, a ) -> Hull
+hull xform triangles =
   let
+    tripleMap ( a, b, c ) =
+      ( xform a, xform b, xform c )
+
     toFace ( a, b, c ) =
       { normal =
           Vector.normalize (Vector.cross (Vector.sub b a) (Vector.sub c a))
@@ -33,39 +31,24 @@ fromTriangles triangles =
         |> List.map (\f -> f vec)
         |> List.all (not << isNaN)
   in
-    List.map toFace triangles
+    List.map (tripleMap >> toFace) triangles
       |> List.filter (.normal >> isDefined)
 
 
-{-| Returns `True` if the given position is on or in the given hull.
-Defaults to `False` if the hull has no sides.
-
-    hull =
-      fromTriangles
-        [ (vec3 0 0 0, vec3 0 0 5, vec3 10 0 0)
-        , (vec3 0 0 0, vec3 0 5 0, vec3 0 0 5)
-        , (vec3 0 0 0, vec3 10 0 0, vec3 0 5 0)
-        , (vec3 10 0 0, vec3 0 0 5, vec3 0 5 0)
-        ]
-
-    isInside hull (vec3 5 1 1) == True
-
-    isInside hull (vec3 -1 2 -1) == False
-
-    isInside hull (vec3 0 0 0) == True
--}
-isInside : Vector -> Hull -> Bool
-isInside point faces =
+isInside : Vector -> Body -> Bool
+isInside point body =
   let
+    bodyPoint =
+      Matrix.rotate
+        (Vector.negate body.orientation)
+        (Vector.sub point body.position)
+
     isBehind face =
-      Vector.dot face.normal (Vector.sub point face.keyPoint) < 1.0e-6
+      Vector.dot face.normal (Vector.sub bodyPoint face.keyPoint) < 1.0e-6
   in
-    not (List.isEmpty faces) && List.all isBehind faces
+    not (List.isEmpty body.hull) && List.all isBehind body.hull
 
 
-{-| Returns `True` if the given position is outside the given hull.
-The logical inverse of `isInside`.
--}
-isOutside : Vector -> Hull -> Bool
+isOutside : Vector -> Body -> Bool
 isOutside point boundary =
   not (isInside point boundary)

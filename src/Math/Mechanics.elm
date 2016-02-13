@@ -1,4 +1,4 @@
-module Math.Mechanics (State, evolve, initialize, recenter, body, Body) where
+module Math.Mechanics (State, evolve, initialize, recenter, body, Body, Hull) where
 
 import Dict exposing (Dict)
 import Math.Vector as Vector exposing (Vector)
@@ -17,7 +17,15 @@ type alias Body =
   , angVelocity : Vector
   , mass : Float
   , inertia : Vector
+  , hull : Hull
   }
+
+
+type alias Hull =
+  List
+    { keyPoint : Vector
+    , normal : Vector
+    }
 
 
 initialize : Dict String Body -> State

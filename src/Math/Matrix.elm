@@ -1,4 +1,4 @@
-module Math.Matrix (Matrix, makeRotate, transform, perspective, transpose, placement, toMat4, toInverseMat4) where
+module Math.Matrix (Matrix, perspective, rotate, transpose, inverse, placement, toMat4) where
 
 import Math.Matrix4 as Mat4
 import Math.Vector as Vector exposing (Vector)
@@ -6,22 +6,6 @@ import Math.Vector as Vector exposing (Vector)
 
 type Matrix
   = Wrapper Mat4.Mat4
-
-
-makeRotate : Vector -> Matrix
-makeRotate v =
-  if Vector.length v == 0 then
-    Wrapper Mat4.identity
-  else
-    Mat4.makeRotate
-      (Vector.length v)
-      (Vector.toVec3 v)
-      |> Wrapper
-
-
-transform : Matrix -> Vector -> Vector
-transform (Wrapper m) =
-  Vector.toVec3 >> Mat4.transform m >> Vector.fromVec3
 
 
 perspective : Float -> Matrix
@@ -35,14 +19,24 @@ transpose (Wrapper m) =
   Wrapper (Mat4.transpose m)
 
 
+inverse : Matrix -> Matrix
+inverse (Wrapper m) =
+  Wrapper (Mat4.inverseOrthonormal m)
+
+
+rotate : Vector -> Vector -> Vector
+rotate orientation vector =
+  Vector.toVec3 vector
+    |> Mat4.transform (rotMat4 orientation)
+    |> Vector.fromVec3
+
+
 placement : Vector -> Vector -> Matrix
 placement position orientation =
-  if Vector.length orientation == 0 then
-    Wrapper (Mat4.makeTranslate (Vector.toVec3 position))
-  else
-    Mat4.makeTranslate (Vector.toVec3 position)
-      |> Mat4.rotate (Vector.length orientation) (Vector.toVec3 orientation)
-      |> Wrapper
+  Mat4.mul
+    (Mat4.makeTranslate (Vector.toVec3 position))
+    (rotMat4 orientation)
+    |> Wrapper
 
 
 toMat4 : Matrix -> Mat4.Mat4
@@ -50,6 +44,9 @@ toMat4 (Wrapper m) =
   m
 
 
-toInverseMat4 : Matrix -> Mat4.Mat4
-toInverseMat4 (Wrapper m) =
-  Mat4.inverseOrthonormal m
+rotMat4 : Vector -> Mat4.Mat4
+rotMat4 orientation =
+  if Vector.length orientation == 0 then
+    Mat4.identity
+  else
+    Mat4.makeRotate (Vector.length orientation) (Vector.toVec3 orientation)

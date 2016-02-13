@@ -61,9 +61,9 @@ toTriangles positions =
             |> Vector.normalize
 
         toVertex p =
-          { vertPosition = p
+          { position = p
           , normal = normal
-          , vertColor = Vec4.vec4 0.28125 0.234375 0.47265625 1
+          , color = Vec4.vec4 0.28125 0.234375 0.47265625 1
           }
       in
         List.map2

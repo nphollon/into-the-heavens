@@ -32,7 +32,7 @@ entity objectType placement camera world =
       , cameraOrientation = Matrix.toMat4 camera.orientation
       , cameraPosition = Vector.toVec3 camera.position
       , placement = Matrix.toMat4 placement
-      , inversePlacement = Matrix.toInverseMat4 placement
+      , inversePlacement = Matrix.toMat4 (Matrix.inverse placement)
       }
 
     fragmentShader =

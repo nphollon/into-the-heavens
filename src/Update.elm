@@ -12,7 +12,6 @@ import Math.Vector exposing (Vector)
 import Http
 import WebGL exposing (Drawable)
 import Math.Mechanics as Mech
-import Math.Collision as Collision
 
 
 type Update
@@ -30,7 +29,6 @@ type Mode
 type alias GameState =
   { continue : Bool
   , universe : Mech.State
-  , hulls : List Collision.Hull
   , graphics : List GraphicsObject
   , library : Library
   , action : Action

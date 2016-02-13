@@ -118,7 +118,7 @@ star color phi theta =
 
 translate : Float -> Float -> Float -> Vertex -> Vertex
 translate x y z vertex =
-  { vertex | vertPosition = Vector.add vertex.vertPosition (Vector.vector x y z) }
+  { vertex | position = Vector.add vertex.position (Vector.vector x y z) }
 
 
 rotate : Float -> Float -> Vertex -> Vertex
@@ -126,9 +126,8 @@ rotate pitch yaw vertex =
   let
     rotation =
       Vector.orient (Vector.vector 0 yaw 0) (Vector.vector 0 0 pitch)
-        |> Matrix.makeRotate
   in
-    { vertex | vertPosition = Matrix.transform rotation vertex.vertPosition }
+    { vertex | position = Matrix.rotate rotation vertex.position }
 
 
 vertex : Color -> Float -> Float -> Float -> Vertex
@@ -147,8 +146,8 @@ vertex color x y z =
         (norm rgba.blue)
         rgba.alpha
   in
-    { vertPosition = Vector.vector x y z
-    , vertColor = colorVector
+    { position = Vector.vector x y z
+    , color = colorVector
     , normal = Vector.vector 1 0 0
     }
 

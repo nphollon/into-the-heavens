@@ -46,15 +46,15 @@ encodeList f =
 encodeAttribute : Vertex -> Json.Value
 encodeAttribute att =
   Json.object
-    [ ( "position", encodeVector att.vertPosition )
-    , ( "color", encodeVec4 att.vertColor )
+    [ ( "position", encodeVector att.position )
+    , ( "color", encodeVec4 att.color )
     , ( "normal", encodeVector att.normal )
     ]
 
 
 type alias Vertex =
-  { vertPosition : Vector
-  , vertColor : Vec4
+  { position : Vector
+  , color : Vec4
   , normal : Vector
   }
 

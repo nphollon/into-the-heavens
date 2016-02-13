@@ -4,6 +4,8 @@ import Update exposing (..)
 import Math.Vector as Vector
 import Dict
 import Effects exposing (Effects)
+import Generate.Ship as Ship
+import Math.Collision as Collision
 
 
 game : Library -> ( Mode, Effects a )
@@ -23,6 +25,7 @@ game library =
                     , angVelocity = Vector.vector 0 0 0
                     , inertia = Vector.vector 1 1 1
                     , mass = 1
+                    , hull = []
                     }
                   )
                 , ( "planet"
@@ -32,21 +35,21 @@ game library =
                     , angVelocity = Vector.vector 0 0.3 0
                     , inertia = Vector.vector 1 1 1
                     , mass = 1
+                    , hull = []
                     }
                   )
                 , ( "other"
                   , { position = Vector.vector 0 0 -20
                     , velocity = Vector.vector 0 0 0
                     , orientation = Vector.vector 0 0 0
-                    , angVelocity = Vector.vector 0.1 0.3 0.4
+                    , angVelocity = Vector.vector 0.1 0.2 0.3
                     , inertia = Vector.vector 1 1 1
                     , mass = 1
+                    , hull = Collision.hull .position Ship.mesh
                     }
                   )
                 ]
           }
-      , hulls =
-          [ [], [] ]
       , graphics =
           [ Background "Background"
           , Object

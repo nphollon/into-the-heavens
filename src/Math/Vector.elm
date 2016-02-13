@@ -102,6 +102,8 @@ distanceSquared u v =
   lengthSquared (u `sub` v)
 
 
+{-| Combine two orientations
+-}
 orient : Vector -> Vector -> Vector
 orient u v =
   compose (toQuaternion v) (toQuaternion u)

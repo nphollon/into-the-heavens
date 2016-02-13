@@ -38,7 +38,7 @@ thrust delta model =
   let
     forwardThrust ship =
       Vector.vector 0 0 (toFloat model.action.thrust * -10)
-        |> Matrix.transform (Matrix.makeRotate ship.orientation)
+        |> Matrix.rotate ship.orientation
 
     brake ship =
       Vector.scale -10 ship.velocity
@@ -74,12 +74,19 @@ thrust delta model =
 transition : GameState -> ( Mode, Effects a )
 transition model =
   let
-    hasCrashed body =
-      List.any (Collision.isInside body.position) model.hulls
-
-    shipCrashed =
+    shipPosition =
       Dict.get "ship" model.universe.bodies
-        |> Maybe.map hasCrashed
+        |> Maybe.map .position
+        |> Maybe.withDefault (Vector.vector 0 0 0)
+
+    {-
+    shipCrashed =
+      Dict.values model.universe.bodies
+        |> List.any (Collision.isInside shipPosition)
+    -}
+    shipCrashed =
+      Mech.body "other" model.universe
+        |> Maybe.map (Collision.isInside shipPosition)
         |> Maybe.withDefault False
   in
     if shipCrashed then
