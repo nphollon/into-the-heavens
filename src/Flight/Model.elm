@@ -44,7 +44,9 @@ thrust delta model =
       Vector.scale -10 ship.velocity
 
     linear ship =
-      if model.action.thrust >= 0 then
+      if model.action.thrust == 0 then
+        Vector.vector 0 0 0
+      else if model.action.thrust > 0 then
         forwardThrust ship
       else
         brake ship
@@ -65,9 +67,22 @@ thrust delta model =
       { linear = linear ship
       , angular = angular ship
       }
+
+    alwaysGoing ship _ =
+      { linear = Matrix.rotate ship.orientation (Vector.vector 0 0 1)
+      , angular = Vector.vector 0 0 0
+      }
   in
     { model
-      | universe = Mech.evolve (Dict.singleton "ship" rule) delta model.universe
+      | universe =
+          Mech.evolve
+            (Dict.fromList
+              [ ( "ship", rule )
+              , ( "other", alwaysGoing )
+              ]
+            )
+            delta
+            model.universe
     }
 
 
