@@ -29,7 +29,6 @@ type alias GameState =
   , universe : State
   , graphics : List GraphicsObject
   , library : Library
-  , action : Action
   }
 
 
@@ -47,6 +46,7 @@ type alias Body =
   , mass : Float
   , inertia : Vector
   , hull : Hull
+  , action : Action
   }
 
 

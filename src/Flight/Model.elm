@@ -38,16 +38,16 @@ thrust : Float -> GameState -> GameState
 thrust delta model =
   let
     forwardThrust ship =
-      Vector.vector 0 0 (toFloat model.action.thrust * -10)
+      Vector.vector 0 0 (toFloat ship.action.thrust * -10)
         |> Matrix.rotate ship.orientation
 
     brake ship =
       Vector.scale -10 ship.velocity
 
     linear ship =
-      if model.action.thrust == 0 then
+      if ship.action.thrust == 0 then
         Vector.vector 0 0 0
-      else if model.action.thrust > 0 then
+      else if ship.action.thrust > 0 then
         forwardThrust ship
       else
         brake ship
@@ -60,9 +60,9 @@ thrust delta model =
 
     angular ship =
       Vector.vector
-        (comp (toFloat model.action.pitch) (ship.angVelocity.x))
-        (comp (toFloat model.action.yaw) (ship.angVelocity.y))
-        (comp (toFloat model.action.roll) (ship.angVelocity.z))
+        (comp (toFloat ship.action.pitch) (ship.angVelocity.x))
+        (comp (toFloat ship.action.yaw) (ship.angVelocity.y))
+        (comp (toFloat ship.action.roll) (ship.angVelocity.z))
 
     rule ship _ =
       { linear = linear ship
@@ -139,5 +139,21 @@ controlUpdate keysDown model =
 
     newAction =
       Set.foldl keyAct Init.inaction keysDown
+
+    newBodies =
+      Dict.update
+        "ship"
+        (Maybe.map
+          (\body ->
+            { body | action = newAction }
+          )
+        )
+        model.universe.bodies
+
+    newUniverse u =
+      { u | bodies = newBodies }
   in
-    { model | action = newAction }
+    { model
+      | universe =
+          newUniverse model.universe
+    }

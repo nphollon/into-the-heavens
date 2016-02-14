@@ -27,6 +27,7 @@ game library =
                     , inertia = Vector.vector 1 1 1
                     , mass = 1
                     , hull = []
+                    , action = inaction
                     }
                   )
                 , ( "planet"
@@ -37,6 +38,7 @@ game library =
                     , inertia = Vector.vector 1 1 1
                     , mass = 1
                     , hull = Collision.hull .position Sphere.mesh
+                    , action = inaction
                     }
                   )
                 , ( "other"
@@ -47,6 +49,7 @@ game library =
                     , inertia = Vector.vector 1 1 1
                     , mass = 1
                     , hull = Collision.hull .position Ship.mesh
+                    , action = inaction
                     }
                   )
                 ]
@@ -64,7 +67,6 @@ game library =
               , shader = Planet
               }
           ]
-      , action = inaction
       }
     )
     Effects.none
