@@ -4,7 +4,6 @@ import Char
 import Dict
 import Effects exposing (Effects)
 import Set exposing (Set)
-import Time exposing (Time)
 import Types exposing (Update(..), Action, GameState, Mode(..))
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
@@ -22,7 +21,7 @@ update input model =
   in
     case input of
       FPS dt ->
-        thrust (1 * Time.inSeconds dt) model
+        thrust dt model
           |> transition
 
       Keys keysDown ->

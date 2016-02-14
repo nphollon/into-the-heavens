@@ -31,7 +31,7 @@ app =
 inputs : List (Signal Update)
 inputs =
   [ Signal.map Keys Keyboard.keysDown
-  , Signal.map FPS (Time.fpsWhen 60 hasFocus)
+  , Signal.map (Time.inSeconds >> FPS) (Time.fpsWhen 60 hasFocus)
   ]
 
 
