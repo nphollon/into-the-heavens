@@ -29,6 +29,7 @@ type alias GameState =
   , universe : State
   , graphics : List GraphicsObject
   , library : Library
+  , aiState : AiState
   }
 
 
@@ -63,6 +64,13 @@ type alias Action =
   , yaw : Int
   , roll : Int
   }
+
+
+type AiState
+  = Turning Float
+  | Thrusting Float
+  | Braking Float
+  | Resting Float
 
 
 type GraphicsObject

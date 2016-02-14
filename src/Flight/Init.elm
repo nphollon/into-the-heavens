@@ -72,6 +72,7 @@ game library =
               , shader = Planet
               }
           ]
+      , aiState = Resting 1
       }
     )
     Effects.none

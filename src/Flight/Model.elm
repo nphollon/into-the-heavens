@@ -4,7 +4,7 @@ import Char
 import Dict
 import Effects exposing (Effects)
 import Set exposing (Set)
-import Types exposing (Update(..), Action, GameState, Mode(..))
+import Types exposing (Update(..), Action, GameState, Mode(..), AiState(..))
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
 import Math.Matrix as Matrix
@@ -21,8 +21,9 @@ update input model =
   in
     case input of
       FPS dt ->
-        thrust dt model
-          |> transition
+        steerAi dt model
+          |> thrust dt
+          |> crashCheck
 
       Keys keysDown ->
         controlUpdate keysDown model
@@ -69,8 +70,48 @@ thrust delta model =
     }
 
 
-transition : GameState -> ( Mode, Effects a )
-transition model =
+steerAi : Float -> GameState -> GameState
+steerAi delta model =
+  let
+    check time thisState nextState nextAction =
+      if time < 0 then
+        { model | aiState = nextState }
+          |> setAction "other" nextAction
+      else
+        { model | aiState = thisState time }
+  in
+    case model.aiState of
+      Turning t ->
+        check
+          (t - delta)
+          Turning
+          (Thrusting 2)
+          { thrust = 1, pitch = 0, yaw = 0, roll = 0 }
+
+      Thrusting t ->
+        check
+          (t - delta)
+          Thrusting
+          (Resting 2)
+          { thrust = 0, pitch = 0, yaw = 0, roll = 0 }
+
+      Resting t ->
+        check
+          (t - delta)
+          Resting
+          (Braking 2)
+          { thrust = -1, pitch = 0, yaw = 0, roll = 0 }
+
+      Braking t ->
+        check
+          (t - delta)
+          Braking
+          (Turning 0.7)
+          { thrust = 0, pitch = 0, yaw = 1, roll = 0 }
+
+
+crashCheck : GameState -> ( Mode, Effects a )
+crashCheck model =
   let
     shipPosition =
       Dict.get "ship" model.universe.bodies
@@ -118,24 +159,20 @@ controlUpdate keysDown model =
 
         otherwise ->
           action
-
-    newAction =
-      Set.foldl keyAct Init.inaction keysDown
-
-    newBodies =
-      Dict.update
-        "ship"
-        (Maybe.map
-          (\body ->
-            { body | action = newAction }
-          )
-        )
-        model.universe.bodies
-
-    newUniverse u =
-      { u | bodies = newBodies }
   in
-    { model
-      | universe =
-          newUniverse model.universe
-    }
+    setAction "ship" (Set.foldl keyAct Init.inaction keysDown) model
+
+
+setAction : String -> Action -> GameState -> GameState
+setAction label newAction model =
+  let
+    updateAction b =
+      { b | action = newAction }
+
+    updateUniverse u =
+      { u
+        | bodies =
+            Dict.update label (Maybe.map updateAction) u.bodies
+      }
+  in
+    { model | universe = updateUniverse model.universe }
