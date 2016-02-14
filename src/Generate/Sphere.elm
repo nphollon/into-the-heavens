@@ -19,6 +19,11 @@ type Zone
   | Four
 
 
+size : Float
+size =
+  18
+
+
 mesh : Mesh
 mesh =
   let
@@ -51,6 +56,7 @@ toRect ( ( colatitude, longitude ), zone ) =
 
     position =
       Vector.vector (sin theta * cos phi) (sin theta * sin phi) (cos theta)
+        |> Vector.scale size
   in
     { position = position
     , color = toColor zone
@@ -76,7 +82,7 @@ split ( a, b, c ) =
       Vec4.add c d |> Vec4.scale 0.5
 
     midpoint a b =
-      { position = normalMidpoint a.position b.position
+      { position = Vector.scale size (normalMidpoint a.position b.position)
       , color = meanMidpoint a.color b.color
       , normal = normalMidpoint a.normal b.normal
       }

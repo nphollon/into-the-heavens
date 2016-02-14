@@ -31,10 +31,10 @@ game library =
                     }
                   )
                 , ( "planet"
-                  , { position = Vector.vector 1 -2 -5
+                  , { position = Vector.vector 0 -20 0
                     , velocity = Vector.vector 0 0 0
                     , orientation = Vector.vector 0 0 0
-                    , angVelocity = Vector.vector 0 0.3 0
+                    , angVelocity = Vector.vector 0 3.0e-2 0
                     , inertia = Vector.vector 1 1 1
                     , mass = 1
                     , hull = Collision.hull .position Sphere.mesh
@@ -45,7 +45,7 @@ game library =
                   , { position = Vector.vector 0 0 -20
                     , velocity = Vector.vector 0 0 0
                     , orientation = Vector.vector 0 0 0
-                    , angVelocity = Vector.vector 0.5 0.5 0
+                    , angVelocity = Vector.vector 0 0 0
                     , inertia = Vector.vector 1 1 1
                     , mass = 1
                     , hull = Collision.hull .position Ship.mesh
