@@ -36,41 +36,24 @@ update input model =
 thrust : Float -> GameState -> GameState
 thrust delta model =
   let
-    forwardThrust ship =
-      Vector.vector 0 0 (toFloat ship.action.thrust * -10)
-        |> Matrix.rotate ship.orientation
-
-    brake ship =
-      Vector.scale -10 ship.velocity
-
-    linear ship =
-      if ship.action.thrust == 0 then
-        Vector.vector 0 0 0
-      else if ship.action.thrust > 0 then
-        forwardThrust ship
+    goOrStop dir vel =
+      if dir == 0 then
+        -6 * vel
       else
-        brake ship
-
-    comp a b =
-      if a /= 0 then
-        200 * delta * a
-      else
-        -6 * b
-
-    angular ship =
-      Vector.vector
-        (comp (toFloat ship.action.pitch) (ship.angVelocity.x))
-        (comp (toFloat ship.action.yaw) (ship.angVelocity.y))
-        (comp (toFloat ship.action.roll) (ship.angVelocity.z))
+        200 * delta * (toFloat dir)
 
     rule ship _ =
-      { linear = linear ship
-      , angular = angular ship
-      }
-
-    alwaysGoing ship _ =
-      { linear = Matrix.rotate ship.orientation (Vector.vector 0 0 1)
-      , angular = Vector.vector 0 0 0
+      { linear =
+          if ship.action.thrust >= 0 then
+            Vector.vector 0 0 (toFloat ship.action.thrust * -10)
+              |> Matrix.rotate ship.orientation
+          else
+            Vector.scale -10 ship.velocity
+      , angular =
+          Vector.vector
+            (goOrStop (toFloat ship.action.pitch) (ship.angVelocity.x))
+            (goOrStop (toFloat ship.action.yaw) (ship.angVelocity.y))
+            (goOrStop (toFloat ship.action.roll) (ship.angVelocity.z))
       }
   in
     { model
@@ -78,7 +61,7 @@ thrust delta model =
           Mech.evolve
             (Dict.fromList
               [ ( "ship", rule )
-              , ( "other", alwaysGoing )
+              , ( "other", rule )
               ]
             )
             delta

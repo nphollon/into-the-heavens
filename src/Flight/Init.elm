@@ -49,7 +49,12 @@ game library =
                     , inertia = Vector.vector 1 1 1
                     , mass = 1
                     , hull = Collision.hull .position Ship.mesh
-                    , action = inaction
+                    , action =
+                        { thrust = 0
+                        , pitch = 0
+                        , yaw = 0
+                        , roll = 0
+                        }
                     }
                   )
                 ]

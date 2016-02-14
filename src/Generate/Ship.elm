@@ -14,34 +14,34 @@ mesh =
       (1 + sqrt 2) * 2 ^ -0.25
 
     zMid =
-      -(2 ^ -0.25)
+      2 ^ -0.25
 
     rMid =
       2 ^ -0.5
 
     cornerPositions =
       Array.fromList
-        [ Vector.vector 0 0 zPeak
+        [ Vector.vector 0 0 -zPeak
         , Vector.vector rMid rMid zMid
         , Vector.vector rMid -rMid zMid
         , Vector.vector -rMid -rMid zMid
         , Vector.vector -rMid rMid zMid
-        , Vector.vector 1 0 -zPeak
-        , Vector.vector 0 -1 -zPeak
-        , Vector.vector -1 0 -zPeak
-        , Vector.vector 0 1 -zPeak
+        , Vector.vector 1 0 zPeak
+        , Vector.vector 0 -1 zPeak
+        , Vector.vector -1 0 zPeak
+        , Vector.vector 0 1 zPeak
         ]
 
     cornerIndexes =
-      [ [ 0, 3, 6, 2 ]
-      , [ 0, 4, 7, 3 ]
-      , [ 0, 1, 8, 4 ]
-      , [ 0, 2, 5, 1 ]
-      , [ 8, 5, 6, 7 ]
-      , [ 7, 6, 3 ]
-      , [ 6, 5, 2 ]
-      , [ 5, 8, 1 ]
-      , [ 8, 7, 4 ]
+      [ [ 0, 2, 6, 3 ]
+      , [ 0, 3, 7, 4 ]
+      , [ 0, 4, 8, 1 ]
+      , [ 0, 1, 5, 2 ]
+      , [ 8, 7, 6, 5 ]
+      , [ 7, 3, 6 ]
+      , [ 6, 2, 5 ]
+      , [ 5, 1, 8 ]
+      , [ 8, 4, 7 ]
       ]
 
     toPositions indexes =
