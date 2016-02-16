@@ -9,7 +9,7 @@ import Generate.Sphere as Sphere
 import Math.Collision as Collision
 
 
-game : Library -> ( Mode, Effects a )
+game : Library -> ( Mode, Effects Update )
 game library =
   (,)
     (GameMode

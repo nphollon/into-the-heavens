@@ -6,11 +6,11 @@ import Effects exposing (Effects)
 import Set
 import Char
 import Frame
-import Types exposing (Update(..), Mode(..), GameOverState)
+import Types exposing (..)
 import Flight.Init
 
 
-update : Update -> GameOverState -> ( Mode, Effects a )
+update : Update -> GameOverState -> ( Mode, Effects Update )
 update input model =
   let
     continue =

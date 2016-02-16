@@ -35,7 +35,7 @@ inputs =
   ]
 
 
-update : Update -> Mode -> ( Mode, Effects a )
+update : Update -> Mode -> ( Mode, Effects Update )
 update up mode =
   case mode of
     GameMode data ->

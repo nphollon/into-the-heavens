@@ -7,7 +7,7 @@ import Flight.Model as Model
 import Flight.View as View
 
 
-update : Update -> GameState -> ( Mode, Effects a )
+update : Update -> GameState -> ( Mode, Effects Update )
 update =
   Model.update
 

@@ -11,7 +11,7 @@ import Frame
 import Flight.Init
 
 
-update : Update -> MenuState -> ( Mode, Effects a )
+update : Update -> MenuState -> ( Mode, Effects Update )
 update input model =
   let
     noEffects =

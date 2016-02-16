@@ -1,10 +1,11 @@
 module Flight.Model (update) where
 
-import Char
+import Char exposing (KeyCode)
 import Dict
+import Task
 import Effects exposing (Effects)
 import Set exposing (Set)
-import Types exposing (Update(..), Action, GameState, Mode(..), AiState(..))
+import Types exposing (..)
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
 import Flight.Init as Init
@@ -12,25 +13,25 @@ import GameOver.Init
 import Math.Collision as Collision
 
 
-update : Update -> GameState -> ( Mode, Effects a )
+update : Update -> GameState -> ( Mode, Effects Update )
 update input model =
-  let
-    noEffects =
-      flip (,) Effects.none
-  in
-    case input of
-      FPS dt ->
-        steerAi dt model
-          |> thrust dt
-          |> crashCheck
+  case input of
+    FPS dt ->
+      let
+        newModel =
+          steerAi dt model
+            |> thrust dt
+      in
+        ( GameMode newModel, crashCheck newModel )
 
-      Keys keysDown ->
-        controlUpdate keysDown model
-          |> GameMode
-          |> noEffects
+    Keys keysDown ->
+      controlUpdate keysDown model
 
-      otherwise ->
-        noEffects (GameMode model)
+    Collide _ _ ->
+      GameOver.Init.gameOver model.library
+
+    Meshes _ ->
+      ( GameMode model, Effects.none )
 
 
 thrust : Float -> GameState -> GameState
@@ -78,7 +79,7 @@ steerAi delta model =
           { thrust = 0, pitch = 0, yaw = 1, roll = 0 }
 
 
-crashCheck : GameState -> ( Mode, Effects a )
+crashCheck : GameState -> Effects Update
 crashCheck model =
   let
     shipPosition =
@@ -86,17 +87,28 @@ crashCheck model =
         |> Maybe.map .position
         |> Maybe.withDefault (Vector.vector 0 0 0)
 
-    shipCrashed =
-      Dict.values model.universe
-        |> List.any (Collision.isInside shipPosition)
+    collidedWith =
+      Dict.foldl
+        (\label hull accumulator ->
+          if Collision.isInside shipPosition hull then
+            Just label
+          else
+            accumulator
+        )
+        Nothing
+        model.universe
   in
-    if shipCrashed then
-      GameOver.Init.gameOver model.library
-    else
-      ( GameMode model, Effects.none )
+    case collidedWith of
+      Just label ->
+        Collide "ship" label
+          |> Task.succeed
+          |> Effects.task
+
+      Nothing ->
+        Effects.none
 
 
-controlUpdate : Set Char.KeyCode -> GameState -> GameState
+controlUpdate : Set KeyCode -> GameState -> ( Mode, Effects Update )
 controlUpdate keysDown model =
   let
     keyAct key action =
@@ -127,8 +139,11 @@ controlUpdate keysDown model =
 
         otherwise ->
           action
+
+    newAction =
+      Set.foldl keyAct Init.inaction keysDown
   in
-    setAction "ship" (Set.foldl keyAct Init.inaction keysDown) model
+    ( GameMode (setAction "ship" newAction model), Effects.none )
 
 
 setAction : String -> Action -> GameState -> GameState

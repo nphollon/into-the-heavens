@@ -16,6 +16,7 @@ type Update
   = Meshes Response
   | FPS Time
   | Keys (Set Char.KeyCode)
+  | Collide String String
 
 
 type Mode
