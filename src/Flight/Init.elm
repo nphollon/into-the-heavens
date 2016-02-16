@@ -36,7 +36,7 @@ game library =
                 }
               )
             , ( "other"
-              , { position = Vector.vector 0 0 -20
+              , { position = Vector.vector 5 5 -20
                 , velocity = Vector.vector 0 0 0
                 , orientation = Vector.vector 0 0 0
                 , angVelocity = Vector.vector 0 0 0
