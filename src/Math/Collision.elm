@@ -2,7 +2,7 @@ module Math.Collision (isOutside, isInside, hull) where
 
 import Math.Vector as Vector exposing (Vector)
 import Math.Matrix as Matrix exposing (Matrix)
-import Types exposing (Hull, Geometry)
+import Types exposing (Hull, Body)
 
 
 {-| Given a list of triangles, compute a hull. For a triangle of points (a,b,c),
@@ -35,8 +35,8 @@ hull xform triangles =
       |> List.filter (.normal >> isDefined)
 
 
-isInside : Vector -> Geometry -> Hull -> Bool
-isInside point body hull =
+isInside : Vector -> Body -> Bool
+isInside point body =
   let
     bodyPoint =
       Matrix.rotate
@@ -46,9 +46,9 @@ isInside point body hull =
     isBehind face =
       Vector.dot face.normal (Vector.sub bodyPoint face.keyPoint) < 1.0e-6
   in
-    not (List.isEmpty hull) && List.all isBehind hull
+    not (List.isEmpty body.hull) && List.all isBehind body.hull
 
 
-isOutside : Vector -> Geometry -> Hull -> Bool
-isOutside point body hull =
-  not (isInside point body hull)
+isOutside : Vector -> Body -> Bool
+isOutside point boundary =
+  not (isInside point boundary)

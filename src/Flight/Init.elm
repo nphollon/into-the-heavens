@@ -15,64 +15,64 @@ game library =
     (GameMode
       { library = library
       , continue = False
-      , bodies =
-          Dict.fromList
-            [ ( "player"
-              , { geometry =
-                    { position = Vector.vector 0 0 0
+      , universe =
+          { time = 0
+          , bodies =
+              Dict.fromList
+                [ ( "ship"
+                  , { position = Vector.vector 0 0 0
                     , velocity = Vector.vector 0 0 0
                     , orientation = Vector.vector 0 0 0
                     , angVelocity = Vector.vector 0 0 0
+                    , inertia = Vector.vector 1 1 1
+                    , mass = 1
+                    , hull = []
+                    , action = inaction
                     }
-                , bodyType = Camera { action = inaction }
-                }
-              )
-            , ( "planet"
-              , { geometry =
-                    { position = Vector.vector 0 -20 0
+                  )
+                , ( "planet"
+                  , { position = Vector.vector 0 -20 0
                     , velocity = Vector.vector 0 0 0
                     , orientation = Vector.vector 0 0 0
                     , angVelocity = Vector.vector 0 3.0e-2 0
+                    , inertia = Vector.vector 1 1 1
+                    , mass = 1
+                    , hull = Collision.hull .position Sphere.mesh
+                    , action = inaction
                     }
-                , bodyType =
-                    Inert
-                      { meshName = "Sphere"
-                      , shader = Planet
-                      , hull = Collision.hull .position Sphere.mesh
-                      }
-                }
-              )
-            , ( "other"
-              , { geometry =
-                    { position = Vector.vector 0 0 -20
+                  )
+                , ( "other"
+                  , { position = Vector.vector 0 0 -20
                     , velocity = Vector.vector 0 0 0
                     , orientation = Vector.vector 0 0 0
                     , angVelocity = Vector.vector 0 0 0
+                    , inertia = Vector.vector 1 1 1
+                    , mass = 1
+                    , hull = Collision.hull .position Ship.mesh
+                    , action =
+                        { thrust = 0
+                        , pitch = 0
+                        , yaw = 0
+                        , roll = 0
+                        }
                     }
-                , bodyType =
-                    Active
-                      { meshName = "Ship"
-                      , shader = Ship
-                      , hull = Collision.hull .position Ship.mesh
-                      , action = inaction
-                      , ai = Resting 1
-                      }
-                }
-              )
-            , ( "background"
-              , { geometry =
-                    { position = Vector.vector 0 0 0
-                    , velocity = Vector.vector 0 0 0
-                    , orientation = Vector.vector 0 0 0
-                    , angVelocity = Vector.vector 0 0 0
-                    }
-                , bodyType =
-                    Background
-                      { meshName = "Background"
-                      }
-                }
-              )
-            ]
+                  )
+                ]
+          }
+      , graphics =
+          [ Background "Background"
+          , Object
+              { bodyName = "other"
+              , meshName = "Ship"
+              , shader = Ship
+              }
+          , Object
+              { bodyName = "planet"
+              , meshName = "Sphere"
+              , shader = Planet
+              }
+          ]
+      , aiState = Resting 1
       }
     )
     Effects.none
