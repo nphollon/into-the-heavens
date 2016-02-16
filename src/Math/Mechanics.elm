@@ -3,6 +3,7 @@ module Math.Mechanics (evolve, body) where
 import Dict exposing (Dict)
 import Types exposing (Body)
 import Math.Vector as Vector exposing (Vector)
+import Math.Matrix as Matrix exposing (Matrix)
 
 
 body : String -> Dict String Body -> Maybe Body
@@ -14,71 +15,79 @@ body key state =
 -- Evolving states
 
 
-evolve : Rules -> Float -> Dict String Body -> Dict String Body
-evolve accel dt state =
+evolve : Float -> Dict String Body -> Dict String Body
+evolve dt =
+  Dict.map (\k v -> evolveObject dt v)
+
+
+evolveObject : Float -> Body -> Body
+evolveObject dt object =
   let
+    accel =
+      acceleration object
+
+    stateDerivative state =
+      { state
+        | position = state.velocity
+        , velocity = accel.linear
+        , orientation = state.angVelocity
+        , angVelocity = accel.angular
+      }
+
     a =
-      stateDerivative accel state
+      stateDerivative object
 
     b =
-      nudge (dt / 2) a state |> stateDerivative accel
+      stateDerivative (nudge (dt / 2) a object)
 
     c =
-      nudge (dt / 2) b state |> stateDerivative accel
+      stateDerivative (nudge (dt / 2) b object)
 
     d =
-      nudge dt c state |> stateDerivative accel
+      stateDerivative (nudge dt c object)
   in
-    state
+    object
       |> nudge (dt / 6) a
       |> nudge (dt / 3) b
       |> nudge (dt / 3) c
       |> nudge (dt / 6) d
 
 
-stateDerivative : Rules -> Dict String Body -> Dict String Body
-stateDerivative accels state =
-  Dict.map
-    (\key particle ->
-      let
-        a =
-          Dict.get key accels
-            |> Maybe.map (\accel -> accel particle state)
-            |> Maybe.withDefault defaultAcceleration
-      in
-        { particle
-          | position = particle.velocity
-          , velocity = a.linear
-          , orientation = particle.angVelocity
-          , angVelocity = a.angular
-        }
-    )
-    state
-
-
-nudge : Float -> Dict String Body -> Dict String Body -> Dict String Body
-nudge dt derivative state =
+acceleration : Body -> Acceleration
+acceleration object =
   let
-    -- stateDerivative guarantees that the labels are the same
-    combine ( label, dpdt ) ( _, p ) =
-      (,)
-        label
-        { p
-          | position =
-              Vector.add p.position (Vector.scale dt dpdt.position)
-          , velocity =
-              Vector.add p.velocity (Vector.scale dt dpdt.velocity)
-          , orientation =
-              Vector.orient p.orientation (Vector.scale dt dpdt.orientation)
-          , angVelocity =
-              Vector.add p.angVelocity (Vector.scale dt dpdt.angVelocity)
-        }
+    goOrStop dir vel =
+      if dir == 0 then
+        -6 * vel
+      else
+        5 * toFloat dir
   in
-    List.map2
-      combine
-      (Dict.toList derivative)
-      (Dict.toList state)
-      |> Dict.fromList
+    { linear =
+        if object.action.thrust >= 0 then
+          Vector.vector 0 0 (toFloat object.action.thrust * -10)
+            |> Matrix.rotate object.orientation
+        else
+          Vector.scale -10 object.velocity
+    , angular =
+        Vector.vector
+          (goOrStop (toFloat object.action.pitch) (object.angVelocity.x))
+          (goOrStop (toFloat object.action.yaw) (object.angVelocity.y))
+          (goOrStop (toFloat object.action.roll) (object.angVelocity.z))
+    }
+
+
+nudge : Float -> Body -> Body -> Body
+nudge dt dpdt p =
+  { p
+    | position =
+        Vector.add p.position (Vector.scale dt dpdt.position)
+    , velocity =
+        Vector.add p.velocity (Vector.scale dt dpdt.velocity)
+    , orientation =
+        Vector.orient p.orientation (Vector.scale dt dpdt.orientation)
+    , angVelocity =
+        Vector.add p.angVelocity (Vector.scale dt dpdt.angVelocity)
+  }
 
 
 type alias Acceleration =
@@ -92,7 +101,3 @@ defaultAcceleration =
   { linear = Vector.vector 0 0 0
   , angular = Vector.vector 0 0 0
   }
-
-
-type alias Rules =
-  Dict String (Body -> Dict String Body -> Acceleration)

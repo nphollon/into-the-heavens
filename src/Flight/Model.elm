@@ -7,7 +7,6 @@ import Set exposing (Set)
 import Types exposing (Update(..), Action, GameState, Mode(..), AiState(..))
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
-import Math.Matrix as Matrix
 import Flight.Init as Init
 import GameOver.Init
 import Math.Collision as Collision
@@ -36,38 +35,7 @@ update input model =
 
 thrust : Float -> GameState -> GameState
 thrust delta model =
-  let
-    goOrStop dir vel =
-      if dir == 0 then
-        -6 * vel
-      else
-        200 * delta * (toFloat dir)
-
-    rule ship _ =
-      { linear =
-          if ship.action.thrust >= 0 then
-            Vector.vector 0 0 (toFloat ship.action.thrust * -10)
-              |> Matrix.rotate ship.orientation
-          else
-            Vector.scale -10 ship.velocity
-      , angular =
-          Vector.vector
-            (goOrStop (toFloat ship.action.pitch) (ship.angVelocity.x))
-            (goOrStop (toFloat ship.action.yaw) (ship.angVelocity.y))
-            (goOrStop (toFloat ship.action.roll) (ship.angVelocity.z))
-      }
-  in
-    { model
-      | universe =
-          Mech.evolve
-            (Dict.fromList
-              [ ( "ship", rule )
-              , ( "other", rule )
-              ]
-            )
-            delta
-            model.universe
-    }
+  { model | universe = Mech.evolve delta model.universe }
 
 
 steerAi : Float -> GameState -> GameState
