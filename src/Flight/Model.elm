@@ -121,7 +121,12 @@ fireMissile model =
               "missile"
               { ship
                 | hull = []
-                , action = Init.inaction
+                , action =
+                    { thrust = 2
+                    , pitch = 0
+                    , yaw = 0
+                    , roll = 0
+                    }
               }
               model.universe
         , graphics =
