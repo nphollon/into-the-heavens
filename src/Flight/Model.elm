@@ -114,12 +114,12 @@ crashCheck : GameState -> ( Mode, Effects a )
 crashCheck model =
   let
     shipPosition =
-      Dict.get "ship" model.universe.bodies
+      Dict.get "ship" model.universe
         |> Maybe.map .position
         |> Maybe.withDefault (Vector.vector 0 0 0)
 
     shipCrashed =
-      Dict.values model.universe.bodies
+      Dict.values model.universe
         |> List.any (Collision.isInside shipPosition)
   in
     if shipCrashed then
@@ -168,11 +168,8 @@ setAction label newAction model =
   let
     updateAction b =
       { b | action = newAction }
-
-    updateUniverse u =
-      { u
-        | bodies =
-            Dict.update label (Maybe.map updateAction) u.bodies
-      }
   in
-    { model | universe = updateUniverse model.universe }
+    { model
+      | universe =
+          Dict.update label (Maybe.map updateAction) model.universe
+    }

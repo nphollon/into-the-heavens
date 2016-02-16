@@ -26,16 +26,10 @@ type Mode
 
 type alias GameState =
   { continue : Bool
-  , universe : State
+  , universe : Dict String Body
   , graphics : List GraphicsObject
   , library : Library
   , aiState : AiState
-  }
-
-
-type alias State =
-  { time : Float
-  , bodies : Dict String Body
   }
 
 

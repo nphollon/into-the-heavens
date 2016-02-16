@@ -1,40 +1,20 @@
-module Math.Mechanics (evolve, initialize, recenter, body) where
+module Math.Mechanics (evolve, body) where
 
 import Dict exposing (Dict)
-import Types exposing (Body, State)
+import Types exposing (Body)
 import Math.Vector as Vector exposing (Vector)
 
 
-initialize : Dict String Body -> State
-initialize dataDict =
-  { time = 0
-  , bodies = dataDict
-  }
-
-
-body : String -> State -> Maybe Body
+body : String -> Dict String Body -> Maybe Body
 body key state =
-  Dict.get key state.bodies
-
-
-totalMass : State -> Float
-totalMass =
-  .bodies >> Dict.foldl (\_ p -> (+) p.mass) 0
-
-
-recenter : Body -> Body -> Body
-recenter origin object =
-  { object
-    | position = Vector.sub object.position origin.position
-    , velocity = Vector.sub object.velocity origin.velocity
-  }
+  Dict.get key state
 
 
 
 -- Evolving states
 
 
-evolve : Rules -> Float -> State -> State
+evolve : Rules -> Float -> Dict String Body -> Dict String Body
 evolve accel dt state =
   let
     a =
@@ -56,7 +36,27 @@ evolve accel dt state =
       |> nudge (dt / 6) d
 
 
-nudge : Float -> State -> State -> State
+stateDerivative : Rules -> Dict String Body -> Dict String Body
+stateDerivative accels state =
+  Dict.map
+    (\key particle ->
+      let
+        a =
+          Dict.get key accels
+            |> Maybe.map (\accel -> accel particle state)
+            |> Maybe.withDefault defaultAcceleration
+      in
+        { particle
+          | position = particle.velocity
+          , velocity = a.linear
+          , orientation = particle.angVelocity
+          , angVelocity = a.angular
+        }
+    )
+    state
+
+
+nudge : Float -> Dict String Body -> Dict String Body -> Dict String Body
 nudge dt derivative state =
   let
     -- stateDerivative guarantees that the labels are the same
@@ -73,42 +73,12 @@ nudge dt derivative state =
           , angVelocity =
               Vector.add p.angVelocity (Vector.scale dt dpdt.angVelocity)
         }
-
-    bodies =
-      List.map2
-        combine
-        (Dict.toList derivative.bodies)
-        (Dict.toList state.bodies)
-        |> Dict.fromList
   in
-    { state
-      | time = state.time + dt * derivative.time
-      , bodies = bodies
-    }
-
-
-stateDerivative : Rules -> State -> State
-stateDerivative accels state =
-  { state
-    | time = 1
-    , bodies =
-        Dict.map
-          (\key particle ->
-            let
-              a =
-                Dict.get key accels
-                  |> Maybe.map (\accel -> accel particle state)
-                  |> Maybe.withDefault defaultAcceleration
-            in
-              { particle
-                | position = particle.velocity
-                , velocity = a.linear
-                , orientation = particle.angVelocity
-                , angVelocity = a.angular
-              }
-          )
-          state.bodies
-  }
+    List.map2
+      combine
+      (Dict.toList derivative)
+      (Dict.toList state)
+      |> Dict.fromList
 
 
 type alias Acceleration =
@@ -125,4 +95,4 @@ defaultAcceleration =
 
 
 type alias Rules =
-  Dict String (Body -> State -> Acceleration)
+  Dict String (Body -> Dict String Body -> Acceleration)
