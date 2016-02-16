@@ -22,8 +22,6 @@ game library =
                 , velocity = Vector.vector 0 0 0
                 , orientation = Vector.vector 0 0 0
                 , angVelocity = Vector.vector 0 0 0
-                , inertia = Vector.vector 1 1 1
-                , mass = 1
                 , hull = []
                 , action = inaction
                 }
@@ -33,8 +31,6 @@ game library =
                 , velocity = Vector.vector 0 0 0
                 , orientation = Vector.vector 0 0 0
                 , angVelocity = Vector.vector 0 3.0e-2 0
-                , inertia = Vector.vector 1 1 1
-                , mass = 1
                 , hull = Collision.hull .position Sphere.mesh
                 , action = inaction
                 }
@@ -44,8 +40,6 @@ game library =
                 , velocity = Vector.vector 0 0 0
                 , orientation = Vector.vector 0 0 0
                 , angVelocity = Vector.vector 0 0 0
-                , inertia = Vector.vector 1 1 1
-                , mass = 1
                 , hull = Collision.hull .position Ship.mesh
                 , action =
                     { thrust = 0

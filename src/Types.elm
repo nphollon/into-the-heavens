@@ -38,8 +38,6 @@ type alias Body =
   , velocity : Vector
   , orientation : Vector
   , angVelocity : Vector
-  , mass : Float
-  , inertia : Vector
   , hull : Hull
   , action : Action
   }

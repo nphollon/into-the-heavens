@@ -71,7 +71,7 @@ cameraAt aspect object =
   }
 
 
-dashboard : State -> Html
+dashboard : Dict String Body -> Html
 dashboard universe =
   let
     printNumber label value =

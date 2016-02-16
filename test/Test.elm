@@ -111,8 +111,6 @@ stillBody position orientation =
   , orientation = orientation
   , velocity = Vec.vector 0 0 0
   , angVelocity = Vec.vector 0 0 0
-  , inertia = Vec.vector 0 0 0
-  , mass = 0
   , action = Flight.Init.inaction
   , hull = hull
   }
