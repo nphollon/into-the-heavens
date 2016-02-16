@@ -18,9 +18,6 @@ update input model =
       flip (,) Effects.none
   in
     case input of
-      FPS dt ->
-        noEffects (MenuMode model)
-
       Meshes response ->
         noEffects (MenuMode { model | response = Just response })
 
@@ -31,6 +28,9 @@ update input model =
 
           ( _, _ ) ->
             noEffects (MenuMode model)
+
+      otherwise ->
+        noEffects (MenuMode model)
 
 
 view : Signal.Address Update -> MenuState -> Html

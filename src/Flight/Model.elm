@@ -30,6 +30,9 @@ update input model =
     Collide _ _ ->
       GameOver.Init.gameOver model.library
 
+    FireMissile ->
+      ( GameMode (fireMissile model), Effects.none )
+
     Meshes _ ->
       ( GameMode model, Effects.none )
 
@@ -108,6 +111,28 @@ crashCheck model =
         Effects.none
 
 
+fireMissile : GameState -> GameState
+fireMissile model =
+  case Dict.get "ship" model.universe of
+    Just ship ->
+      { model
+        | universe =
+            Dict.insert
+              "missile"
+              { ship
+                | hull = []
+                , action = Init.inaction
+              }
+              model.universe
+        , graphics =
+            (Object { bodyName = "missile", meshName = "Ship", shader = Ship })
+              :: model.graphics
+      }
+
+    Nothing ->
+      model
+
+
 controlUpdate : Set KeyCode -> GameState -> ( Mode, Effects Update )
 controlUpdate keysDown model =
   let
@@ -142,8 +167,14 @@ controlUpdate keysDown model =
 
     newAction =
       Set.foldl keyAct Init.inaction keysDown
+
+    effect =
+      if Set.member (Char.toCode 'O') keysDown then
+        Effects.task (Task.succeed FireMissile)
+      else
+        Effects.none
   in
-    ( GameMode (setAction "ship" newAction model), Effects.none )
+    ( GameMode (setAction "ship" newAction model), effect )
 
 
 setAction : String -> Action -> GameState -> GameState

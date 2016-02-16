@@ -17,6 +17,7 @@ type Update
   | FPS Time
   | Keys (Set Char.KeyCode)
   | Collide String String
+  | FireMissile
 
 
 type Mode
