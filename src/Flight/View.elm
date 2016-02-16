@@ -11,7 +11,6 @@ import Math.Vector as Vector
 import Math.Matrix as Matrix exposing (Matrix)
 import Flight.Background as Background
 import Flight.Foreground as Foreground
-import Math.Mechanics as Mech
 import Frame
 
 
@@ -19,30 +18,39 @@ view : Signal.Address Update -> GameState -> Html
 view address model =
   Frame.view
     [ scene 900 600 model ]
-    [ dashboard model.universe
+    [ dashboard model.bodies
     , instructions
     ]
 
 
 scene : Int -> Int -> GameState -> Html
-scene width height { universe, library, graphics } =
+scene width height { bodies, library } =
   let
     camera =
-      Maybe.map
-        (cameraAt (toFloat width / toFloat height))
-        (Mech.body "ship" universe)
+      Dict.values bodies
+        |> List.map selectCamera
+        |> Maybe.oneOf
+        |> Maybe.map (cameraData (toFloat width / toFloat height))
 
-    draw object =
-      case object of
-        Background meshName ->
+    draw body =
+      case body.bodyType of
+        Background { meshName } ->
           MaybeX.map2 Background.entity camera (Dict.get meshName library)
 
-        Object { bodyName, meshName, shader } ->
-          MaybeX.map3
-            (objectPlacement >> Foreground.entity shader)
-            (Mech.body bodyName universe)
+        Inert { meshName, shader } ->
+          MaybeX.map2
+            (Foreground.entity shader (objectPlacement body.geometry))
             camera
             (Dict.get meshName library)
+
+        Active { meshName, shader } ->
+          MaybeX.map2
+            (Foreground.entity shader (objectPlacement body.geometry))
+            camera
+            (Dict.get meshName library)
+
+        Camera _ ->
+          Nothing
 
     webgl =
       WebGL.webglWithConfig
@@ -51,18 +59,29 @@ scene width height { universe, library, graphics } =
         ]
         ( width, height )
   in
-    List.filterMap draw graphics
+    Dict.values bodies
+      |> List.filterMap draw
       |> webgl
       |> Html.fromElement
 
 
-objectPlacement : Body -> Matrix
-objectPlacement object =
-  Matrix.placement object.position object.orientation
+objectPlacement : Geometry -> Matrix
+objectPlacement geometry =
+  Matrix.placement geometry.position geometry.orientation
 
 
-cameraAt : Float -> Body -> Camera
-cameraAt aspect object =
+selectCamera : Body -> Maybe Geometry
+selectCamera body =
+  case body.bodyType of
+    Camera _ ->
+      Just body.geometry
+
+    otherwise ->
+      Nothing
+
+
+cameraData : Float -> Geometry -> CameraData
+cameraData aspect object =
   { perspective = Matrix.perspective aspect
   , position = object.position
   , orientation =
@@ -71,8 +90,8 @@ cameraAt aspect object =
   }
 
 
-dashboard : State -> Html
-dashboard universe =
+dashboard : Dict String Body -> Html
+dashboard bodies =
   let
     printNumber label value =
       let
@@ -99,8 +118,8 @@ dashboard universe =
           |> text
 
     shipPosition =
-      Mech.body "ship" universe
-        |> MaybeX.mapDefault (Vector.vector 0 0 0) .position
+      Dict.get "player" bodies
+        |> MaybeX.mapDefault (Vector.vector 0 0 0) (.geometry >> .position)
   in
     div
       [ class "dashboard" ]

@@ -1,40 +1,32 @@
-module Math.Mechanics (evolve, initialize, recenter, body) where
+module Math.Mechanics (evolve, defaultAcceleration) where
 
 import Dict exposing (Dict)
-import Types exposing (Body, State)
+import Types exposing (Body, Geometry)
 import Math.Vector as Vector exposing (Vector)
 
 
-initialize : Dict String Body -> State
-initialize dataDict =
-  { time = 0
-  , bodies = dataDict
+type alias Acceleration =
+  { linear : Vector
+  , angular : Vector
   }
 
 
-body : String -> State -> Maybe Body
-body key state =
-  Dict.get key state.bodies
-
-
-totalMass : State -> Float
-totalMass =
-  .bodies >> Dict.foldl (\_ p -> (+) p.mass) 0
-
-
-recenter : Body -> Body -> Body
-recenter origin object =
-  { object
-    | position = Vector.sub object.position origin.position
-    , velocity = Vector.sub object.velocity origin.velocity
+defaultAcceleration : Acceleration
+defaultAcceleration =
+  { linear = Vector.vector 0 0 0
+  , angular = Vector.vector 0 0 0
   }
+
+
+type alias Rule =
+  Body -> Acceleration
 
 
 
 -- Evolving states
 
 
-evolve : Rules -> Float -> State -> State
+evolve : Rule -> Float -> Dict String Body -> Dict String Body
 evolve accel dt state =
   let
     a =
@@ -56,73 +48,45 @@ evolve accel dt state =
       |> nudge (dt / 6) d
 
 
-nudge : Float -> State -> State -> State
-nudge dt derivative state =
+stateDerivative : Rule -> Dict String Body -> Dict String Geometry
+stateDerivative accel state =
   let
-    -- stateDerivative guarantees that the labels are the same
-    combine ( label, dpdt ) ( _, p ) =
+    deriv _ object =
+      let
+        a =
+          accel object
+      in
+        { position = object.geometry.velocity
+        , velocity = a.linear
+        , orientation = object.geometry.angVelocity
+        , angVelocity = a.angular
+        }
+  in
+    Dict.map deriv state
+
+
+nudge : Float -> Dict String Geometry -> Dict String Body -> Dict String Body
+nudge dt derivatives state =
+  let
+    add dpdt p =
+      { position =
+          Vector.add p.position (Vector.scale dt dpdt.position)
+      , velocity =
+          Vector.add p.velocity (Vector.scale dt dpdt.velocity)
+      , orientation =
+          Vector.orient p.orientation (Vector.scale dt dpdt.orientation)
+      , angVelocity =
+          Vector.add p.angVelocity (Vector.scale dt dpdt.angVelocity)
+      }
+
+    combine ( _, dpdt ) ( label, state ) =
       (,)
         label
-        { p
-          | position =
-              Vector.add p.position (Vector.scale dt dpdt.position)
-          , velocity =
-              Vector.add p.velocity (Vector.scale dt dpdt.velocity)
-          , orientation =
-              Vector.orient p.orientation (Vector.scale dt dpdt.orientation)
-          , angVelocity =
-              Vector.add p.angVelocity (Vector.scale dt dpdt.angVelocity)
-        }
-
-    bodies =
-      List.map2
-        combine
-        (Dict.toList derivative.bodies)
-        (Dict.toList state.bodies)
-        |> Dict.fromList
+        { state | geometry = add dpdt state.geometry }
   in
-    { state
-      | time = state.time + dt * derivative.time
-      , bodies = bodies
-    }
-
-
-stateDerivative : Rules -> State -> State
-stateDerivative accels state =
-  { state
-    | time = 1
-    , bodies =
-        Dict.map
-          (\key particle ->
-            let
-              a =
-                Dict.get key accels
-                  |> Maybe.map (\accel -> accel particle state)
-                  |> Maybe.withDefault defaultAcceleration
-            in
-              { particle
-                | position = particle.velocity
-                , velocity = a.linear
-                , orientation = particle.angVelocity
-                , angVelocity = a.angular
-              }
-          )
-          state.bodies
-  }
-
-
-type alias Acceleration =
-  { linear : Vector
-  , angular : Vector
-  }
-
-
-defaultAcceleration : Acceleration
-defaultAcceleration =
-  { linear = Vector.vector 0 0 0
-  , angular = Vector.vector 0 0 0
-  }
-
-
-type alias Rules =
-  Dict String (Body -> State -> Acceleration)
+    Dict.fromList
+      (List.map2
+        combine
+        (Dict.toList derivatives)
+        (Dict.toList state)
+      )

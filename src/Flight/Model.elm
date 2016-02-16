@@ -4,7 +4,7 @@ import Char
 import Dict
 import Effects exposing (Effects)
 import Set exposing (Set)
-import Types exposing (Update(..), Action, GameState, Mode(..), AiState(..))
+import Types exposing (..)
 import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
 import Math.Matrix as Matrix
@@ -43,84 +43,112 @@ thrust delta model =
       else
         200 * delta * (toFloat dir)
 
-    rule ship _ =
+    applyAction action geometry =
       { linear =
-          if ship.action.thrust >= 0 then
-            Vector.vector 0 0 (toFloat ship.action.thrust * -10)
-              |> Matrix.rotate ship.orientation
+          if action.thrust >= 0 then
+            Vector.vector 0 0 (toFloat action.thrust * -10)
+              |> Matrix.rotate geometry.orientation
           else
-            Vector.scale -10 ship.velocity
+            Vector.scale -10 geometry.velocity
       , angular =
           Vector.vector
-            (goOrStop (toFloat ship.action.pitch) (ship.angVelocity.x))
-            (goOrStop (toFloat ship.action.yaw) (ship.angVelocity.y))
-            (goOrStop (toFloat ship.action.roll) (ship.angVelocity.z))
+            (goOrStop action.pitch (geometry.angVelocity.x))
+            (goOrStop action.yaw (geometry.angVelocity.y))
+            (goOrStop action.roll (geometry.angVelocity.z))
       }
+
+    rule ship =
+      case ship.bodyType of
+        Background _ ->
+          Mech.defaultAcceleration
+
+        Inert _ ->
+          Mech.defaultAcceleration
+
+        Active { action } ->
+          applyAction action ship.geometry
+
+        Camera { action } ->
+          applyAction action ship.geometry
   in
-    { model
-      | universe =
-          Mech.evolve
-            (Dict.fromList
-              [ ( "ship", rule )
-              , ( "other", rule )
-              ]
-            )
-            delta
-            model.universe
-    }
+    { model | bodies = Mech.evolve rule delta model.bodies }
 
 
 steerAi : Float -> GameState -> GameState
 steerAi delta model =
   let
-    check time thisState nextState nextAction =
-      if time < 0 then
-        { model | aiState = nextState }
-          |> setAction "other" nextAction
-      else
-        { model | aiState = thisState time }
+    updateIfActive body =
+      case body.bodyType of
+        Active data ->
+          { body | bodyType = Active (steer data) }
+
+        otherwise ->
+          body
+
+    steer data =
+      let
+        check time thisState nextState nextAction =
+          if time < 0 then
+            { data
+              | ai = nextState
+              , action = nextAction
+            }
+          else
+            { data | ai = thisState time }
+      in
+        case data.ai of
+          Turning t ->
+            check
+              (t - delta)
+              Turning
+              (Thrusting 2)
+              { thrust = 1, pitch = 0, yaw = 0, roll = 0 }
+
+          Thrusting t ->
+            check
+              (t - delta)
+              Thrusting
+              (Resting 2)
+              { thrust = 0, pitch = 0, yaw = 0, roll = 0 }
+
+          Resting t ->
+            check
+              (t - delta)
+              Resting
+              (Braking 2)
+              { thrust = -1, pitch = 0, yaw = 0, roll = 0 }
+
+          Braking t ->
+            check
+              (t - delta)
+              Braking
+              (Turning 0.7)
+              { thrust = 0, pitch = 0, yaw = 1, roll = 0 }
   in
-    case model.aiState of
-      Turning t ->
-        check
-          (t - delta)
-          Turning
-          (Thrusting 2)
-          { thrust = 1, pitch = 0, yaw = 0, roll = 0 }
-
-      Thrusting t ->
-        check
-          (t - delta)
-          Thrusting
-          (Resting 2)
-          { thrust = 0, pitch = 0, yaw = 0, roll = 0 }
-
-      Resting t ->
-        check
-          (t - delta)
-          Resting
-          (Braking 2)
-          { thrust = -1, pitch = 0, yaw = 0, roll = 0 }
-
-      Braking t ->
-        check
-          (t - delta)
-          Braking
-          (Turning 0.7)
-          { thrust = 0, pitch = 0, yaw = 1, roll = 0 }
+    { model | bodies = Dict.map (\key -> updateIfActive) model.bodies }
 
 
 crashCheck : GameState -> ( Mode, Effects a )
 crashCheck model =
   let
     shipPosition =
-      Dict.get "ship" model.universe.bodies
-        |> Maybe.map .position
+      Dict.get "player" model.bodies
+        |> Maybe.map (.geometry >> .position)
         |> Maybe.withDefault (Vector.vector 0 0 0)
 
+    collidedWith body =
+      case body.bodyType of
+        Inert { hull } ->
+          Collision.isInside shipPosition body.geometry hull
+
+        Active { hull } ->
+          Collision.isInside shipPosition body.geometry hull
+
+        otherwise ->
+          False
+
     shipCrashed =
-      Dict.values model.universe.bodies
-        |> List.any (Collision.isInside shipPosition)
+      List.any collidedWith (Dict.values model.bodies)
   in
     if shipCrashed then
       GameOver.Init.gameOver model.library
@@ -160,19 +188,23 @@ controlUpdate keysDown model =
         otherwise ->
           action
   in
-    setAction "ship" (Set.foldl keyAct Init.inaction keysDown) model
+    setAction "player" (Set.foldl keyAct Init.inaction keysDown) model
 
 
 setAction : String -> Action -> GameState -> GameState
 setAction label newAction model =
   let
-    updateAction b =
-      { b | action = newAction }
+    updateAction body =
+      case body.bodyType of
+        Camera data ->
+          { body
+            | bodyType = Camera { action = newAction }
+          }
 
-    updateUniverse u =
-      { u
-        | bodies =
-            Dict.update label (Maybe.map updateAction) u.bodies
-      }
+        otherwise ->
+          body
   in
-    { model | universe = updateUniverse model.universe }
+    { model
+      | bodies =
+          Dict.update label (Maybe.map updateAction) model.bodies
+    }

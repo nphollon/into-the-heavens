@@ -4,7 +4,7 @@ import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL exposing (Renderable, Drawable, Shader)
-import Types exposing (Camera, Vertex)
+import Types exposing (CameraData, Vertex)
 import Math.Matrix as Matrix
 import Math.Vector as Vector
 
@@ -21,7 +21,7 @@ type alias Uniform =
   }
 
 
-entity : Camera -> Drawable Vertex -> Renderable
+entity : CameraData -> Drawable Vertex -> Renderable
 entity camera bkg =
   let
     uniform =

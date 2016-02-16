@@ -26,28 +26,43 @@ type Mode
 
 type alias GameState =
   { continue : Bool
-  , universe : State
-  , graphics : List GraphicsObject
-  , library : Library
-  , aiState : AiState
-  }
-
-
-type alias State =
-  { time : Float
   , bodies : Dict String Body
+  , library : Library
   }
 
 
 type alias Body =
+  { geometry : Geometry
+  , bodyType : BodyType
+  }
+
+
+type BodyType
+  = Background
+      { meshName : String
+      }
+  | Inert
+      { meshName : String
+      , shader : ShaderType
+      , hull : Hull
+      }
+  | Active
+      { meshName : String
+      , shader : ShaderType
+      , hull : Hull
+      , action : Action
+      , ai : AiState
+      }
+  | Camera
+      { action : Action
+      }
+
+
+type alias Geometry =
   { position : Vector
   , velocity : Vector
   , orientation : Vector
   , angVelocity : Vector
-  , mass : Float
-  , inertia : Vector
-  , hull : Hull
-  , action : Action
   }
 
 
@@ -73,21 +88,12 @@ type AiState
   | Resting Float
 
 
-type GraphicsObject
-  = Background String
-  | Object
-      { bodyName : String
-      , meshName : String
-      , shader : ShaderType
-      }
-
-
 type ShaderType
   = Ship
   | Planet
 
 
-type alias Camera =
+type alias CameraData =
   { perspective : Matrix
   , orientation : Matrix
   , position : Vector
