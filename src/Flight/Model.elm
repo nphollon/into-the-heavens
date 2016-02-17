@@ -7,7 +7,6 @@ import Effects exposing (Effects)
 import Set exposing (Set)
 import Types exposing (..)
 import Math.Mechanics as Mech
-import Math.Vector as Vector exposing (Vector)
 import Flight.Init as Init
 import GameOver.Init
 import Color
@@ -86,30 +85,31 @@ steerAi delta model =
 crashCheck : GameState -> Effects Update
 crashCheck model =
   let
-    shipPosition =
-      Dict.get "ship" model.universe
-        |> Maybe.map .position
-        |> Maybe.withDefault (Vector.vector 0 0 0)
+    ( points, hulls ) =
+      Dict.partition
+        (\_ body -> List.isEmpty body.hull)
+        model.universe
 
-    collidedWith =
+    collisions =
+      Dict.map
+        (\label body -> collidedWith label body.position)
+        points
+
+    collidedWith pointLabel position =
       Dict.foldl
         (\label hull accumulator ->
-          if Collision.isInside shipPosition hull then
-            Just label
+          if Collision.isInside position hull then
+            Just (Collide pointLabel label)
           else
             accumulator
         )
         Nothing
-        model.universe
+        hulls
   in
-    case collidedWith of
-      Just label ->
-        Collide "ship" label
-          |> Task.succeed
-          |> Effects.task
-
-      Nothing ->
-        Effects.none
+    Dict.values collisions
+      |> List.filterMap
+          (Maybe.map (Task.succeed >> Effects.task))
+      |> Effects.batch
 
 
 fireMissile : GameState -> GameState
