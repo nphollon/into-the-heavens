@@ -19,7 +19,7 @@ function compile {
     elm make $main_elm --output $elm_out --yes --warn
     if [ $? -ne 0 ]; then exit 1; fi;
 
-    cp $elm_out $min_out
+    uglifyjs $elm_out -m -c warnings=false -o $min_out
     if [ $? -ne 0 ]; then exit 1; fi;
     echo "Successfully generated $min_out"
 
