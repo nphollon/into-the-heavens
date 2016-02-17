@@ -34,6 +34,7 @@ type alias GameState =
   , library : Library
   , aiState : AiState
   , hasFired : Bool
+  , nextId : Int
   }
 
 

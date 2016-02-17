@@ -1,6 +1,7 @@
 module Flight.Model (update) where
 
 import Char exposing (KeyCode)
+import Color
 import Dict
 import Task
 import Effects exposing (Effects)
@@ -123,22 +124,36 @@ fireMissile : GameState -> GameState
 fireMissile model =
   case Dict.get "ship" model.universe of
     Just ship ->
-      { model
-        | universe =
-            Dict.insert
-              "missile"
-              { ship
-                | hull = []
-                , health = 1
-                , action =
-                    { thrust = 2
-                    , pitch = 0
-                    , yaw = 0
-                    , roll = 0
-                    }
-              }
-              model.universe
-      }
+      let
+        name =
+          ("missile" ++ (toString model.nextId))
+      in
+        { model
+          | universe =
+              Dict.insert
+                name
+                { ship
+                  | hull = []
+                  , health = 1
+                  , action =
+                      { thrust = 2
+                      , pitch = 0
+                      , yaw = 0
+                      , roll = 0
+                      }
+                }
+                model.universe
+          , nextId = model.nextId + 1
+          , graphics =
+              (Object
+                { bodyName = name
+                , meshName = "Ship"
+                , shader = Matte Color.red
+                , scale = Just 0.1
+                }
+              )
+                :: model.graphics
+        }
 
     Nothing ->
       model

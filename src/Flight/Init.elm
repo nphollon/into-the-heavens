@@ -17,6 +17,7 @@ game library =
       { library = library
       , continue = False
       , hasFired = False
+      , nextId = 0
       , universe =
           Dict.fromList
             [ ( "ship"
@@ -68,12 +69,6 @@ game library =
               , meshName = "Sphere"
               , shader = Planet
               , scale = Nothing
-              }
-          , Object
-              { bodyName = "missile"
-              , meshName = "Ship"
-              , shader = Matte Color.red
-              , scale = Just 0.1
               }
           ]
       , aiState = Resting 1
