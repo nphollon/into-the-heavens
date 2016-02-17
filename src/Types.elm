@@ -42,6 +42,7 @@ type alias Body =
   , orientation : Vector
   , angVelocity : Vector
   , hull : Hull
+  , health : Float
   , action : Action
   }
 

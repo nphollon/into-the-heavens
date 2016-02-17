@@ -24,6 +24,7 @@ game library =
                 , orientation = Vector.vector 0 0 0
                 , angVelocity = Vector.vector 0 0 0
                 , hull = []
+                , health = 1
                 , action = inaction
                 }
               )
@@ -34,6 +35,7 @@ game library =
                 , angVelocity = Vector.vector 0 3.0e-2 0
                 , hull = Collision.hull .position Sphere.mesh
                 , action = inaction
+                , health = 1.0e10
                 }
               )
             , ( "other"
@@ -42,6 +44,7 @@ game library =
                 , orientation = Vector.vector 0 0 0
                 , angVelocity = Vector.vector 0 0 0
                 , hull = Collision.hull .position Ship.mesh
+                , health = 1
                 , action =
                     { thrust = 0
                     , pitch = 0

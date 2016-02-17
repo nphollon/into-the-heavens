@@ -31,8 +31,8 @@ update input model =
         GameOver.Init.gameOver model.library
       else
         ( model
-            |> remove particle
-            |> remove hull
+            |> hit particle
+            |> hit hull
             |> GameMode
         , Effects.none
         )
@@ -129,6 +129,7 @@ fireMissile model =
               "missile"
               { ship
                 | hull = []
+                , health = 1
                 , action =
                     { thrust = 2
                     , pitch = 0
@@ -143,12 +144,19 @@ fireMissile model =
       model
 
 
-remove : String -> GameState -> GameState
-remove label model =
-  { model
-    | universe =
-        Dict.remove label model.universe
-  }
+hit : String -> GameState -> GameState
+hit label model =
+  let
+    deductHealth body =
+      if body.health > 1 then
+        Just { body | health = body.health - 1 }
+      else
+        Nothing
+  in
+    { model
+      | universe =
+          Dict.update label (flip Maybe.andThen deductHealth) model.universe
+    }
 
 
 controlUpdate : Set KeyCode -> GameState -> ( Mode, Effects Update )
