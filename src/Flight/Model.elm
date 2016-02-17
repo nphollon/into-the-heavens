@@ -194,13 +194,28 @@ controlUpdate keysDown model =
     newAction =
       Set.foldl keyAct Init.inaction keysDown
 
-    effect =
-      if Set.member (Char.toCode 'O') keysDown then
-        Effects.task (Task.succeed FireMissile)
-      else
-        Effects.none
+    modelWithAction =
+      setAction "ship" newAction model
+
+    firing =
+      Set.member (Char.toCode 'O') keysDown
   in
-    ( GameMode (setAction "ship" newAction model), effect )
+    case ( firing, model.hasFired ) of
+      ( True, True ) ->
+        ( GameMode modelWithAction, Effects.none )
+
+      ( True, False ) ->
+        (,)
+          (GameMode { modelWithAction | hasFired = True })
+          (Effects.task (Task.succeed FireMissile))
+
+      ( False, True ) ->
+        (,)
+          (GameMode { modelWithAction | hasFired = False })
+          Effects.none
+
+      ( False, False ) ->
+        ( GameMode modelWithAction, Effects.none )
 
 
 setAction : String -> Action -> GameState -> GameState

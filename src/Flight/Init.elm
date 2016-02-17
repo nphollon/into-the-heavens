@@ -16,6 +16,7 @@ game library =
     (GameMode
       { library = library
       , continue = False
+      , hasFired = False
       , universe =
           Dict.fromList
             [ ( "ship"

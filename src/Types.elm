@@ -33,6 +33,7 @@ type alias GameState =
   , graphics : List GraphicsObject
   , library : Library
   , aiState : AiState
+  , hasFired : Bool
   }
 
 
