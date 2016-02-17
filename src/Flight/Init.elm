@@ -1,5 +1,6 @@
 module Flight.Init (game, inaction) where
 
+import Color
 import Types exposing (..)
 import Math.Vector as Vector
 import Dict
@@ -55,12 +56,14 @@ game library =
           , Object
               { bodyName = "other"
               , meshName = "Ship"
-              , shader = Ship
+              , shader = Matte Color.purple
+              , scale = Nothing
               }
           , Object
               { bodyName = "planet"
               , meshName = "Sphere"
               , shader = Planet
+              , scale = Nothing
               }
           ]
       , aiState = Resting 1

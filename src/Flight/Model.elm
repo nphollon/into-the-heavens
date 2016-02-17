@@ -10,6 +10,7 @@ import Math.Mechanics as Mech
 import Math.Vector as Vector exposing (Vector)
 import Flight.Init as Init
 import GameOver.Init
+import Color
 import Math.Collision as Collision
 
 
@@ -130,7 +131,13 @@ fireMissile model =
               }
               model.universe
         , graphics =
-            (Object { bodyName = "missile", meshName = "Ship", shader = Ship })
+            (Object
+              { bodyName = "missile"
+              , meshName = "Ship"
+              , shader = Matte Color.red
+              , scale = Just 0.1
+              }
+            )
               :: model.graphics
       }
 

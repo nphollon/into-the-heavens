@@ -1,4 +1,4 @@
-module Math.Matrix (Matrix, perspective, rotate, transpose, inverse, placement, toMat4) where
+module Math.Matrix (Matrix, perspective, rotate, transpose, inverse, placement, scale, toMat4) where
 
 import Math.Matrix4 as Mat4
 import Math.Vector as Vector exposing (Vector)
@@ -37,6 +37,11 @@ placement position orientation =
     (Mat4.makeTranslate (Vector.toVec3 position))
     (rotMat4 orientation)
     |> Wrapper
+
+
+scale : Float -> Matrix -> Matrix
+scale factor (Wrapper m) =
+  Wrapper (Mat4.scale3 factor factor factor m)
 
 
 toMat4 : Matrix -> Mat4.Mat4

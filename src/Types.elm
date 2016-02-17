@@ -9,6 +9,7 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix exposing (Matrix)
 import Math.Vector exposing (Vector)
 import Http
+import Color exposing (Color)
 import WebGL exposing (Drawable)
 
 
@@ -73,12 +74,13 @@ type GraphicsObject
       { bodyName : String
       , meshName : String
       , shader : ShaderType
+      , scale : Maybe Float
       }
 
 
 type ShaderType
-  = Ship
-  | Planet
+  = Planet
+  | Matte Color
 
 
 type alias Camera =

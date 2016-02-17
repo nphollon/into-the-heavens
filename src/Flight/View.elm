@@ -35,11 +35,14 @@ scene width height { universe, library, graphics } =
     draw object =
       case object of
         Background meshName ->
-          MaybeX.map2 Background.entity camera (Dict.get meshName library)
+          MaybeX.map2
+            Background.entity
+            camera
+            (Dict.get meshName library)
 
-        Object { bodyName, meshName, shader } ->
+        Object { bodyName, meshName, shader, scale } ->
           MaybeX.map3
-            (objectPlacement >> Foreground.entity shader)
+            (objectPlacement scale >> Foreground.entity shader)
             (Mech.body bodyName universe)
             camera
             (Dict.get meshName library)
@@ -56,9 +59,18 @@ scene width height { universe, library, graphics } =
       |> Html.fromElement
 
 
-objectPlacement : Body -> Matrix
-objectPlacement object =
-  Matrix.placement object.position object.orientation
+objectPlacement : Maybe Float -> Body -> Matrix
+objectPlacement scale object =
+  let
+    placement =
+      Matrix.placement object.position object.orientation
+  in
+    case scale of
+      Just s ->
+        Matrix.scale s placement
+
+      Nothing ->
+        placement
 
 
 cameraAt : Float -> Body -> Camera
