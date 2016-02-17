@@ -135,5 +135,6 @@ instructions =
         [ li [] [ text "Thrust Forward : I" ]
         , li [] [ text "Brake : M" ]
         , li [] [ text "Turn Camera : A / D / W / S / Q / E" ]
+        , li [] [ text "Fire Missile : O" ]
         ]
     ]
