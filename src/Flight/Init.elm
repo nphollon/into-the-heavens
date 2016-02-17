@@ -65,6 +65,12 @@ game library =
               , shader = Planet
               , scale = Nothing
               }
+          , Object
+              { bodyName = "missile"
+              , meshName = "Ship"
+              , shader = Matte Color.red
+              , scale = Just 0.1
+              }
           ]
       , aiState = Resting 1
       }

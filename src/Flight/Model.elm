@@ -9,7 +9,6 @@ import Types exposing (..)
 import Math.Mechanics as Mech
 import Flight.Init as Init
 import GameOver.Init
-import Color
 import Math.Collision as Collision
 
 
@@ -27,8 +26,16 @@ update input model =
     Keys keysDown ->
       controlUpdate keysDown model
 
-    Collide _ _ ->
-      GameOver.Init.gameOver model.library
+    Collide particle hull ->
+      if particle == "ship" then
+        GameOver.Init.gameOver model.library
+      else
+        ( model
+            |> remove particle
+            |> remove hull
+            |> GameMode
+        , Effects.none
+        )
 
     FireMissile ->
       ( GameMode (fireMissile model), Effects.none )
@@ -130,19 +137,18 @@ fireMissile model =
                     }
               }
               model.universe
-        , graphics =
-            (Object
-              { bodyName = "missile"
-              , meshName = "Ship"
-              , shader = Matte Color.red
-              , scale = Just 0.1
-              }
-            )
-              :: model.graphics
       }
 
     Nothing ->
       model
+
+
+remove : String -> GameState -> GameState
+remove label model =
+  { model
+    | universe =
+        Dict.remove label model.universe
+  }
 
 
 controlUpdate : Set KeyCode -> GameState -> ( Mode, Effects Update )
