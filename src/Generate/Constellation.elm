@@ -3,7 +3,7 @@ module Generate.Constellation (mesh) where
 import Random.PCG as Random
 import Color exposing (Color)
 import Math.Vector as Vector
-import Math.Matrix as Matrix
+import Math.Transform as Transform
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Generate.Json exposing (Mesh, Vertex)
 
@@ -125,9 +125,9 @@ rotate : Float -> Float -> Vertex -> Vertex
 rotate pitch yaw vertex =
   let
     rotation =
-      Vector.orient (Vector.vector 0 yaw 0) (Vector.vector 0 0 pitch)
+      Transform.mulOrient (Vector.vector 0 yaw 0) (Vector.vector 0 0 pitch)
   in
-    { vertex | position = Matrix.rotate rotation vertex.position }
+    { vertex | position = Transform.rotate rotation vertex.position }
 
 
 vertex : Color -> Float -> Float -> Float -> Vertex

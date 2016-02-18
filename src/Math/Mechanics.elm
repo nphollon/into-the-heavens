@@ -3,7 +3,7 @@ module Math.Mechanics (evolve, body) where
 import Dict exposing (Dict)
 import Types exposing (Body)
 import Math.Vector as Vector exposing (Vector)
-import Math.Matrix as Matrix exposing (Matrix)
+import Math.Transform as Transform
 
 
 body : String -> Dict String Body -> Maybe Body
@@ -65,7 +65,7 @@ acceleration object =
     { linear =
         if object.action.thrust >= 0 then
           Vector.vector 0 0 (toFloat object.action.thrust * -10)
-            |> Matrix.rotate object.orientation
+            |> Transform.rotate object.orientation
         else
           Vector.scale -10 object.velocity
     , angular =
@@ -84,7 +84,7 @@ nudge dt dpdt p =
     , velocity =
         Vector.add p.velocity (Vector.scale dt dpdt.velocity)
     , orientation =
-        Vector.orient p.orientation (Vector.scale dt dpdt.orientation)
+        Transform.mulOrient p.orientation (Vector.scale dt dpdt.orientation)
     , angVelocity =
         Vector.add p.angVelocity (Vector.scale dt dpdt.angVelocity)
   }

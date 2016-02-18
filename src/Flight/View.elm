@@ -9,9 +9,10 @@ import WebGL exposing (Drawable)
 import Types exposing (..)
 import Math.Vector as Vector
 import Math.Matrix as Matrix exposing (Matrix)
+import Math.Transform as Transform
+import Math.Mechanics as Mech
 import Flight.Background as Background
 import Flight.Foreground as Foreground
-import Math.Mechanics as Mech
 import Frame
 
 
@@ -63,7 +64,7 @@ objectPlacement : Maybe Float -> Body -> Matrix
 objectPlacement scale object =
   let
     placement =
-      Matrix.placement object.position object.orientation
+      Transform.placement object.position object.orientation
   in
     case scale of
       Just s ->
@@ -78,7 +79,7 @@ cameraAt aspect object =
   { perspective = Matrix.perspective aspect
   , position = object.position
   , orientation =
-      Matrix.placement (Vector.vector 0 0 0) object.orientation
+      Transform.placement (Vector.vector 0 0 0) object.orientation
         |> Matrix.transpose
   }
 
