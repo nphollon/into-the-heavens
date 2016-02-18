@@ -1,7 +1,6 @@
 module Main (..) where
 
 import Keyboard
-import Time exposing (Time)
 import Html exposing (Html)
 import StartApp
 import Effects exposing (Effects, Never)
@@ -31,7 +30,6 @@ app =
 inputs : List (Signal Update)
 inputs =
   [ Signal.map Keys Keyboard.keysDown
-  , Signal.map (Time.inSeconds >> FPS) (Time.fpsWhen 60 hasFocus)
   ]
 
 

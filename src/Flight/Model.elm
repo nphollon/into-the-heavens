@@ -4,6 +4,7 @@ import Char exposing (KeyCode)
 import Color
 import Dict
 import Task
+import Time exposing (Time)
 import Effects exposing (Effects)
 import Set exposing (Set)
 import Types exposing (..)
@@ -16,13 +17,8 @@ import Math.Collision as Collision
 update : Update -> GameState -> ( Mode, Effects Update )
 update input model =
   case input of
-    FPS dt ->
-      let
-        newModel =
-          steerAi dt model
-            |> thrust dt
-      in
-        ( GameMode newModel, crashCheck newModel )
+    Tick clockTime ->
+      timeUpdate clockTime model
 
     Keys keysDown ->
       controlUpdate keysDown model
@@ -35,7 +31,7 @@ update input model =
             |> hit particle
             |> hit hull
             |> GameMode
-        , Effects.none
+        , Effects.tick Tick
         )
 
     FireMissile ->
@@ -43,6 +39,27 @@ update input model =
 
     Meshes _ ->
       ( GameMode model, Effects.none )
+
+
+timeUpdate : Time -> GameState -> ( Mode, Effects Update )
+timeUpdate clockTime model =
+  case model.clockTime of
+    Just prevClockTime ->
+      let
+        dt =
+          Time.inSeconds (clockTime - prevClockTime)
+
+        newModel =
+          { model | clockTime = Just clockTime }
+            |> steerAi dt
+            |> thrust dt
+      in
+        ( GameMode newModel, crashCheck newModel )
+
+    Nothing ->
+      (,)
+        (GameMode { model | clockTime = Just clockTime })
+        (Effects.tick Tick)
 
 
 thrust : Float -> GameState -> GameState
@@ -98,9 +115,15 @@ crashCheck model =
         (\_ body -> List.isEmpty body.hull)
         model.universe
 
-    collisions =
-      Dict.map
-        (\label body -> collidedWith label body.position)
+    collision =
+      Dict.foldl
+        (\label point accumulator ->
+          if accumulator == Nothing then
+            collidedWith label point.position
+          else
+            accumulator
+        )
+        Nothing
         points
 
     collidedWith pointLabel position =
@@ -114,10 +137,9 @@ crashCheck model =
         Nothing
         hulls
   in
-    Dict.values collisions
-      |> List.filterMap
-          (Maybe.map (Task.succeed >> Effects.task))
-      |> Effects.batch
+    collision
+      |> Maybe.map (Task.succeed >> Effects.task)
+      |> Maybe.withDefault (Effects.tick Tick)
 
 
 fireMissile : GameState -> GameState

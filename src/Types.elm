@@ -15,7 +15,7 @@ import WebGL exposing (Drawable)
 
 type Update
   = Meshes Response
-  | FPS Time
+  | Tick Time
   | Keys (Set Char.KeyCode)
   | Collide String String
   | FireMissile
@@ -35,6 +35,7 @@ type alias GameState =
   , aiState : AiState
   , hasFired : Bool
   , nextId : Int
+  , clockTime : Maybe Time
   }
 
 

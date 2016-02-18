@@ -18,6 +18,7 @@ game library =
       , continue = False
       , hasFired = False
       , nextId = 0
+      , clockTime = Nothing
       , universe =
           Dict.fromList
             [ ( "ship"
@@ -74,7 +75,7 @@ game library =
       , aiState = Resting 1
       }
     )
-    Effects.none
+    (Effects.tick Tick)
 
 
 inaction : Action
