@@ -95,7 +95,7 @@ planetVertex =
     gl_Position =
       perspective * (cameraOrientation * cameraFrame - projectionOffset);
 
-    vec3 dirToLight = vec3(1, 0, 0);
+    vec3 dirToLight = vec3(0, sqrt(0.5), sqrt(0.5));
     vec3 placedNormal = vec3(vec4(normal, 0) * inversePlacement);
 
     cosAngleIncidence = dot(placedNormal/length(placedNormal), dirToLight);
@@ -175,7 +175,7 @@ matteVertex =
     gl_Position =
       perspective * (cameraOrientation * cameraFrame - projectionOffset);
 
-    vec3 dirToLight = vec3(1, 0, 0);
+    vec3 dirToLight = vec3(0, sqrt(0.5), sqrt(0.5));
     vec3 placedNormal = vec3(vec4(normal, 0) * inversePlacement);
 
     cosAngleIncidence = dot(placedNormal/length(placedNormal), dirToLight);
