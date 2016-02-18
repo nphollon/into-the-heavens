@@ -61,7 +61,7 @@ game library =
               , scale = Nothing
               }
           ]
-      , aiState = Resting 1
+      , aiState = Resting 4
       }
     )
     (Effects.tick Tick)
@@ -78,9 +78,9 @@ inaction =
 
 ship : Body
 ship =
-  { position = Vector.vector 5 5 -20
-  , velocity = Vector.vector 0 0 0
-  , orientation = Vector.vector 0 0 0
+  { position = Vector.vector 5 200 -20
+  , velocity = Vector.vector 0 -50 0
+  , orientation = Vector.vector (-0.5 * pi) 0 0
   , angVelocity = Vector.vector 0 0 0
   , hull = Collision.hull .position Ship.mesh
   , health = 1

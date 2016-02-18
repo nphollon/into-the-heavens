@@ -70,7 +70,6 @@ type alias Action =
 type AiState
   = Turning Float
   | Thrusting Float
-  | Braking Float
   | Resting Float
 
 

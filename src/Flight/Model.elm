@@ -117,15 +117,8 @@ steerAi delta model =
         check
           (t - delta)
           Resting
-          (Braking 2)
-          { thrust = -1, pitch = 0, yaw = 0, roll = 0 }
-
-      Braking t ->
-        check
-          (t - delta)
-          Braking
           (Turning 0.7)
-          { thrust = 0, pitch = 0, yaw = 1, roll = 0 }
+          { thrust = -1, pitch = 0, yaw = 1, roll = 0 }
 
 
 spawnAi : GameState -> GameState
@@ -136,7 +129,7 @@ spawnAi model =
           "visitor"
           Init.ship
           model.universe
-    , aiState = Resting 1
+    , aiState = Resting 4
   }
 
 
