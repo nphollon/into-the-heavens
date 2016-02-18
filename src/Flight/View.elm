@@ -20,7 +20,7 @@ view : Signal.Address Update -> GameState -> Html
 view address model =
   Frame.view
     [ scene 900 600 model ]
-    [ dashboard model.universe
+    [ dashboard model
     , instructions
     ]
 
@@ -84,8 +84,8 @@ cameraAt aspect object =
   }
 
 
-dashboard : Dict String Body -> Html
-dashboard universe =
+dashboard : GameState -> Html
+dashboard model =
   let
     printNumber label value =
       let
@@ -111,8 +111,13 @@ dashboard universe =
           |> String.concat
           |> text
 
+    printInt label value =
+      [ label, ": ", toString value ]
+        |> String.concat
+        |> text
+
     shipPosition =
-      Mech.body "ship" universe
+      Mech.body "ship" model.universe
         |> MaybeX.mapDefault (Vector.vector 0 0 0) .position
   in
     div
@@ -120,6 +125,7 @@ dashboard universe =
       [ p [] [ printNumber "X" shipPosition.x ]
       , p [] [ printNumber "Y" shipPosition.y ]
       , p [] [ printNumber "Z" shipPosition.z ]
+      , p [] [ printInt "Visitors Destroyed" model.score ]
       ]
 
 

@@ -18,6 +18,7 @@ game library =
       , continue = False
       , hasFired = False
       , hasFocus = True
+      , score = 0
       , nextId = 0
       , clockTime = Nothing
       , universe =

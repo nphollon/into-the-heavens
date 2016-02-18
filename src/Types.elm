@@ -32,12 +32,13 @@ type alias GameState =
   { continue : Bool
   , hasFired : Bool
   , hasFocus : Bool
+  , nextId : Int
+  , score : Int
+  , aiState : AiState
+  , clockTime : Maybe Time
   , universe : Dict String Body
   , graphics : List GraphicsObject
   , library : Library
-  , aiState : AiState
-  , nextId : Int
-  , clockTime : Maybe Time
   }
 
 

@@ -130,6 +130,7 @@ spawnAi model =
           Init.ship
           model.universe
     , aiState = Resting 4
+    , score = model.score + 1
   }
 
 
