@@ -189,7 +189,7 @@ spawnFrom : Body -> Body
 spawnFrom ship =
   let
     offset =
-      Vector.vector 0 -0.1 0.1
+      Vector.vector 0 -0.2 0.2
   in
     { ship
       | position = Transform.fromBodyFrame offset ship
@@ -237,10 +237,10 @@ controlUpdate keysDown model =
           { action | pitch = action.pitch + 1 }
 
         'Q' ->
-          { action | roll = action.roll - 1 }
+          { action | roll = action.roll + 1 }
 
         'E' ->
-          { action | roll = action.roll + 1 }
+          { action | roll = action.roll - 1 }
 
         'I' ->
           { action | thrust = action.thrust + 1 }
