@@ -1,8 +1,8 @@
 module Math.Collision (isOutside, isInside, hull) where
 
 import Math.Vector as Vector exposing (Vector)
-import Math.Matrix as Matrix exposing (Matrix)
 import Types exposing (Hull, Body)
+import Math.Transform as Transform
 
 
 {-| Given a list of triangles, compute a hull. For a triangle of points (a,b,c),
@@ -39,9 +39,7 @@ isInside : Vector -> Body -> Bool
 isInside point body =
   let
     bodyPoint =
-      Matrix.rotate
-        (Vector.negate body.orientation)
-        (Vector.sub point body.position)
+      Transform.toBodyFrame point body
 
     isBehind face =
       Vector.dot face.normal (Vector.sub bodyPoint face.keyPoint) < 1.0e-6

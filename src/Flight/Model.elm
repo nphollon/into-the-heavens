@@ -9,6 +9,8 @@ import Effects exposing (Effects)
 import Set exposing (Set)
 import Types exposing (..)
 import Math.Mechanics as Mech
+import Math.Vector as Vector
+import Math.Transform as Transform
 import Flight.Init as Init
 import GameOver.Init
 import Math.Collision as Collision
@@ -165,16 +167,7 @@ fireMissile model =
           | universe =
               Dict.insert
                 name
-                { ship
-                  | hull = []
-                  , health = 1
-                  , action =
-                      { thrust = 20
-                      , pitch = 0
-                      , yaw = 0
-                      , roll = 0
-                      }
-                }
+                (spawnFrom ship)
                 model.universe
           , nextId = model.nextId + 1
           , graphics =
@@ -190,6 +183,25 @@ fireMissile model =
 
     Nothing ->
       model
+
+
+spawnFrom : Body -> Body
+spawnFrom ship =
+  let
+    offset =
+      Vector.vector 0 -0.1 0.1
+  in
+    { ship
+      | position = Transform.fromBodyFrame offset ship
+      , hull = []
+      , health = 1
+      , action =
+          { thrust = 20
+          , pitch = 0
+          , yaw = 0
+          , roll = 0
+          }
+    }
 
 
 hit : String -> GameState -> GameState
