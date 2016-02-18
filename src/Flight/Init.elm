@@ -1,4 +1,4 @@
-module Flight.Init (game, inaction) where
+module Flight.Init (game, inaction, ship) where
 
 import Color
 import Types exposing (..)
@@ -43,19 +43,7 @@ game library =
                 }
               )
             , ( "other"
-              , { position = Vector.vector 5 5 -20
-                , velocity = Vector.vector 0 0 0
-                , orientation = Vector.vector 0 0 0
-                , angVelocity = Vector.vector 0 0 0
-                , hull = Collision.hull .position Ship.mesh
-                , health = 1
-                , action =
-                    { thrust = 0
-                    , pitch = 0
-                    , yaw = 0
-                    , roll = 0
-                    }
-                }
+              , ship
               )
             ]
       , graphics =
@@ -85,4 +73,21 @@ inaction =
   , pitch = 0
   , yaw = 0
   , roll = 0
+  }
+
+
+ship : Body
+ship =
+  { position = Vector.vector 5 5 -20
+  , velocity = Vector.vector 0 0 0
+  , orientation = Vector.vector 0 0 0
+  , angVelocity = Vector.vector 0 0 0
+  , hull = Collision.hull .position Ship.mesh
+  , health = 1
+  , action =
+      { thrust = 0
+      , pitch = 0
+      , yaw = 0
+      , roll = 0
+      }
   }

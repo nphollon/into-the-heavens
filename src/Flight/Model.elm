@@ -64,7 +64,7 @@ timeUpdate clockTime model =
 
         newModel =
           { model | clockTime = Just clockTime }
-            |> steerAi dt
+            |> aiUpdate dt
             |> thrust dt
       in
         ( GameMode newModel, crashCheck newModel )
@@ -78,6 +78,14 @@ timeUpdate clockTime model =
 thrust : Float -> GameState -> GameState
 thrust delta model =
   { model | universe = Mech.evolve delta model.universe }
+
+
+aiUpdate : Float -> GameState -> GameState
+aiUpdate delta model =
+  if Dict.member "other" model.universe then
+    steerAi delta model
+  else
+    spawnAi model
 
 
 steerAi : Float -> GameState -> GameState
@@ -118,6 +126,18 @@ steerAi delta model =
           Braking
           (Turning 0.7)
           { thrust = 0, pitch = 0, yaw = 1, roll = 0 }
+
+
+spawnAi : GameState -> GameState
+spawnAi model =
+  { model
+    | universe =
+        Dict.insert
+          "other"
+          Init.ship
+          model.universe
+    , aiState = Resting 1
+  }
 
 
 crashCheck : GameState -> Effects Update
