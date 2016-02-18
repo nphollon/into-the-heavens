@@ -18,7 +18,12 @@ update : Update -> GameState -> ( Mode, Effects Update )
 update input model =
   case input of
     Tick clockTime ->
-      timeUpdate clockTime model
+      if model.hasFocus then
+        timeUpdate clockTime model
+      else
+        (,)
+          (GameMode { model | clockTime = Nothing })
+          Effects.none
 
     Keys keysDown ->
       controlUpdate keysDown model
@@ -39,6 +44,12 @@ update input model =
 
     Meshes _ ->
       ( GameMode model, Effects.none )
+
+    Focus True ->
+      ( GameMode { model | hasFocus = True }, Effects.tick Tick )
+
+    Focus False ->
+      ( GameMode { model | hasFocus = False }, Effects.none )
 
 
 timeUpdate : Time -> GameState -> ( Mode, Effects Update )

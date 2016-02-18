@@ -19,6 +19,7 @@ type Update
   | Keys (Set Char.KeyCode)
   | Collide String String
   | FireMissile
+  | Focus Bool
 
 
 type Mode
@@ -29,11 +30,12 @@ type Mode
 
 type alias GameState =
   { continue : Bool
+  , hasFired : Bool
+  , hasFocus : Bool
   , universe : Dict String Body
   , graphics : List GraphicsObject
   , library : Library
   , aiState : AiState
-  , hasFired : Bool
   , nextId : Int
   , clockTime : Maybe Time
   }

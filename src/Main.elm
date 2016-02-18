@@ -30,6 +30,7 @@ app =
 inputs : List (Signal Update)
 inputs =
   [ Signal.map Keys Keyboard.keysDown
+  , Signal.map Focus hasFocus
   ]
 
 

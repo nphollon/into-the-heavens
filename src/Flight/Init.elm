@@ -17,6 +17,7 @@ game library =
       { library = library
       , continue = False
       , hasFired = False
+      , hasFocus = True
       , nextId = 0
       , clockTime = Nothing
       , universe =
