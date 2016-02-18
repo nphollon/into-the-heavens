@@ -42,14 +42,14 @@ game library =
                 , health = 1.0e10
                 }
               )
-            , ( "other"
+            , ( "visitor"
               , ship
               )
             ]
       , graphics =
           [ Background "Background"
           , Object
-              { bodyName = "other"
+              { bodyName = "visitor"
               , meshName = "Ship"
               , shader = Matte Color.purple
               , scale = Nothing

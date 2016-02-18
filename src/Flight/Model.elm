@@ -82,7 +82,7 @@ thrust delta model =
 
 aiUpdate : Float -> GameState -> GameState
 aiUpdate delta model =
-  if Dict.member "other" model.universe then
+  if Dict.member "visitor" model.universe then
     steerAi delta model
   else
     spawnAi model
@@ -94,7 +94,7 @@ steerAi delta model =
     check time thisState nextState nextAction =
       if time < 0 then
         { model | aiState = nextState }
-          |> setAction "other" nextAction
+          |> setAction "visitor" nextAction
       else
         { model | aiState = thisState time }
   in
@@ -133,7 +133,7 @@ spawnAi model =
   { model
     | universe =
         Dict.insert
-          "other"
+          "visitor"
           Init.ship
           model.universe
     , aiState = Resting 1
@@ -268,7 +268,7 @@ controlUpdate keysDown model =
         'M' ->
           { action | thrust = action.thrust - 1 }
 
-        otherwise ->
+        _ ->
           action
 
     newAction =
