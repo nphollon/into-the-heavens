@@ -4,14 +4,15 @@ import Color
 import Types exposing (..)
 import Math.Vector as Vector
 import Dict
+import Random.PCG exposing (Seed)
 import Effects exposing (Effects)
 import Generate.Ship as Ship
 import Generate.Sphere as Sphere
 import Math.Collision as Collision
 
 
-game : Library -> ( Mode, Effects Update )
-game library =
+game : Seed -> Library -> ( Mode, Effects Update )
+game seed library =
   (,)
     (GameMode
       { library = library
@@ -21,6 +22,8 @@ game library =
       , score = 0
       , nextId = 0
       , clockTime = Nothing
+      , seed = seed
+      , aiState = 4
       , universe =
           Dict.fromList
             [ ( "ship"
@@ -62,7 +65,6 @@ game library =
               , scale = Nothing
               }
           ]
-      , aiState = Resting 4
       }
     )
     (Effects.tick Tick)

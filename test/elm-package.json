@@ -16,7 +16,8 @@
         "elm-lang/core": "3.0.0 <= v < 4.0.0",
         "evancz/elm-effects": "2.0.1 <= v < 3.0.0",
         "evancz/elm-http": "3.0.0 <= v < 4.0.0",
-        "laszlopandy/elm-console": "1.1.0 <= v < 2.0.0"
+        "laszlopandy/elm-console": "1.1.0 <= v < 2.0.0",
+        "mgold/elm-random-pcg": "1.1.0 <= v < 2.0.0"
     },
     "elm-version": "0.16.0 <= v < 0.17.0"
 }

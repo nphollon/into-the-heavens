@@ -2,8 +2,9 @@ module Types (..) where
 
 import Set exposing (Set)
 import Time exposing (Time)
-import Char
+import Char exposing (KeyCode)
 import Dict exposing (Dict)
+import Random.PCG as Random
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix exposing (Matrix)
@@ -16,7 +17,7 @@ import WebGL exposing (Drawable)
 type Update
   = Meshes Response
   | Tick Time
-  | Keys (Set Char.KeyCode)
+  | Keys (Set KeyCode)
   | Collide String String
   | FireMissile
   | Focus Bool
@@ -35,6 +36,7 @@ type alias GameState =
   , nextId : Int
   , score : Int
   , aiState : AiState
+  , seed : Random.Seed
   , clockTime : Maybe Time
   , universe : Dict String Body
   , graphics : List GraphicsObject
@@ -68,10 +70,8 @@ type alias Action =
   }
 
 
-type AiState
-  = Turning Float
-  | Thrusting Float
-  | Resting Float
+type alias AiState =
+  Float
 
 
 type GraphicsObject
@@ -98,6 +98,7 @@ type alias Camera =
 
 type alias MenuState =
   { response : Maybe Response
+  , seed : Random.Seed
   }
 
 
@@ -118,4 +119,5 @@ type alias Vertex =
 
 type alias GameOverState =
   { library : Library
+  , seed : Random.Seed
   }

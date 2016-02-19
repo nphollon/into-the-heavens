@@ -24,7 +24,7 @@ update input model =
       Keys keySet ->
         case ( model.response, Set.member (Char.toCode 'N') keySet ) of
           ( Just (Ok library), True ) ->
-            Flight.Init.game library
+            Flight.Init.game model.seed library
 
           ( _, _ ) ->
             noEffects (MenuMode model)

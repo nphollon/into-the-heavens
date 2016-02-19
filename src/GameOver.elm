@@ -22,7 +22,7 @@ update input model =
           False
   in
     if continue then
-      Flight.Init.game model.library
+      Flight.Init.game model.seed model.library
     else
       ( GameOverMode model, Effects.none )
 

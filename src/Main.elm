@@ -20,7 +20,7 @@ main =
 app : StartApp.App Mode
 app =
   StartApp.start
-    { init = Menu.Init.menu
+    { init = Menu.Init.menu seed
     , inputs = inputs
     , update = update
     , view = view
@@ -61,6 +61,7 @@ view address mode =
 
 
 port hasFocus : Signal Bool
+port seed : ( Int, Int )
 port tasks : Signal (Task Never ())
 port tasks =
   app.tasks

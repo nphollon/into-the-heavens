@@ -122,10 +122,10 @@ dashboard model =
   in
     div
       [ class "dashboard" ]
-      [ p [] [ printNumber "X" shipPosition.x ]
+      [ p [] [ printInt "Visitors Destroyed" model.score ]
+      , p [] [ printNumber "X" shipPosition.x ]
       , p [] [ printNumber "Y" shipPosition.y ]
       , p [] [ printNumber "Z" shipPosition.z ]
-      , p [] [ printInt "Visitors Destroyed" model.score ]
       ]
 
 

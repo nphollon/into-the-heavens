@@ -1,19 +1,20 @@
 module Flight.Model (update) where
 
+import Set exposing (Set)
 import Char exposing (KeyCode)
 import Color
 import Dict
 import Task
 import Time exposing (Time)
 import Effects exposing (Effects)
-import Set exposing (Set)
+import Random.PCG as Random
 import Types exposing (..)
 import Math.Mechanics as Mech
 import Math.Vector as Vector
 import Math.Transform as Transform
+import Math.Collision as Collision
 import Flight.Init as Init
 import GameOver.Init
-import Math.Collision as Collision
 
 
 update : Update -> GameState -> ( Mode, Effects Update )
@@ -32,7 +33,7 @@ update input model =
 
     Collide particle hull ->
       if particle == "ship" then
-        GameOver.Init.gameOver model.library
+        GameOver.Init.gameOver model.seed model.library
       else
         ( model
             |> hit particle
@@ -90,35 +91,75 @@ aiUpdate delta model =
 
 steerAi : Float -> GameState -> GameState
 steerAi delta model =
+  if model.aiState > 0 then
+    { model | aiState = model.aiState - delta }
+  else
+    let
+      visitor =
+        Mech.body "visitor" model.universe
+
+      thrust =
+        Maybe.map (.action >> .thrust) visitor
+          |> Maybe.withDefault 1
+
+      generator =
+        case thrust of
+          -1 ->
+            aiThrustGenerator
+
+          0 ->
+            aiTurnGenerator
+
+          _ ->
+            aiCoastGenerator
+
+      ( nextMove, nextSeed ) =
+        Random.generate generator model.seed
+    in
+      setAction
+        "visitor"
+        nextMove.action
+        { model
+          | seed = nextSeed
+          , aiState = nextMove.duration
+        }
+
+
+type alias AiMove =
+  { duration : Float, action : Action }
+
+
+aiMove : Float -> Action -> AiMove
+aiMove dur act =
+  { duration = dur
+  , action = act
+  }
+
+
+aiThrustGenerator : Random.Generator AiMove
+aiThrustGenerator =
+  Random.map
+    (flip aiMove { thrust = 1, pitch = 0, yaw = 0, roll = 0 })
+    (Random.float 0.5 3)
+
+
+aiCoastGenerator : Random.Generator AiMove
+aiCoastGenerator =
+  Random.map
+    (flip aiMove { thrust = 0, pitch = 0, yaw = 0, roll = 0 })
+    (Random.float 0 1)
+
+
+aiTurnGenerator : Random.Generator AiMove
+aiTurnGenerator =
   let
-    check time thisState nextState nextAction =
-      if time < 0 then
-        { model | aiState = nextState }
-          |> setAction "visitor" nextAction
-      else
-        { model | aiState = thisState time }
+    action pitch yaw =
+      { thrust = -1, pitch = pitch, yaw = yaw, roll = 0 }
   in
-    case model.aiState of
-      Turning t ->
-        check
-          (t - delta)
-          Turning
-          (Thrusting 2)
-          { thrust = 1, pitch = 0, yaw = 0, roll = 0 }
-
-      Thrusting t ->
-        check
-          (t - delta)
-          Thrusting
-          (Resting 2)
-          { thrust = 0, pitch = 0, yaw = 0, roll = 0 }
-
-      Resting t ->
-        check
-          (t - delta)
-          Resting
-          (Turning 0.7)
-          { thrust = -1, pitch = 0, yaw = 1, roll = 0 }
+    Random.map2
+      aiMove
+      (Random.float 0 0.7)
+      (Random.map2 action (Random.int -1 1) (Random.int -1 1))
 
 
 spawnAi : GameState -> GameState
@@ -129,7 +170,7 @@ spawnAi model =
           "visitor"
           Init.ship
           model.universe
-    , aiState = Resting 4
+    , aiState = 4
     , score = model.score + 1
   }
 

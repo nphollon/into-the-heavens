@@ -7,13 +7,14 @@ import Http
 import Task
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, Value, (:=))
+import Random.PCG as Random
 import WebGL
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 
 
-menu : ( Mode, Effects Update )
-menu =
+menu : ( Int, Int ) -> ( Mode, Effects Update )
+menu seed =
   let
     resources =
       Dict.fromList
@@ -22,7 +23,13 @@ menu =
         , ( "Ship", "$DOMAIN/data/ship.json" )
         ]
   in
-    ( MenuMode { response = Nothing }, request resources )
+    (,)
+      (MenuMode
+        { response = Nothing
+        , seed = uncurry Random.initialSeed2 seed
+        }
+      )
+      (request resources)
 
 
 request : Dict String String -> Effects Update
