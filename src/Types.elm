@@ -72,6 +72,7 @@ type alias Action =
 
 type Ai
   = Aimless Random.Seed Float
+  | Seeking String
 
 
 type GraphicsObject

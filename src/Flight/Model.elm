@@ -132,6 +132,42 @@ steerAi delta object universe =
             , ai = Just (Aimless nextSeed nextMove.duration)
           }
 
+    Just (Seeking targetName) ->
+      case Mech.body targetName universe of
+        Nothing ->
+          { object | action = Init.inaction }
+
+        Just target ->
+          let
+            bearing =
+              Transform.toBodyFrame target.position object
+
+            faces =
+              ((bearing.x ^ 2 + bearing.y ^ 2) < bearing.z ^ 2)
+          in
+            { object
+              | action =
+                  { thrust =
+                      if bearing.z > 0 then
+                        -1
+                      else if faces then
+                        20
+                      else
+                        0
+                  , pitch = sign bearing.y
+                  , yaw = sign -bearing.x
+                  , roll = 0
+                  }
+            }
+
+
+sign : Float -> Int
+sign f =
+  if f == 0 then
+    0
+  else
+    round (f / (abs f))
+
 
 type alias AiMove =
   { duration : Float, action : Action }
@@ -263,11 +299,12 @@ spawnFrom ship =
       , hull = []
       , health = 1
       , action =
-          { thrust = 20
+          { thrust = 0
           , pitch = 0
           , yaw = 0
           , roll = 0
           }
+      , ai = Just (Seeking "visitor")
     }
 
 

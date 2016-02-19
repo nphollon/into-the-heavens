@@ -91,5 +91,6 @@ ship seed =
   , hull = Collision.hull .position Ship.mesh
   , health = 1
   , action = inaction
-  , ai = Just (Aimless seed 4)
+  , ai =
+      Just (Aimless seed 4)
   }
