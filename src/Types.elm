@@ -35,7 +35,6 @@ type alias GameState =
   , hasFocus : Bool
   , nextId : Int
   , score : Int
-  , aiState : AiState
   , seed : Random.Seed
   , clockTime : Maybe Time
   , universe : Dict String Body
@@ -52,6 +51,7 @@ type alias Body =
   , hull : Hull
   , health : Float
   , action : Action
+  , ai : Maybe Ai
   }
 
 
@@ -70,8 +70,8 @@ type alias Action =
   }
 
 
-type alias AiState =
-  Float
+type Ai
+  = Aimless Random.Seed Float
 
 
 type GraphicsObject

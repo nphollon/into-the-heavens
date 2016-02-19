@@ -3,7 +3,7 @@ module Flight.Model (update) where
 import Set exposing (Set)
 import Char exposing (KeyCode)
 import Color
-import Dict
+import Dict exposing (Dict)
 import Task
 import Time exposing (Time)
 import Effects exposing (Effects)
@@ -65,6 +65,7 @@ timeUpdate clockTime model =
 
         newModel =
           { model | clockTime = Just clockTime }
+            |> spawnCheck
             |> aiUpdate dt
             |> thrust dt
       in
@@ -83,46 +84,53 @@ thrust delta model =
 
 aiUpdate : Float -> GameState -> GameState
 aiUpdate delta model =
+  { model
+    | universe =
+        Dict.map
+          (\label object ->
+            steerAi delta object model.universe
+          )
+          model.universe
+  }
+
+
+spawnCheck : GameState -> GameState
+spawnCheck model =
   if Dict.member "visitor" model.universe then
-    steerAi delta model
+    model
   else
     spawnAi model
 
 
-steerAi : Float -> GameState -> GameState
-steerAi delta model =
-  if model.aiState > 0 then
-    { model | aiState = model.aiState - delta }
-  else
-    let
-      visitor =
-        Mech.body "visitor" model.universe
+steerAi : Float -> Body -> Dict String Body -> Body
+steerAi delta object universe =
+  case object.ai of
+    Nothing ->
+      object
 
-      thrust =
-        Maybe.map (.action >> .thrust) visitor
-          |> Maybe.withDefault 1
+    Just (Aimless seed t) ->
+      if t > 0 then
+        { object | ai = Just (Aimless seed (t - delta)) }
+      else
+        let
+          generator =
+            case object.action.thrust of
+              -1 ->
+                aiThrustGenerator
 
-      generator =
-        case thrust of
-          -1 ->
-            aiThrustGenerator
+              0 ->
+                aiTurnGenerator
 
-          0 ->
-            aiTurnGenerator
+              _ ->
+                aiCoastGenerator
 
-          _ ->
-            aiCoastGenerator
-
-      ( nextMove, nextSeed ) =
-        Random.generate generator model.seed
-    in
-      setAction
-        "visitor"
-        nextMove.action
-        { model
-          | seed = nextSeed
-          , aiState = nextMove.duration
-        }
+          ( nextMove, nextSeed ) =
+            Random.generate generator seed
+        in
+          { object
+            | action = nextMove.action
+            , ai = Just (Aimless nextSeed nextMove.duration)
+          }
 
 
 type alias AiMove =
@@ -164,15 +172,19 @@ aiTurnGenerator =
 
 spawnAi : GameState -> GameState
 spawnAi model =
-  { model
-    | universe =
-        Dict.insert
-          "visitor"
-          Init.ship
-          model.universe
-    , aiState = 4
-    , score = model.score + 1
-  }
+  let
+    ( rootSeed, shipSeed ) =
+      Random.split model.seed
+  in
+    { model
+      | universe =
+          Dict.insert
+            "visitor"
+            (Init.ship shipSeed)
+            model.universe
+      , seed = rootSeed
+      , score = model.score + 1
+    }
 
 
 crashCheck : GameState -> Effects Update
