@@ -140,7 +140,7 @@ aiThrustGenerator : Random.Generator AiMove
 aiThrustGenerator =
   Random.map
     (flip aiMove { thrust = 1, pitch = 0, yaw = 0, roll = 0 })
-    (Random.float 0.5 3)
+    (Random.float 0.1 2)
 
 
 aiCoastGenerator : Random.Generator AiMove
