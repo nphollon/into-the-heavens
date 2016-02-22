@@ -23,6 +23,7 @@ game seed library =
         , continue = False
         , missileTrigger = Ready
         , hasFocus = True
+        , hasCrashed = False
         , score = 0
         , nextId = 0
         , clockTime = Nothing

@@ -18,7 +18,6 @@ type Update
   = Meshes Response
   | Tick Time
   | Keys (Set KeyCode)
-  | Collide String String
   | Focus Bool
 
 
@@ -32,6 +31,7 @@ type alias GameState =
   { continue : Bool
   , missileTrigger : Trigger
   , hasFocus : Bool
+  , hasCrashed : Bool
   , nextId : Int
   , score : Int
   , seed : Random.Seed

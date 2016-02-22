@@ -4,7 +4,6 @@ import Set exposing (Set)
 import Char exposing (KeyCode)
 import Color
 import Dict exposing (Dict)
-import Task
 import Time exposing (Time)
 import Effects exposing (Effects)
 import Random.PCG as Random
@@ -31,17 +30,6 @@ update input model =
     Keys keysDown ->
       controlUpdate keysDown model
 
-    Collide particle hull ->
-      if particle == "ship" then
-        GameOver.Init.gameOver model.seed model.library
-      else
-        ( model
-            |> hit particle
-            |> hit hull
-            |> GameMode
-        , Effects.tick Tick
-        )
-
     Meshes _ ->
       ( GameMode model, Effects.none )
 
@@ -66,8 +54,12 @@ timeUpdate clockTime model =
             |> fireCheck
             |> aiUpdate dt
             |> thrust dt
+            |> crashCheck
       in
-        ( GameMode newModel, crashCheck newModel )
+        if newModel.hasCrashed then
+          GameOver.Init.gameOver newModel.seed newModel.library
+        else
+          ( GameMode newModel, Effects.tick Tick )
 
     Nothing ->
       (,)
@@ -185,7 +177,7 @@ spawnAi model =
     }
 
 
-crashCheck : GameState -> Effects Update
+crashCheck : GameState -> GameState
 crashCheck model =
   let
     ( points, hulls ) =
@@ -194,30 +186,30 @@ crashCheck model =
         model.universe
 
     collision =
-      Dict.foldl
-        (\label point accumulator ->
-          if accumulator == Nothing then
-            collidedWith label point.position
-          else
-            accumulator
-        )
-        Nothing
-        points
+      Dict.foldl collidedWith model points
 
-    collidedWith pointLabel position =
+    collidedWith pointLabel point accumulator =
       Dict.foldl
-        (\label hull accumulator ->
-          if Collision.isInside position hull then
-            Just (Collide pointLabel label)
+        (\label hull acc ->
+          if Collision.isInside point.position hull then
+            collide pointLabel label acc
           else
-            accumulator
+            acc
         )
-        Nothing
+        accumulator
         hulls
   in
     collision
-      |> Maybe.map (Task.succeed >> Effects.task)
-      |> Maybe.withDefault (Effects.tick Tick)
+
+
+collide : String -> String -> GameState -> GameState
+collide particle hull model =
+  if particle == "ship" then
+    { model | hasCrashed = True }
+  else
+    model
+      |> hit particle
+      |> hit hull
 
 
 fireCheck : GameState -> GameState
