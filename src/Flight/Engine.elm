@@ -32,10 +32,19 @@ aiUpdate delta model =
 
 spawnCheck : GameState -> GameState
 spawnCheck model =
-  if Dict.member "visitor" model.universe then
-    model
+  if Init.visitorCount model == 0 then
+    let
+      ( rootSeed, shipSeed ) =
+        Random.split model.seed
+    in
+      Init.spawn
+        (Ship shipSeed)
+        { model
+          | seed = rootSeed
+          , score = model.score + 1
+        }
   else
-    spawnAi model
+    model
 
 
 steerAi : Float -> Body -> Dict String Body -> Body
@@ -106,23 +115,6 @@ aiTurnGenerator =
       (Random.map2 action (Random.int -1 1) (Random.int -1 1))
 
 
-spawnAi : GameState -> GameState
-spawnAi model =
-  let
-    ( rootSeed, shipSeed ) =
-      Random.split model.seed
-  in
-    { model
-      | universe =
-          Dict.insert
-            "visitor"
-            (Init.ship shipSeed)
-            model.universe
-      , seed = rootSeed
-      , score = model.score + 1
-    }
-
-
 crashCheck : GameState -> GameState
 crashCheck model =
   let
@@ -131,31 +123,18 @@ crashCheck model =
         (\_ body -> List.isEmpty body.hull)
         model.universe
 
-    collision =
-      Dict.foldl collidedWith model points
-
     collidedWith pointLabel point accumulator =
       Dict.foldl
-        (\label hull acc ->
+        (\hullLabel hull m ->
           if Collision.isInside point.position hull then
-            collide pointLabel label acc
+            m |> hit pointLabel |> hit hullLabel
           else
-            acc
+            m
         )
         accumulator
         hulls
   in
-    collision
-
-
-collide : String -> String -> GameState -> GameState
-collide particle hull model =
-  if particle == "ship" then
-    { model | hasCrashed = True }
-  else
-    model
-      |> hit particle
-      |> hit hull
+    Dict.foldl collidedWith model points
 
 
 fireCheck : GameState -> GameState
@@ -176,22 +155,7 @@ fireCheck model =
 
 fireMissile : GameState -> GameState
 fireMissile model =
-  case Dict.get "ship" model.universe of
-    Just ship ->
-      let
-        name =
-          ("missile" ++ (toString model.nextId))
-      in
-        { model
-          | universe =
-              Dict.insert name (Init.missile ship) model.universe
-          , nextId = model.nextId + 1
-          , graphics =
-              Init.missileGraphics name :: model.graphics
-        }
-
-    Nothing ->
-      model
+  Init.getPlayer (Missile >> flip Init.spawn model) model
 
 
 hit : String -> GameState -> GameState

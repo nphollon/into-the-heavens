@@ -1,15 +1,9 @@
-module Math.Mechanics (evolve, body) where
+module Math.Mechanics (evolve) where
 
 import Dict exposing (Dict)
 import Types exposing (Body)
 import Math.Vector as Vector exposing (Vector)
 import Math.Transform as Transform
-
-
-body : String -> Dict String Body -> Maybe Body
-body key state =
-  Dict.get key state
-
 
 
 -- Evolving states

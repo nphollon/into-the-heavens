@@ -28,10 +28,8 @@ type Mode
 
 
 type alias GameState =
-  { continue : Bool
-  , missileTrigger : Trigger
+  { missileTrigger : Trigger
   , hasFocus : Bool
-  , hasCrashed : Bool
   , nextId : Int
   , score : Int
   , seed : Random.Seed
@@ -94,6 +92,11 @@ type GraphicsObject
 type ShaderType
   = Planet
   | Matte Color
+
+
+type EntityType
+  = Ship Random.Seed
+  | Missile Body
 
 
 type alias Camera =

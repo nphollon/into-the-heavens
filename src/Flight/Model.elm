@@ -15,7 +15,7 @@ update : Update -> GameState -> ( Mode, Effects Update )
 update input model =
   case input of
     Tick clockTime ->
-      if model.hasCrashed then
+      if Init.hasCrashed model then
         GameOver.Init.gameOver model.seed model.library
       else if model.hasFocus then
         timeUpdate clockTime model
@@ -103,7 +103,7 @@ controlUpdate keysDown model =
       Set.foldl keyAct Init.inaction keysDown
 
     modelWithAction =
-      setAction "ship" newAction model
+      Init.updatePlayer (\p -> { p | action = newAction }) model
 
     firing =
       Set.member (Char.toCode 'O') keysDown

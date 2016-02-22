@@ -10,7 +10,6 @@ import Types exposing (..)
 import Math.Vector as Vector
 import Math.Matrix as Matrix exposing (Matrix)
 import Math.Transform as Transform
-import Math.Mechanics as Mech
 import Flight.Background as Background
 import Flight.Foreground as Foreground
 import Frame
@@ -31,7 +30,7 @@ scene width height { universe, library, graphics } =
     camera =
       Maybe.map
         (cameraAt (toFloat width / toFloat height))
-        (Mech.body "ship" universe)
+        (Dict.get "ship" universe)
 
     draw object =
       case object of
@@ -44,7 +43,7 @@ scene width height { universe, library, graphics } =
         Object { bodyName, meshName, shader, scale } ->
           MaybeX.map3
             (objectPlacement scale >> Foreground.entity shader)
-            (Mech.body bodyName universe)
+            (Dict.get bodyName universe)
             camera
             (Dict.get meshName library)
 
@@ -117,7 +116,7 @@ dashboard model =
         |> text
 
     shipPosition =
-      Mech.body "ship" model.universe
+      Dict.get "ship" model.universe
         |> MaybeX.mapDefault (Vector.vector 0 0 0) .position
   in
     div

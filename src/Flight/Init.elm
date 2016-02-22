@@ -1,7 +1,8 @@
-module Flight.Init (game, inaction, ship, missile, missileGraphics) where
+module Flight.Init (game, inaction, spawn, visitorCount, hasCrashed, updatePlayer, getPlayer) where
 
 import Color
 import Dict
+import String
 import Random.PCG as Random exposing (Seed)
 import Effects exposing (Effects)
 import Types exposing (..)
@@ -14,66 +15,53 @@ import Math.Vector as Vector
 
 game : Seed -> Library -> ( Mode, Effects Update )
 game seed library =
-  let
-    ( rootSeed, shipSeed ) =
-      Random.split seed
-  in
-    (,)
-      (GameMode
-        { library = library
-        , continue = False
-        , missileTrigger = Ready
-        , hasFocus = True
-        , hasCrashed = False
-        , score = 0
-        , nextId = 0
-        , clockTime = Nothing
-        , lag = 0
-        , seed = rootSeed
-        , universe =
-            Dict.fromList
-              [ ( "ship"
-                , { position = Vector.vector 0 0 0
-                  , velocity = Vector.vector 0 0 0
-                  , orientation = Vector.vector 0 0 0
-                  , angVelocity = Vector.vector 0 0 0
-                  , hull = []
-                  , health = 1
-                  , action = inaction
-                  , ai = Nothing
-                  }
-                )
-              , ( "planet"
-                , { position = Vector.vector 0 -20 0
-                  , velocity = Vector.vector 0 0 0
-                  , orientation = Vector.vector 0 0 0
-                  , angVelocity = Vector.vector 0 3.0e-2 0
-                  , hull = Collision.hull .position Sphere.mesh
-                  , action = inaction
-                  , health = 1.0e10
-                  , ai = Nothing
-                  }
-                )
-              , ( "visitor", ship shipSeed )
-              ]
-        , graphics =
-            [ Background "Background"
-            , Object
-                { bodyName = "visitor"
-                , meshName = "Ship"
-                , shader = Matte Color.purple
-                , scale = Nothing
+  (,)
+    (GameMode
+      { library = library
+      , missileTrigger = Ready
+      , hasFocus = True
+      , score = -1
+      , nextId = 0
+      , clockTime = Nothing
+      , lag = 0
+      , seed = seed
+      , universe =
+          Dict.fromList
+            [ ( "ship"
+              , { position = Vector.vector 0 0 0
+                , velocity = Vector.vector 0 0 0
+                , orientation = Vector.vector 0 0 0
+                , angVelocity = Vector.vector 0 0 0
+                , hull = []
+                , health = 1
+                , action = inaction
+                , ai = Nothing
                 }
-            , Object
-                { bodyName = "planet"
-                , meshName = "Sphere"
-                , shader = Planet
-                , scale = Nothing
+              )
+            , ( "planet"
+              , { position = Vector.vector 0 -20 0
+                , velocity = Vector.vector 0 0 0
+                , orientation = Vector.vector 0 0 0
+                , angVelocity = Vector.vector 0 3.0e-2 0
+                , hull = Collision.hull .position Sphere.mesh
+                , action = inaction
+                , health = 1.0e10
+                , ai = Nothing
                 }
+              )
             ]
-        }
-      )
-      (Effects.tick Tick)
+      , graphics =
+          [ Background "Background"
+          , Object
+              { bodyName = "planet"
+              , meshName = "Sphere"
+              , shader = Planet
+              , scale = Nothing
+              }
+          ]
+      }
+    )
+    (Effects.tick Tick)
 
 
 inaction : Action
@@ -85,44 +73,105 @@ inaction =
   }
 
 
-ship : Seed -> Body
-ship seed =
-  { position = Vector.vector 5 200 -20
-  , velocity = Vector.vector 0 -50 0
-  , orientation = Vector.vector (-0.5 * pi) 0 0
-  , angVelocity = Vector.vector 0 0 0
-  , hull = Collision.hull .position Ship.mesh
-  , health = 1
-  , action = inaction
-  , ai = Just (Aimless seed 4)
-  }
-
-
-missile : Body -> Body
-missile ship =
+spawn : EntityType -> GameState -> GameState
+spawn objType model =
   let
-    offset =
-      Vector.vector 0 -0.2 0.2
+    name =
+      entityString objType ++ toString model.nextId
+
+    body =
+      entityBody objType
+
+    graphics =
+      entityGraphics name objType
   in
-    { ship
-      | position = Transform.fromBodyFrame offset ship
-      , hull = []
+    { model
+      | universe = Dict.insert name body model.universe
+      , nextId = model.nextId + 1
+      , graphics = graphics :: model.graphics
+    }
+
+
+entityString : EntityType -> String
+entityString objType =
+  case objType of
+    Ship _ ->
+      "visitor"
+
+    Missile _ ->
+      "missile"
+
+
+entityBody : EntityType -> Body
+entityBody objType =
+  case objType of
+    Ship seed ->
+      { position = Vector.vector 5 200 -20
+      , velocity = Vector.vector 0 -50 0
+      , orientation = Vector.vector (-0.5 * pi) 0 0
+      , angVelocity = Vector.vector 0 0 0
+      , hull = Collision.hull .position Ship.mesh
       , health = 1
-      , action =
-          { thrust = 20
-          , pitch = 0
-          , yaw = 0
-          , roll = 0
-          }
-    }
+      , action = inaction
+      , ai = Just (Aimless seed 4)
+      }
+
+    Missile parent ->
+      { parent
+        | position = Transform.fromBodyFrame (Vector.vector 0 -0.2 0.2) parent
+        , hull = []
+        , health = 1
+        , action =
+            { thrust = 20
+            , pitch = 0
+            , yaw = 0
+            , roll = 0
+            }
+      }
 
 
-missileGraphics : String -> GraphicsObject
-missileGraphics name =
-  (Object
-    { bodyName = name
-    , meshName = "Ship"
-    , shader = Matte Color.red
-    , scale = Just 0.1
-    }
-  )
+entityGraphics : String -> EntityType -> GraphicsObject
+entityGraphics name objType =
+  case objType of
+    Ship _ ->
+      Object
+        { bodyName = name
+        , meshName = "Ship"
+        , shader = Matte Color.purple
+        , scale = Nothing
+        }
+
+    Missile _ ->
+      Object
+        { bodyName = name
+        , meshName = "Ship"
+        , shader = Matte Color.red
+        , scale = Just 0.1
+        }
+
+
+visitorCount : GameState -> Int
+visitorCount model =
+  Dict.keys model.universe
+    |> List.filter (String.startsWith "visitor")
+    |> List.length
+
+
+hasCrashed : GameState -> Bool
+hasCrashed model =
+  not (Dict.member "ship" model.universe)
+
+
+updatePlayer : (Body -> Body) -> GameState -> GameState
+updatePlayer up model =
+  { model | universe = Dict.update "ship" (Maybe.map up) model.universe }
+
+
+getPlayer : (Body -> GameState) -> GameState -> GameState
+getPlayer f model =
+  case Dict.get "ship" model.universe of
+    Just ship ->
+      f ship
+
+    Nothing ->
+      model
