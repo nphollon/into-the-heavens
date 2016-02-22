@@ -23,12 +23,10 @@ update input model =
       if model.hasFocus then
         timeUpdate clockTime model
       else
-        (,)
-          (GameMode { model | clockTime = Nothing })
-          Effects.none
+        ( GameMode { model | clockTime = Nothing }, Effects.none )
 
     Keys keysDown ->
-      controlUpdate keysDown model
+      ( GameMode (controlUpdate keysDown model), Effects.none )
 
     Meshes _ ->
       ( GameMode model, Effects.none )
@@ -45,16 +43,15 @@ timeUpdate clockTime model =
   case model.clockTime of
     Just prevClockTime ->
       let
-        dt =
-          Time.inSeconds (clockTime - prevClockTime)
+        elapsed =
+          clockTime - prevClockTime
 
         newModel =
-          { model | clockTime = Just clockTime }
-            |> spawnCheck
-            |> fireCheck
-            |> aiUpdate dt
-            |> thrust dt
-            |> crashCheck
+          loop
+            { model
+              | clockTime = Just clockTime
+              , lag = model.lag + elapsed
+            }
       in
         if newModel.hasCrashed then
           GameOver.Init.gameOver newModel.seed newModel.library
@@ -65,6 +62,25 @@ timeUpdate clockTime model =
       (,)
         (GameMode { model | clockTime = Just clockTime })
         (Effects.tick Tick)
+
+
+loop : GameState -> GameState
+loop model =
+  let
+    updateDelta =
+      Time.second / 60
+  in
+    if model.lag < updateDelta then
+      model
+    else
+      { model | lag = model.lag - updateDelta }
+        |> gameTick (Time.inSeconds updateDelta)
+        |> loop
+
+
+gameTick : Float -> GameState -> GameState
+gameTick dt =
+  spawnCheck >> fireCheck >> aiUpdate dt >> thrust dt >> crashCheck
 
 
 thrust : Float -> GameState -> GameState
@@ -292,7 +308,7 @@ hit label model =
     }
 
 
-controlUpdate : Set KeyCode -> GameState -> ( Mode, Effects Update )
+controlUpdate : Set KeyCode -> GameState -> GameState
 controlUpdate keysDown model =
   let
     keyAct key action =
@@ -332,22 +348,19 @@ controlUpdate keysDown model =
 
     firing =
       Set.member (Char.toCode 'O') keysDown
-
-    finalModel =
-      case ( firing, modelWithAction.missileTrigger ) of
-        ( True, Ready ) ->
-          { modelWithAction | missileTrigger = Fire }
-
-        ( False, Fire ) ->
-          { modelWithAction | missileTrigger = FireAndReset }
-
-        ( False, Reset ) ->
-          { modelWithAction | missileTrigger = Ready }
-
-        otherwise ->
-          modelWithAction
   in
-    ( GameMode finalModel, Effects.none )
+    case ( firing, modelWithAction.missileTrigger ) of
+      ( True, Ready ) ->
+        { modelWithAction | missileTrigger = Fire }
+
+      ( False, Fire ) ->
+        { modelWithAction | missileTrigger = FireAndReset }
+
+      ( False, Reset ) ->
+        { modelWithAction | missileTrigger = Ready }
+
+      otherwise ->
+        modelWithAction
 
 
 setAction : String -> Action -> GameState -> GameState

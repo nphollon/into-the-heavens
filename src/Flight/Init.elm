@@ -27,6 +27,7 @@ game seed library =
         , score = 0
         , nextId = 0
         , clockTime = Nothing
+        , lag = 0
         , seed = rootSeed
         , universe =
             Dict.fromList

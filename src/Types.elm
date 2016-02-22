@@ -36,6 +36,7 @@ type alias GameState =
   , score : Int
   , seed : Random.Seed
   , clockTime : Maybe Time
+  , lag : Time
   , universe : Dict String Body
   , graphics : List GraphicsObject
   , library : Library
