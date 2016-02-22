@@ -19,7 +19,6 @@ type Update
   | Tick Time
   | Keys (Set KeyCode)
   | Collide String String
-  | FireMissile
   | Focus Bool
 
 
@@ -31,7 +30,7 @@ type Mode
 
 type alias GameState =
   { continue : Bool
-  , hasFired : Bool
+  , missileTrigger : Trigger
   , hasFocus : Bool
   , nextId : Int
   , score : Int
@@ -41,6 +40,13 @@ type alias GameState =
   , graphics : List GraphicsObject
   , library : Library
   }
+
+
+type Trigger
+  = Ready
+  | Fire
+  | FireAndReset
+  | Reset
 
 
 type alias Body =

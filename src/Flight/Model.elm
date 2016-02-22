@@ -42,9 +42,6 @@ update input model =
         , Effects.tick Tick
         )
 
-    FireMissile ->
-      ( GameMode (fireMissile model), Effects.none )
-
     Meshes _ ->
       ( GameMode model, Effects.none )
 
@@ -66,6 +63,7 @@ timeUpdate clockTime model =
         newModel =
           { model | clockTime = Just clockTime }
             |> spawnCheck
+            |> fireCheck
             |> aiUpdate dt
             |> thrust dt
       in
@@ -222,6 +220,22 @@ crashCheck model =
       |> Maybe.withDefault (Effects.tick Tick)
 
 
+fireCheck : GameState -> GameState
+fireCheck model =
+  case model.missileTrigger of
+    Ready ->
+      model
+
+    Fire ->
+      fireMissile { model | missileTrigger = Reset }
+
+    FireAndReset ->
+      fireMissile { model | missileTrigger = Ready }
+
+    Reset ->
+      model
+
+
 fireMissile : GameState -> GameState
 fireMissile model =
   case Dict.get "ship" model.universe of
@@ -326,23 +340,22 @@ controlUpdate keysDown model =
 
     firing =
       Set.member (Char.toCode 'O') keysDown
+
+    finalModel =
+      case ( firing, modelWithAction.missileTrigger ) of
+        ( True, Ready ) ->
+          { modelWithAction | missileTrigger = Fire }
+
+        ( False, Fire ) ->
+          { modelWithAction | missileTrigger = FireAndReset }
+
+        ( False, Reset ) ->
+          { modelWithAction | missileTrigger = Ready }
+
+        otherwise ->
+          modelWithAction
   in
-    case ( firing, model.hasFired ) of
-      ( True, True ) ->
-        ( GameMode modelWithAction, Effects.none )
-
-      ( True, False ) ->
-        (,)
-          (GameMode { modelWithAction | hasFired = True })
-          (Effects.task (Task.succeed FireMissile))
-
-      ( False, True ) ->
-        (,)
-          (GameMode { modelWithAction | hasFired = False })
-          Effects.none
-
-      ( False, False ) ->
-        ( GameMode modelWithAction, Effects.none )
+    ( GameMode finalModel, Effects.none )
 
 
 setAction : String -> Action -> GameState -> GameState

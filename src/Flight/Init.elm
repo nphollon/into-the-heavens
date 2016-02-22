@@ -21,7 +21,7 @@ game seed library =
       (GameMode
         { library = library
         , continue = False
-        , hasFired = False
+        , missileTrigger = Ready
         , hasFocus = True
         , score = 0
         , nextId = 0
