@@ -1,14 +1,15 @@
-module Flight.Init (game, inaction, ship) where
+module Flight.Init (game, inaction, ship, missile, missileGraphics) where
 
 import Color
-import Types exposing (..)
-import Math.Vector as Vector
 import Dict
 import Random.PCG as Random exposing (Seed)
 import Effects exposing (Effects)
+import Types exposing (..)
 import Generate.Ship as Ship
 import Generate.Sphere as Sphere
 import Math.Collision as Collision
+import Math.Transform as Transform
+import Math.Vector as Vector
 
 
 game : Seed -> Library -> ( Mode, Effects Update )
@@ -95,3 +96,33 @@ ship seed =
   , action = inaction
   , ai = Just (Aimless seed 4)
   }
+
+
+missile : Body -> Body
+missile ship =
+  let
+    offset =
+      Vector.vector 0 -0.2 0.2
+  in
+    { ship
+      | position = Transform.fromBodyFrame offset ship
+      , hull = []
+      , health = 1
+      , action =
+          { thrust = 20
+          , pitch = 0
+          , yaw = 0
+          , roll = 0
+          }
+    }
+
+
+missileGraphics : String -> GraphicsObject
+missileGraphics name =
+  (Object
+    { bodyName = name
+    , meshName = "Ship"
+    , shader = Matte Color.red
+    , scale = Just 0.1
+    }
+  )
