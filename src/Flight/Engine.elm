@@ -11,7 +11,11 @@ import Flight.Mechanics as Mech
 
 update : Float -> GameState -> GameState
 update dt =
-  spawnCheck >> fireCheck >> Ai.aiUpdate dt >> thrust dt >> crashCheck
+  fireCheck
+    >> spawnCheck
+    >> Ai.aiUpdate dt
+    >> thrust dt
+    >> crashCheck
 
 
 spawnCheck : GameState -> GameState

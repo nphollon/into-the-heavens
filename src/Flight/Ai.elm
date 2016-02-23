@@ -11,11 +11,11 @@ aiUpdate : Float -> GameState -> GameState
 aiUpdate delta model =
   { model
     | universe =
-        Dict.map
-          (\_ object ->
-            steerAi delta object model.universe
-          )
-          model.universe
+        model.universe
+          |> Dict.map
+              (\_ object -> steerAi delta object model.universe)
+          |> Dict.filter
+              (\_ object -> object.ai /= Just (SelfDestruct))
   }
 
 
@@ -49,10 +49,16 @@ steerAi delta object universe =
                 Just (Aimless nextSeed nextMove.duration nextMove.action)
           }
 
-    Just (Seeking _) ->
-      object
+    Just (Seeking lifespan target) ->
+      if lifespan > 0 then
+        { object | ai = Just (Seeking (lifespan - delta) target) }
+      else
+        { object | ai = Just SelfDestruct }
 
     Just (PlayerControlled _) ->
+      object
+
+    Just SelfDestruct ->
       object
 
 
@@ -105,7 +111,7 @@ acceleration universe object =
     Just (PlayerControlled action) ->
       accelFromAction action object
 
-    Just (Seeking targetName) ->
+    Just (Seeking _ targetName) ->
       case Dict.get targetName universe of
         Nothing ->
           defaultAcceleration
@@ -115,6 +121,9 @@ acceleration universe object =
               Vector.scale 80 (Vector.direction target.position object.position)
           , angular = Vector.vector 0 0 0
           }
+
+    Just SelfDestruct ->
+      defaultAcceleration
 
 
 accelFromAction : Action -> Body -> Acceleration

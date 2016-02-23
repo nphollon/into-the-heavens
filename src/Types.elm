@@ -84,7 +84,8 @@ type alias Acceleration =
 type Ai
   = Aimless Random.Seed Float Action
   | PlayerControlled Action
-  | Seeking String
+  | Seeking Float String
+  | SelfDestruct
 
 
 type GraphicsObject
