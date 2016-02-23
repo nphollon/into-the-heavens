@@ -74,6 +74,12 @@ type alias Action =
   }
 
 
+type alias Acceleration =
+  { linear : Vector
+  , angular : Vector
+  }
+
+
 type Ai
   = Aimless Random.Seed Float Action
   | PlayerControlled Action
