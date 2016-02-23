@@ -11,23 +11,24 @@ import Flight.Ai as Ai
 
 
 evolve : Float -> Dict String Body -> Dict String Body
-evolve dt =
-  Dict.map (\k v -> evolveObject dt v)
+evolve dt universe =
+  Dict.map (\k v -> evolveObject dt universe v) universe
 
 
-evolveObject : Float -> Body -> Body
-evolveObject dt object =
+evolveObject : Float -> Dict String Body -> Body -> Body
+evolveObject dt universe object =
   let
-    accel =
-      Ai.acceleration object
-
     stateDerivative state =
-      { state
-        | position = state.velocity
-        , velocity = accel.linear
-        , orientation = state.angVelocity
-        , angVelocity = accel.angular
-      }
+      let
+        accel =
+          Ai.acceleration universe state
+      in
+        { state
+          | position = state.velocity
+          , velocity = accel.linear
+          , orientation = state.angVelocity
+          , angVelocity = accel.angular
+        }
 
     a =
       stateDerivative object

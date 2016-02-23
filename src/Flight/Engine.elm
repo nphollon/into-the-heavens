@@ -20,13 +20,15 @@ spawnCheck model =
     let
       ( rootSeed, shipSeed ) =
         Random.split model.seed
+
+      ( spawnModel, spawnName ) =
+        Init.spawn (Ship shipSeed) model
     in
-      Init.spawn
-        (Ship shipSeed)
-        { model
-          | seed = rootSeed
-          , score = model.score + 1
-        }
+      { spawnModel
+        | seed = rootSeed
+        , score = model.score + 1
+        , target = spawnName
+      }
   else
     model
 
@@ -78,7 +80,7 @@ fireMissile : GameState -> GameState
 fireMissile model =
   Init.getPlayer
     (\p ->
-      Init.spawn (Missile p model.target) model
+      fst (Init.spawn (Missile p model.target) model)
     )
     model
 

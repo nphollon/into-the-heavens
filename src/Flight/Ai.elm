@@ -49,7 +49,7 @@ steerAi delta object universe =
                 Just (Aimless nextSeed nextMove.duration nextMove.action)
           }
 
-    Just (Seeking target) ->
+    Just (Seeking _) ->
       object
 
     Just (PlayerControlled _) ->
@@ -93,8 +93,8 @@ aiTurnGenerator =
       (Random.map2 action (Random.int -1 1) (Random.int -1 1))
 
 
-acceleration : Body -> Acceleration
-acceleration object =
+acceleration : Dict String Body -> Body -> Acceleration
+acceleration universe object =
   case object.ai of
     Nothing ->
       defaultAcceleration
@@ -105,8 +105,16 @@ acceleration object =
     Just (PlayerControlled action) ->
       accelFromAction action object
 
-    Just (Seeking target) ->
-      defaultAcceleration
+    Just (Seeking targetName) ->
+      case Dict.get targetName universe of
+        Nothing ->
+          defaultAcceleration
+
+        Just target ->
+          { linear =
+              Vector.scale 80 (Vector.direction target.position object.position)
+          , angular = Vector.vector 0 0 0
+          }
 
 
 accelFromAction : Action -> Body -> Acceleration
