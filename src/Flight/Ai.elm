@@ -113,18 +113,11 @@ acceleration universe object =
 
     Just (Seeking _ targetName) ->
       case Dict.get targetName universe of
+        Just target ->
+          accelTowards target object
+
         Nothing ->
           defaultAcceleration
-
-        Just target ->
-          { linear =
-              target.velocity
-                |> Vector.scale (0.2 * sqrt (Vector.distance object.position target.position))
-                |> Vector.add target.position
-                |> flip Vector.direction object.position
-                |> Vector.scale 100
-          , angular = Vector.vector 0 0 0
-          }
 
     Just SelfDestruct ->
       defaultAcceleration
@@ -150,6 +143,29 @@ accelFromAction action object =
           (goOrStop (toFloat action.pitch) (object.angVelocity.x))
           (goOrStop (toFloat action.yaw) (object.angVelocity.y))
           (goOrStop (toFloat action.roll) (object.angVelocity.z))
+    }
+
+
+accelTowards : Body -> Body -> Acceleration
+accelTowards target missile =
+  let
+    range =
+      Vector.sub target.position missile.position
+
+    velocity =
+      Vector.sub target.velocity missile.velocity
+
+    rSquared =
+      Vector.distanceSquared target.position missile.position
+
+    lineOfSightRotation =
+      Vector.scale (1 / rSquared) (Vector.cross range velocity)
+
+    scaleFactor =
+      1.0e-6
+  in
+    { linear = Vector.cross velocity lineOfSightRotation
+    , angular = Vector.vector 0 0 0
     }
 
 
