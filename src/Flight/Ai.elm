@@ -159,10 +159,7 @@ accelTowards target missile =
       Vector.distanceSquared target.position missile.position
 
     lineOfSightRotation =
-      Vector.scale (1 / rSquared) (Vector.cross range velocity)
-
-    scaleFactor =
-      1.0e-6
+      Vector.scale (0.7 / rSquared) (Vector.cross range velocity)
   in
     { linear = Vector.cross velocity lineOfSightRotation
     , angular = Vector.vector 0 0 0
