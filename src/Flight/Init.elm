@@ -120,7 +120,7 @@ entityBody objType =
       { parent
         | position = Transform.fromBodyFrame (Vector.vector 0 -0.2 0.2) parent
         , velocity =
-            Vector.vector 0 0 -20
+            Vector.vector 0 0 0
               |> Transform.rotate parent.orientation
               |> Vector.add parent.velocity
         , hull = []

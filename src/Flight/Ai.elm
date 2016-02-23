@@ -118,7 +118,11 @@ acceleration universe object =
 
         Just target ->
           { linear =
-              Vector.scale 80 (Vector.direction target.position object.position)
+              target.velocity
+                |> Vector.scale (0.2 * sqrt (Vector.distance object.position target.position))
+                |> Vector.add target.position
+                |> flip Vector.direction object.position
+                |> Vector.scale 100
           , angular = Vector.vector 0 0 0
           }
 
