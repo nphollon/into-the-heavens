@@ -34,8 +34,7 @@ game seed library =
                 , angVelocity = Vector.vector 0 0 0
                 , hull = []
                 , health = 1
-                , action = inaction
-                , ai = Nothing
+                , ai = Just (PlayerControlled inaction)
                 }
               )
             , ( "planet"
@@ -44,7 +43,6 @@ game seed library =
                 , orientation = Vector.vector 0 0 0
                 , angVelocity = Vector.vector 0 3.0e-2 0
                 , hull = Collision.hull .position Sphere.mesh
-                , action = inaction
                 , health = 1.0e10
                 , ai = Nothing
                 }
@@ -112,8 +110,7 @@ entityBody objType =
       , angVelocity = Vector.vector 0 0 0
       , hull = Collision.hull .position Ship.mesh
       , health = 1
-      , action = inaction
-      , ai = Just (Aimless seed 4)
+      , ai = Just (Aimless seed 4 inaction)
       }
 
     Missile parent ->
@@ -121,12 +118,17 @@ entityBody objType =
         | position = Transform.fromBodyFrame (Vector.vector 0 -0.2 0.2) parent
         , hull = []
         , health = 1
-        , action =
-            { thrust = 20
-            , pitch = 0
-            , yaw = 0
-            , roll = 0
-            }
+        , ai =
+            Just
+              (Aimless
+                (Random.initialSeed 0)
+                100
+                { thrust = 20
+                , pitch = 0
+                , yaw = 0
+                , roll = 0
+                }
+              )
       }
 
 

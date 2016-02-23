@@ -2,7 +2,6 @@ module Flight.Model (update) where
 
 import Set exposing (Set)
 import Char exposing (KeyCode)
-import Dict exposing (Dict)
 import Time exposing (Time)
 import Effects exposing (Effects)
 import Types exposing (..)
@@ -103,7 +102,11 @@ controlUpdate keysDown model =
       Set.foldl keyAct Init.inaction keysDown
 
     modelWithAction =
-      Init.updatePlayer (\p -> { p | action = newAction }) model
+      Init.updatePlayer
+        (\p ->
+          { p | ai = Just (PlayerControlled newAction) }
+        )
+        model
 
     firing =
       Set.member (Char.toCode 'O') keysDown
@@ -120,15 +123,3 @@ controlUpdate keysDown model =
 
       otherwise ->
         modelWithAction
-
-
-setAction : String -> Action -> GameState -> GameState
-setAction label newAction model =
-  let
-    updateAction b =
-      { b | action = newAction }
-  in
-    { model
-      | universe =
-          Dict.update label (Maybe.map updateAction) model.universe
-    }

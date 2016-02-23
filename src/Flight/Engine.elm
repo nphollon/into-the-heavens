@@ -53,13 +53,13 @@ steerAi delta object universe =
     Nothing ->
       object
 
-    Just (Aimless seed t) ->
+    Just (Aimless seed t action) ->
       if t > 0 then
-        { object | ai = Just (Aimless seed (t - delta)) }
+        { object | ai = Just (Aimless seed (t - delta) action) }
       else
         let
           generator =
-            case object.action.thrust of
+            case action.thrust of
               -1 ->
                 aiThrustGenerator
 
@@ -73,9 +73,12 @@ steerAi delta object universe =
             Random.generate generator seed
         in
           { object
-            | action = nextMove.action
-            , ai = Just (Aimless nextSeed nextMove.duration)
+            | ai =
+                Just (Aimless nextSeed nextMove.duration nextMove.action)
           }
+
+    Just (PlayerControlled _) ->
+      object
 
 
 type alias AiMove =

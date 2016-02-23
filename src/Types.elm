@@ -55,7 +55,6 @@ type alias Body =
   , angVelocity : Vector
   , hull : Hull
   , health : Float
-  , action : Action
   , ai : Maybe Ai
   }
 
@@ -76,7 +75,8 @@ type alias Action =
 
 
 type Ai
-  = Aimless Random.Seed Float
+  = Aimless Random.Seed Float Action
+  | PlayerControlled Action
 
 
 type GraphicsObject

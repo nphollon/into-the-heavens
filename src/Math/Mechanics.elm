@@ -1,7 +1,7 @@
 module Math.Mechanics (evolve) where
 
 import Dict exposing (Dict)
-import Types exposing (Body)
+import Types exposing (Body, Action, Ai(..))
 import Math.Vector as Vector exposing (Vector)
 import Math.Transform as Transform
 
@@ -49,6 +49,19 @@ evolveObject dt object =
 
 acceleration : Body -> Acceleration
 acceleration object =
+  case object.ai of
+    Nothing ->
+      defaultAcceleration
+
+    Just (Aimless _ _ action) ->
+      accelFromAction action object
+
+    Just (PlayerControlled action) ->
+      accelFromAction action object
+
+
+accelFromAction : Action -> Body -> Acceleration
+accelFromAction action object =
   let
     goOrStop dir vel =
       if dir == 0 then
@@ -57,16 +70,16 @@ acceleration object =
         5 * toFloat dir
   in
     { linear =
-        if object.action.thrust >= 0 then
-          Vector.vector 0 0 (toFloat object.action.thrust * -10)
+        if action.thrust >= 0 then
+          Vector.vector 0 0 (toFloat action.thrust * -10)
             |> Transform.rotate object.orientation
         else
           Vector.scale -10 object.velocity
     , angular =
         Vector.vector
-          (goOrStop (toFloat object.action.pitch) (object.angVelocity.x))
-          (goOrStop (toFloat object.action.yaw) (object.angVelocity.y))
-          (goOrStop (toFloat object.action.roll) (object.angVelocity.z))
+          (goOrStop (toFloat action.pitch) (object.angVelocity.x))
+          (goOrStop (toFloat action.yaw) (object.angVelocity.y))
+          (goOrStop (toFloat action.roll) (object.angVelocity.z))
     }
 
 
