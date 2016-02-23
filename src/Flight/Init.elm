@@ -18,13 +18,14 @@ game seed library =
   (,)
     (GameMode
       { library = library
-      , missileTrigger = Ready
       , hasFocus = True
-      , score = -1
-      , nextId = 0
       , clockTime = Nothing
       , lag = 0
       , seed = seed
+      , nextId = 0
+      , missileTrigger = Ready
+      , target = ""
+      , score = -1
       , universe =
           Dict.fromList
             [ ( "ship"
@@ -96,7 +97,7 @@ entityString objType =
     Ship _ ->
       "visitor"
 
-    Missile _ ->
+    Missile _ _ ->
       "missile"
 
 
@@ -113,22 +114,12 @@ entityBody objType =
       , ai = Just (Aimless seed 4 inaction)
       }
 
-    Missile parent ->
+    Missile parent target ->
       { parent
         | position = Transform.fromBodyFrame (Vector.vector 0 -0.2 0.2) parent
         , hull = []
         , health = 1
-        , ai =
-            Just
-              (Aimless
-                (Random.initialSeed 0)
-                100
-                { thrust = 20
-                , pitch = 0
-                , yaw = 0
-                , roll = 0
-                }
-              )
+        , ai = Just (Seeking target)
       }
 
 
@@ -143,7 +134,7 @@ entityGraphics name objType =
         , scale = Nothing
         }
 
-    Missile _ ->
+    Missile _ _ ->
       Object
         { bodyName = name
         , meshName = "Ship"

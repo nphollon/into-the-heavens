@@ -76,7 +76,11 @@ fireCheck model =
 
 fireMissile : GameState -> GameState
 fireMissile model =
-  Init.getPlayer (Missile >> flip Init.spawn model) model
+  Init.getPlayer
+    (\p ->
+      Init.spawn (Missile p model.target) model
+    )
+    model
 
 
 hit : String -> GameState -> GameState

@@ -49,6 +49,9 @@ steerAi delta object universe =
                 Just (Aimless nextSeed nextMove.duration nextMove.action)
           }
 
+    Just (Seeking target) ->
+      object
+
     Just (PlayerControlled _) ->
       object
 
@@ -101,6 +104,9 @@ acceleration object =
 
     Just (PlayerControlled action) ->
       accelFromAction action object
+
+    Just (Seeking target) ->
+      defaultAcceleration
 
 
 accelFromAction : Action -> Body -> Acceleration

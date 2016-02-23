@@ -29,6 +29,7 @@ type Mode
 
 type alias GameState =
   { missileTrigger : Trigger
+  , target : String
   , hasFocus : Bool
   , nextId : Int
   , score : Int
@@ -83,6 +84,7 @@ type alias Acceleration =
 type Ai
   = Aimless Random.Seed Float Action
   | PlayerControlled Action
+  | Seeking String
 
 
 type GraphicsObject
@@ -102,7 +104,7 @@ type ShaderType
 
 type EntityType
   = Ship Random.Seed
-  | Missile Body
+  | Missile Body String
 
 
 type alias Camera =
