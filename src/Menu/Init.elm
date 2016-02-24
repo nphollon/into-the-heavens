@@ -8,7 +8,7 @@ import Task
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, Value, (:=))
 import Random.PCG as Random
-import WebGL
+import WebGL exposing (Drawable(..))
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 
@@ -58,11 +58,26 @@ toLibrary list =
 
 decode : Decoder Library
 decode =
-  Decode.tuple3 (,,) vertex vertex vertex
-    |> Decode.list
-    |> Decode.dict
-    |> Decode.object1
-        (Dict.map (\k v -> WebGL.Triangle v))
+  Decode.dict
+    (("primitive" := Decode.string) `Decode.andThen` decodeItem)
+
+
+decodeItem : String -> Decoder (Drawable Vertex)
+decodeItem primitive =
+  case primitive of
+    "Triangle" ->
+      Decode.object1 Triangle ("attributes" := decodeTriangles)
+
+    "Points" ->
+      Decode.object1 Points ("attributes" := Decode.list vertex)
+
+    _ ->
+      Decode.fail "Unrecognized attribute"
+
+
+decodeTriangles : Decoder (List ( Vertex, Vertex, Vertex ))
+decodeTriangles =
+  Decode.list (Decode.tuple3 (,,) vertex vertex vertex)
 
 
 vertex : Decoder Vertex

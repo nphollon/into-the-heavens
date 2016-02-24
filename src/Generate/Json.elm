@@ -1,4 +1,4 @@
-module Generate.Json (encode, Mesh, Vertex) where
+module Generate.Json (encode, Vertex) where
 
 import String
 import Graphics.Element as Layout
@@ -6,16 +6,31 @@ import Json.Encode as Json
 import Text
 import Math.Vector as Vector exposing (Vector)
 import Math.Vector4 as Vec4 exposing (Vec4)
+import WebGL exposing (Drawable(..))
 
 
-encode : Mesh -> String
+encode : Drawable Vertex -> String
 encode =
   encodeMesh >> Json.encode 0
 
 
-encodeMesh : Mesh -> Json.Value
-encodeMesh =
-  encodeList encodeTriple
+encodeMesh : Drawable Vertex -> Json.Value
+encodeMesh mesh =
+  case mesh of
+    Triangle triangles ->
+      Json.object
+        [ ( "primitive", Json.string "Triangle" )
+        , ( "attributes", encodeList encodeTriple triangles )
+        ]
+
+    Points points ->
+      Json.object
+        [ ( "primitive", Json.string "Points" )
+        , ( "attributes", encodeList encodeAttribute points )
+        ]
+
+    _ ->
+      Json.null
 
 
 encodeTriple : ( Vertex, Vertex, Vertex ) -> Json.Value
@@ -57,7 +72,3 @@ type alias Vertex =
   , color : Vec4
   , normal : Vector
   }
-
-
-type alias Mesh =
-  List ( Vertex, Vertex, Vertex )

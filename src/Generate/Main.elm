@@ -2,7 +2,8 @@ module Main (..) where
 
 import Task exposing (Task)
 import Console exposing (IO, (>>>))
-import Generate.Json as Json exposing (Mesh)
+import WebGL exposing (Drawable)
+import Generate.Json as Json exposing (Vertex)
 import Generate.Sphere as Sphere
 import Generate.Constellation as Constellation
 import Generate.Ship as Ship
@@ -19,7 +20,7 @@ writeModels =
     ]
 
 
-write : Mesh -> String -> IO ()
+write : Drawable Vertex -> String -> IO ()
 write model filename =
   Console.writeFile
     { file = "public_html/data/" ++ filename

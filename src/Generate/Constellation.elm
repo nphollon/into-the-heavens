@@ -5,17 +5,19 @@ import Color exposing (Color)
 import Math.Vector as Vector
 import Math.Transform as Transform
 import Math.Vector4 as Vec4 exposing (Vec4)
-import Generate.Json exposing (Mesh, Vertex)
+import Generate.Json exposing (Vertex)
+import WebGL exposing (Drawable(..))
 
 
-mesh : Mesh
+mesh : Drawable Vertex
 mesh =
-  List.concat
-    [ crux
-    , ursaMajor
-    , aquarius
-    , scatter 100
-    ]
+  [ crux
+  , ursaMajor
+  , aquarius
+  , scatter 100
+  ]
+    |> List.concat
+    |> Points
 
 
 type alias Point =
@@ -27,7 +29,7 @@ skyPoint ra dec =
   ( turns ra / 24, degrees (90 - dec) )
 
 
-crux : Mesh
+crux : List Vertex
 crux =
   constellation
     [ skyPoint 12.43 -63.08
@@ -38,7 +40,7 @@ crux =
     ]
 
 
-ursaMajor : Mesh
+ursaMajor : List Vertex
 ursaMajor =
   constellation
     [ skyPoint 11.06 61.75
@@ -58,7 +60,7 @@ ursaMajor =
     ]
 
 
-aquarius : Mesh
+aquarius : List Vertex
 aquarius =
   constellation
     [ skyPoint 22.1 -0.32
@@ -70,55 +72,14 @@ aquarius =
     ]
 
 
-constellation : List Point -> Mesh
+constellation : List Point -> List Vertex
 constellation stars =
-  List.concatMap (uncurry (star Color.yellow)) stars
+  List.map (uncurry (star Color.yellow)) stars
 
 
-star : Color.Color -> Float -> Float -> Mesh
+star : Color.Color -> Float -> Float -> Vertex
 star color phi theta =
-  let
-    distance =
-      400.0
-
-    r =
-      distance * 4.0e-3
-
-    move =
-      translate 0 distance 0 >> rotate theta phi
-
-    down =
-      move <| vertex color 0 -r 0
-
-    up =
-      move <| vertex color 0 r 0
-
-    west =
-      move <| vertex color -r 0 0
-
-    east =
-      move <| vertex color r 0 0
-
-    south =
-      move <| vertex color 0 0 -r
-
-    north =
-      move <| vertex color 0 0 r
-  in
-    [ ( down, north, west )
-    , ( down, east, north )
-    , ( down, south, east )
-    , ( down, west, south )
-    , ( up, west, north )
-    , ( up, north, east )
-    , ( up, east, south )
-    , ( up, south, west )
-    ]
-
-
-translate : Float -> Float -> Float -> Vertex -> Vertex
-translate x y z vertex =
-  { vertex | position = Vector.add vertex.position (Vector.vector x y z) }
+  vertex color 0 400 0 |> rotate theta phi
 
 
 rotate : Float -> Float -> Vertex -> Vertex
@@ -152,7 +113,7 @@ vertex color x y z =
     }
 
 
-scatter : Int -> Mesh
+scatter : Int -> List Vertex
 scatter n =
   let
     seed =
@@ -161,7 +122,7 @@ scatter n =
     ( randomPoints, seed' ) =
       Random.generate (Random.list n starPoint) seed
   in
-    List.concatMap (uncurry (star Color.blue)) randomPoints
+    List.map (uncurry (star Color.blue)) randomPoints
 
 
 starPoint : Random.Generator Point

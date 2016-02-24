@@ -1,14 +1,20 @@
-module Generate.Ship (mesh) where
+module Generate.Ship (mesh, triangles) where
 
-import Generate.Json exposing (Mesh, Vertex)
+import Generate.Json exposing (Vertex)
+import WebGL exposing (Drawable(..))
 import Array
 import Math.Vector as Vector exposing (Vector)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Maybe.Extra as MaybeX
 
 
-mesh : Mesh
+mesh : Drawable Vertex
 mesh =
+  Triangle triangles
+
+
+triangles : List ( Vertex, Vertex, Vertex )
+triangles =
   let
     zPeak =
       (1 + sqrt 2) * 2 ^ -0.25

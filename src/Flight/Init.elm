@@ -43,7 +43,7 @@ game seed library =
                 , velocity = Vector.vector 0 0 0
                 , orientation = Vector.vector 0 0 0
                 , angVelocity = Vector.vector 0 3.0e-2 0
-                , hull = Collision.hull .position Sphere.mesh
+                , hull = Collision.hull .position Sphere.triangles
                 , health = 1.0e10
                 , ai = Nothing
                 }
@@ -112,7 +112,7 @@ entityBody objType =
       , velocity = Vector.vector 0 -50 0
       , orientation = Vector.vector (-0.5 * pi) 0 0
       , angVelocity = Vector.vector 0 0 0
-      , hull = Collision.hull .position Ship.mesh
+      , hull = Collision.hull .position Ship.triangles
       , health = 1
       , ai = Just (Aimless seed 4 inaction)
       }

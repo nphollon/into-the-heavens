@@ -1,11 +1,12 @@
-module Generate.Sphere (mesh) where
+module Generate.Sphere (mesh, triangles) where
 
 import Color
 import Array exposing (Array)
 import Math.Vector as Vector exposing (Vector)
 import Math.Vector4 as Vec4 exposing (Vec4)
-import Generate.Json exposing (Mesh, Vertex)
+import Generate.Json exposing (Vertex)
 import Maybe.Extra as MaybeX
+import WebGL exposing (Drawable(..))
 
 
 type alias TupPoint =
@@ -24,8 +25,13 @@ size =
   18
 
 
-mesh : Mesh
+mesh : Drawable Vertex
 mesh =
+  Triangle triangles
+
+
+triangles : List ( Vertex, Vertex, Vertex )
+triangles =
   let
     sphereIcosaFaces =
       List.filterMap
@@ -64,7 +70,7 @@ toRect ( ( colatitude, longitude ), zone ) =
     }
 
 
-recurse : Int -> ( Vertex, Vertex, Vertex ) -> Mesh
+recurse : Int -> ( Vertex, Vertex, Vertex ) -> List ( Vertex, Vertex, Vertex )
 recurse iter triangle =
   if iter == 0 then
     [ triangle ]
@@ -72,7 +78,7 @@ recurse iter triangle =
     List.concatMap (recurse (iter - 1)) (split triangle)
 
 
-split : ( Vertex, Vertex, Vertex ) -> Mesh
+split : ( Vertex, Vertex, Vertex ) -> List ( Vertex, Vertex, Vertex )
 split ( a, b, c ) =
   let
     normalMidpoint u v =
