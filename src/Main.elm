@@ -57,10 +57,11 @@ view address mode =
       GameOver.view address data
 
     MenuMode data ->
-      Menu.view address data
+      Menu.view isMobile address data
 
 
 port hasFocus : Signal Bool
+port isMobile : Bool
 port seed : ( Int, Int )
 port tasks : Signal (Task Never ())
 port tasks =

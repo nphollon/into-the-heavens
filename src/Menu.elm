@@ -36,19 +36,19 @@ update input model =
         noEffects (MenuMode model)
 
 
-view : Signal.Address Update -> MenuState -> Html
-view address state =
+view : Bool -> Signal.Address Update -> MenuState -> Html
+view isMobile address state =
   let
     top =
       case state.response of
         Nothing ->
-          loading
+          loading isMobile
 
         Just (Err e) ->
           resourceFailure e
 
         Just (Ok lib) ->
-          ready
+          ready isMobile
   in
     Frame.view
       [ top ]
@@ -60,21 +60,23 @@ view address state =
       ]
 
 
-ready : Html
-ready =
+ready : Bool -> Html
+ready isMobile =
   div
     []
     [ h1 [ class "title" ] [ text "Into the Heavens" ]
     , h2 [ class "subtitle" ] [ text "Press 'N'" ]
+    , mobileWarning isMobile
     ]
 
 
-loading : Html
-loading =
+loading : Bool -> Html
+loading isMobile =
   div
     []
     [ h1 [ class "title" ] [ text "Into the Heavens" ]
     , h2 [ class "subtitle" ] [ text "Loading..." ]
+    , mobileWarning isMobile
     ]
 
 
@@ -100,3 +102,13 @@ resourceFailure e =
       [ h1 [ class "title" ] [ text "Error" ]
       , h2 [ class "subtitle" ] [ text message ]
       ]
+
+
+mobileWarning : Bool -> Html
+mobileWarning isMobile =
+  if isMobile then
+    h3
+      [ class "subtitle" ]
+      [ text "You can only play if you have a keyboard. Sorry mobile." ]
+  else
+    div [] []
