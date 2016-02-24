@@ -12,6 +12,8 @@ import Math.Matrix as Matrix exposing (Matrix)
 import Math.Transform as Transform
 import Flight.Background as Background
 import Flight.Foreground as Foreground
+import Flight.Guide as Guide
+import Flight.Camera as Camera
 import Frame
 
 
@@ -27,9 +29,12 @@ view address model =
 scene : Int -> Int -> GameState -> Html
 scene width height { universe, library, graphics } =
   let
+    aspect =
+      toFloat width / toFloat height
+
     camera =
       Maybe.map
-        (cameraAt (toFloat width / toFloat height))
+        (Camera.at aspect)
         (Dict.get "ship" universe)
 
     draw object =
@@ -45,6 +50,11 @@ scene width height { universe, library, graphics } =
             (objectPlacement scale >> Foreground.entity shader)
             (Dict.get bodyName universe)
             camera
+            (Dict.get meshName library)
+
+        Guide meshName ->
+          Maybe.map
+            (Guide.entity (Camera.ortho aspect))
             (Dict.get meshName library)
 
     webgl =
@@ -71,16 +81,6 @@ objectPlacement scale object =
 
       Nothing ->
         placement
-
-
-cameraAt : Float -> Body -> Camera
-cameraAt aspect object =
-  { perspective = Matrix.perspective aspect
-  , position = object.position
-  , orientation =
-      Transform.placement (Vector.vector 0 0 0) object.orientation
-        |> Matrix.transpose
-  }
 
 
 dashboard : GameState -> Html

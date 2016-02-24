@@ -57,6 +57,7 @@ game seed library =
               , shader = Planet
               , scale = Nothing
               }
+          , Guide "Crosshair"
           ]
       }
     )

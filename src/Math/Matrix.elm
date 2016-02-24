@@ -1,4 +1,4 @@
-module Math.Matrix (Matrix, perspective, mul, makeTranslate, makeRotate, transform, transpose, inverse, scale, toMat4) where
+module Math.Matrix (Matrix, mul, identity, makeTranslate, makeRotate, transform, transpose, inverse, scale, toMat4) where
 
 import Math.Matrix4 as Mat4
 import Math.Vector as Vector exposing (Vector)
@@ -8,10 +8,9 @@ type Matrix
   = Wrapper Mat4.Mat4
 
 
-perspective : Float -> Matrix
-perspective aspect =
-  Mat4.makePerspective 60 aspect 0.1 1000.0
-    |> Wrapper
+identity : Matrix
+identity =
+  Wrapper Mat4.identity
 
 
 transpose : Matrix -> Matrix

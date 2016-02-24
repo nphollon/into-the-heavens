@@ -43,7 +43,7 @@ entity : ShaderType -> Matrix -> Camera -> Drawable Vertex -> Renderable
 entity objectType placement camera world =
   let
     uniform =
-      { perspective = Matrix.toMat4 camera.perspective
+      { perspective = camera.perspective
       , cameraOrientation = Matrix.toMat4 camera.orientation
       , cameraPosition = Vector.toVec3 camera.position
       , placement = Matrix.toMat4 placement
@@ -51,7 +51,7 @@ entity objectType placement camera world =
       }
 
     matteUniform c =
-      { perspective = Matrix.toMat4 camera.perspective
+      { perspective = camera.perspective
       , cameraOrientation = Matrix.toMat4 camera.orientation
       , cameraPosition = Vector.toVec3 camera.position
       , placement = Matrix.toMat4 placement

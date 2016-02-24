@@ -7,6 +7,7 @@ import Dict exposing (Dict)
 import Random.PCG as Random
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
+import Math.Matrix4 exposing (Mat4)
 import Math.Matrix exposing (Matrix)
 import Math.Vector exposing (Vector)
 import Http
@@ -90,6 +91,7 @@ type Ai
 
 type GraphicsObject
   = Background String
+  | Guide String
   | Object
       { bodyName : String
       , meshName : String
@@ -109,7 +111,7 @@ type EntityType
 
 
 type alias Camera =
-  { perspective : Matrix
+  { perspective : Mat4
   , orientation : Matrix
   , position : Vector
   }

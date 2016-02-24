@@ -1,12 +1,10 @@
 module Flight.Background (entity) where
 
-import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL exposing (Renderable, Drawable, Shader)
 import Types exposing (Camera, Vertex)
 import Math.Matrix as Matrix
-import Math.Vector as Vector
 
 
 type alias Varying =
@@ -17,7 +15,6 @@ type alias Varying =
 type alias Uniform =
   { perspective : Mat4
   , cameraOrientation : Mat4
-  , cameraPosition : Vec3
   }
 
 
@@ -25,9 +22,8 @@ entity : Camera -> Drawable Vertex -> Renderable
 entity camera bkg =
   let
     uniform =
-      { perspective = Matrix.toMat4 camera.perspective
+      { perspective = camera.perspective
       , cameraOrientation = Matrix.toMat4 camera.orientation
-      , cameraPosition = Vector.toVec3 camera.position
       }
   in
     WebGL.render vertexShader fragmentShader bkg uniform
