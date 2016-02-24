@@ -1,8 +1,34 @@
-/* colours:
+@font-face {
+    font-family: 'PT Serif';
+    src: url('assets/pt_serif-web-italic-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
 
-black = #340a0b;
-red = #7d1a0c
-*/
+}
+
+@font-face {
+    font-family: 'PT Serif';
+    src: url('assets/pt_serif-web-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Fira Sans';
+    src: url('assets/firasans-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Bitter';
+    src: url('assets/bitter-italic-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+
+}
 
 body {
     background-color: #33273B;
