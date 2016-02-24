@@ -24,11 +24,6 @@ type alias Point =
   ( Float, Float )
 
 
-skyPoint : Float -> Float -> Point
-skyPoint ra dec =
-  ( turns ra / 24, degrees (90 - dec) )
-
-
 crux : List Vertex
 crux =
   constellation
@@ -74,11 +69,23 @@ aquarius =
 
 constellation : List Point -> List Vertex
 constellation stars =
-  List.map (uncurry (star Color.yellow)) stars
+  List.map (star Color.yellow) stars
 
 
-star : Color.Color -> Float -> Float -> Vertex
-star color phi theta =
+scatter : Int -> List Vertex
+scatter n =
+  let
+    seed =
+      Random.initialSeed 2
+
+    ( randomPoints, seed' ) =
+      Random.generate (Random.list n starPoint) seed
+  in
+    List.map (star Color.blue) randomPoints
+
+
+star : Color.Color -> ( Float, Float ) -> Vertex
+star color ( phi, theta ) =
   vertex color 0 400 0 |> rotate theta phi
 
 
@@ -113,16 +120,9 @@ vertex color x y z =
     }
 
 
-scatter : Int -> List Vertex
-scatter n =
-  let
-    seed =
-      Random.initialSeed 2
-
-    ( randomPoints, seed' ) =
-      Random.generate (Random.list n starPoint) seed
-  in
-    List.map (uncurry (star Color.blue)) randomPoints
+skyPoint : Float -> Float -> Point
+skyPoint ra dec =
+  ( turns ra / 24, degrees (90 - dec) )
 
 
 starPoint : Random.Generator Point
