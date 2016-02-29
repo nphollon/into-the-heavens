@@ -11,7 +11,7 @@ import WebGL exposing (Drawable(..))
 
 mesh : Drawable Vertex
 mesh =
-  Points (scatter 10000)
+  Points (scatter 8900)
 
 
 type alias Point =
@@ -58,7 +58,7 @@ vertex hue position =
         colorVector 255 89 11
   in
     { position = position
-    , color = starColor
+    , color = Vec4.scale 0.7 starColor
     , normal = Vector.vector 1 0 0
     }
 
@@ -67,9 +67,8 @@ starPoint : Random.Generator Vertex
 starPoint =
   let
     toVertex density az cosAlt color =
-      sphericalVector (density ^ 2) (acos cosAlt) az
+      sphericalVector (1000000.0 * density ^ 4) (acos cosAlt) az
         |> Vector.add (Vector.vector 0 0 0.8)
-        |> toCelestialSphere
         |> vertex color
   in
     Random.map4

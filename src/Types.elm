@@ -103,6 +103,7 @@ type GraphicsObject
 type ShaderType
   = Planet
   | Matte Color
+  | Stars
 
 
 type EntityType
