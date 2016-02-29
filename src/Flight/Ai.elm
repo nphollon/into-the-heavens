@@ -15,7 +15,7 @@ aiUpdate delta model =
           |> Dict.map
               (\_ object -> steerAi delta object model.universe)
           |> Dict.filter
-              (\_ object -> object.ai /= Just (SelfDestruct))
+              (\_ object -> object.ai /= Just SelfDestruct)
   }
 
 

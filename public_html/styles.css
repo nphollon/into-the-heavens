@@ -43,7 +43,7 @@ body {
 .app {
     margin: 2em;
     width: 950px;
-    background-color: #2A2329;
+    background-color: #0A0309;
     border-radius: 1em;
 }
 
@@ -54,7 +54,7 @@ body {
 }
 
 .bottom {
-    border-top: thin double #0B78B3;
+    border-top: thin double #33273B;
     min-height: 200px;
     display: flex;
     flex-wrap: wrap;

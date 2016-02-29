@@ -5,7 +5,7 @@ import Console exposing (IO, (>>>))
 import WebGL exposing (Drawable)
 import Generate.Json as Json exposing (Vertex)
 import Generate.Sphere as Sphere
-import Generate.Constellation as Constellation
+import Generate.Cluster as Cluster
 import Generate.Ship as Ship
 
 
@@ -15,7 +15,7 @@ writeModels =
     (\x io -> io >>> (uncurry write x))
     (Console.pure ())
     [ ( Sphere.mesh, "sphere.json" )
-    , ( Constellation.mesh, "background.json" )
+    , ( Cluster.mesh, "background.json" )
     , ( Ship.mesh, "ship.json" )
     ]
 
