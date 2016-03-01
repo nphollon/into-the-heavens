@@ -11,7 +11,7 @@ import WebGL exposing (Drawable(..))
 
 mesh : Drawable Vertex
 mesh =
-  Points (scatter 10000)
+  Points (scatter 8900)
 
 
 type alias Point =
@@ -68,7 +68,7 @@ starPoint =
   let
     toVertex density az cosAlt color =
       sphericalVector (density ^ 2) (acos cosAlt) az
-        |> Vector.add (Vector.vector 0 0 0.8)
+        |> Vector.add (Vector.vector 0 0.7 0.7)
         |> toCelestialSphere
         |> vertex color
   in
@@ -102,6 +102,6 @@ toCelestialSphere v =
       Vector.length v
 
     flatR =
-      400 + r
+      200000.0 + r
   in
     sphericalVector flatR (acos (v.z / r)) (atan2 v.y v.x)
