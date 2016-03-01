@@ -9,7 +9,7 @@ import Types exposing (Body, Camera)
 
 at : Float -> Body -> Camera
 at aspect object =
-  { perspective = Mat4.makePerspective 60 aspect 0.1 1.0e7
+  { perspective = Mat4.makePerspective 60 aspect 0.1 1000.0
   , position = object.position
   , orientation =
       Transform.placement (Vector.vector 0 0 0) object.orientation

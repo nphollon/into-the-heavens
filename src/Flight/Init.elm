@@ -48,24 +48,9 @@ game seed library =
                 , ai = Nothing
                 }
               )
-            , ( "cluster"
-              , { position = Vector.vector 0 500000.0 500000.0
-                , velocity = Vector.vector 0 0 0
-                , orientation = Vector.vector 0 0 0
-                , angVelocity = Vector.vector 0 0 0
-                , hull = []
-                , health = 1.0e10
-                , ai = Nothing
-                }
-              )
             ]
       , graphics =
-          [ Object
-              { bodyName = "cluster"
-              , meshName = "Background"
-              , shader = Stars
-              , scale = Nothing
-              }
+          [ Background "Background"
           , Object
               { bodyName = "planet"
               , meshName = "Sphere"
