@@ -123,14 +123,14 @@ entityBody objType =
     Missile parent target ->
       { position = Transform.fromBodyFrame (Vector.vector 0 -0.2 0.2) parent
       , velocity =
-          Vector.vector 0 0 -20
+          Vector.vector 0 0 -80
             |> Transform.rotate parent.orientation
             |> Vector.add parent.velocity
       , orientation = parent.orientation
       , angVelocity = Vector.vector 0 0 0
       , hull = []
       , health = 1
-      , ai = Just (Seeking 3 target)
+      , ai = Just (Seeking 4 target)
       }
 
 
