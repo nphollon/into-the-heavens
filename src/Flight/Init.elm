@@ -59,8 +59,7 @@ game seed library =
               }
           , Reticule "Crosshair"
           , Target
-              { bodyName = "visitor0"
-              , meshName = "Crosshair"
+              { meshName = "Crosshair"
               }
           ]
       }

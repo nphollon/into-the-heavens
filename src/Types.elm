@@ -99,8 +99,7 @@ type GraphicsObject
       , scale : Maybe Float
       }
   | Target
-      { bodyName : String
-      , meshName : String
+      { meshName : String
       }
 
 

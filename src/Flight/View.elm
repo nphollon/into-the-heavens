@@ -27,7 +27,7 @@ view address model =
 
 
 scene : Int -> Int -> GameState -> Html
-scene width height { universe, library, graphics } =
+scene width height { universe, library, graphics, target } =
   let
     aspect =
       toFloat width / toFloat height
@@ -57,10 +57,10 @@ scene width height { universe, library, graphics } =
             (Guide.reticule (Camera.ortho aspect))
             (Dict.get meshName library)
 
-        Target { bodyName, meshName } ->
+        Target { meshName } ->
           MaybeX.map3
             (\b c -> Foreground.entity Decoration (decorPlacement b c) c)
-            (Dict.get bodyName universe)
+            (Dict.get target universe)
             camera
             (Dict.get meshName library)
 
