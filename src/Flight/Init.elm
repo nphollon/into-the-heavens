@@ -57,7 +57,11 @@ game seed library =
               , shader = Planet
               , scale = Nothing
               }
-          , Guide "Crosshair"
+          , Reticule "Crosshair"
+          , Target
+              { bodyName = "visitor0"
+              , meshName = "Crosshair"
+              }
           ]
       }
     )

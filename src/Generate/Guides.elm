@@ -22,7 +22,7 @@ toVertex : Float -> Vertex
 toVertex angle =
   let
     ( x, y ) =
-      fromPolar ( 5.0e-2, angle )
+      fromPolar ( 1, angle )
   in
     { vertPosition = Vec3.vec3 x y 1
     , vertColor = Vec4.vec4 1 0 0 1

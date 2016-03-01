@@ -1,4 +1,4 @@
-module Math.Transform (rotate, placement, toBodyFrame, fromBodyFrame, mulOrient) where
+module Math.Transform (rotate, rotationFor, placement, toBodyFrame, fromBodyFrame, mulOrient) where
 
 import Types exposing (Body)
 import Math.Matrix as Matrix exposing (Matrix)
@@ -10,11 +10,28 @@ rotate orientation =
   Matrix.transform (Matrix.makeRotate orientation)
 
 
-placement : Vector -> Vector -> Matrix
-placement position orientation =
-  Matrix.mul
-    (Matrix.makeTranslate position)
-    (Matrix.makeRotate orientation)
+rotationFor : Vector -> Vector
+rotationFor v =
+  let
+    u =
+      Vector.vector 0 0 1
+
+    cross =
+      Vector.cross u v
+
+    crossMag =
+      Vector.length cross
+
+    angle =
+      atan2 crossMag (Vector.dot u v)
+  in
+    Vector.scale (angle / crossMag) cross
+
+
+placement : Float -> Vector -> Vector -> Matrix
+placement scale position orientation =
+  Matrix.mul (Matrix.makeTranslate position) (Matrix.makeRotate orientation)
+    |> Matrix.scale scale
 
 
 toBodyFrame : Vector -> Body -> Vector

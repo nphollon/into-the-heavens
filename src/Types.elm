@@ -91,18 +91,23 @@ type Ai
 
 type GraphicsObject
   = Background String
-  | Guide String
+  | Reticule String
   | Object
       { bodyName : String
       , meshName : String
       , shader : ShaderType
       , scale : Maybe Float
       }
+  | Target
+      { bodyName : String
+      , meshName : String
+      }
 
 
 type ShaderType
   = Planet
   | Matte Color
+  | Decoration
 
 
 type EntityType

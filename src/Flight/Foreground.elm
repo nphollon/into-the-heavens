@@ -20,10 +20,18 @@ type alias Uniform a =
   }
 
 
-type alias Varying =
-  { fragColor : Vec4
-  , cosAngleIncidence : Float
+type alias Varying a =
+  { a
+    | fragColor : Vec4
   }
+
+
+type alias VertexShader a b =
+  Shader Vertex (Uniform a) (Varying b)
+
+
+type alias FragmentShader a b =
+  Shader {} (Uniform a) (Varying b)
 
 
 vectorColor : Color -> Vec4
@@ -61,14 +69,17 @@ entity objectType placement camera world =
   in
     case objectType of
       Planet ->
-        WebGL.render planetVertex planetShader world uniform
+        WebGL.render planetVertex planetFragment world uniform
 
       Matte color ->
         matteUniform color
           |> WebGL.render matteVertex matteFragment world
 
+      Decoration ->
+        WebGL.render decorVertex decorFragment world uniform
 
-planetVertex : Shader Vertex (Uniform {}) Varying
+
+planetVertex : VertexShader {} { cosAngleIncidence : Float }
 planetVertex =
   [glsl|
   precision mediump float;
@@ -104,22 +115,8 @@ planetVertex =
   |]
 
 
-shipShader : Shader {} (Uniform {}) Varying
-shipShader =
-  [glsl|
-  precision mediump float;
-  varying vec4 fragColor;
-  varying float cosAngleIncidence;
-
-  void main () {
-    gl_FragColor = fragColor * cosAngleIncidence;
-    gl_FragColor.w = 1.0;
-  }
-  |]
-
-
-planetShader : Shader {} (Uniform {}) Varying
-planetShader =
+planetFragment : FragmentShader {} { cosAngleIncidence : Float }
+planetFragment =
   [glsl|
   precision mediump float;
   varying vec4 fragColor;
@@ -148,7 +145,7 @@ planetShader =
   |]
 
 
-matteVertex : Shader Vertex (Uniform { color : Vec4 }) Varying
+matteVertex : VertexShader { color : Vec4 } { cosAngleIncidence : Float }
 matteVertex =
   [glsl|
   precision mediump float;
@@ -184,7 +181,7 @@ matteVertex =
   |]
 
 
-matteFragment : Shader {} (Uniform { color : Vec4 }) Varying
+matteFragment : FragmentShader { color : Vec4 } { cosAngleIncidence : Float }
 matteFragment =
   [glsl|
   precision mediump float;
@@ -194,5 +191,48 @@ matteFragment =
   void main () {
     gl_FragColor = fragColor * cosAngleIncidence;
     gl_FragColor.w = 1.0;
+  }
+  |]
+
+
+decorVertex : VertexShader {} {}
+decorVertex =
+  [glsl|
+  precision mediump float;
+
+  attribute vec3 vertPosition;
+  attribute vec4 vertColor;
+  attribute vec3 normal;
+
+  uniform vec3 cameraPosition;
+  uniform mat4 perspective;
+  uniform mat4 cameraOrientation;
+  uniform mat4 placement;
+  uniform mat4 inversePlacement;
+
+  varying vec4 fragColor;
+
+  void main() {
+    vec4 worldFrame = placement * vec4(vertPosition, 1);
+    vec4 cameraFrame = worldFrame - vec4(cameraPosition, 0);
+
+    vec4 projectionOffset = vec4(0, 0, length(cameraFrame.xyz), 0);
+
+    gl_Position =
+      perspective * (cameraOrientation * cameraFrame - projectionOffset);
+
+    fragColor = vertColor;
+  }
+  |]
+
+
+decorFragment : FragmentShader {} {}
+decorFragment =
+  [glsl|
+  precision mediump float;
+  varying vec4 fragColor;
+
+  void main () {
+    gl_FragColor = fragColor;
   }
   |]

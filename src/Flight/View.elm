@@ -52,9 +52,16 @@ scene width height { universe, library, graphics } =
             camera
             (Dict.get meshName library)
 
-        Guide meshName ->
+        Reticule meshName ->
           Maybe.map
-            (Guide.entity (Camera.ortho aspect))
+            (Guide.reticule (Camera.ortho aspect))
+            (Dict.get meshName library)
+
+        Target { bodyName, meshName } ->
+          MaybeX.map3
+            (\b c -> Foreground.entity Decoration (decorPlacement b c) c)
+            (Dict.get bodyName universe)
+            camera
             (Dict.get meshName library)
 
     webgl =
@@ -71,16 +78,24 @@ scene width height { universe, library, graphics } =
 
 objectPlacement : Maybe Float -> Body -> Matrix
 objectPlacement scale object =
-  let
-    placement =
-      Transform.placement object.position object.orientation
-  in
-    case scale of
-      Just s ->
-        Matrix.scale s placement
+  Transform.placement
+    (Maybe.withDefault 1 scale)
+    object.position
+    object.orientation
 
-      Nothing ->
-        placement
+
+decorPlacement : Body -> Camera -> Matrix
+decorPlacement object camera =
+  let
+    direction =
+      Vector.direction object.position camera.position
+
+    position =
+      Vector.scale 0.1 direction
+        |> Vector.add camera.position
+  in
+    Transform.rotationFor direction
+      |> Transform.placement 1.0e-2 position
 
 
 dashboard : GameState -> Html

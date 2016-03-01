@@ -1,4 +1,4 @@
-module Flight.Guide (entity) where
+module Flight.Guide (reticule) where
 
 import Math.Vector4 exposing (Vec4)
 import Math.Matrix4 exposing (Mat4)
@@ -16,8 +16,8 @@ type alias Uniform =
   }
 
 
-entity : Camera -> Drawable Vertex -> Renderable
-entity camera mesh =
+reticule : Camera -> Drawable Vertex -> Renderable
+reticule camera mesh =
   let
     uniform =
       { perspective = camera.perspective }

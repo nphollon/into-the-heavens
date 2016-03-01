@@ -12,14 +12,19 @@ at aspect object =
   { perspective = Mat4.makePerspective 60 aspect 0.1 1000.0
   , position = object.position
   , orientation =
-      Transform.placement (Vector.vector 0 0 0) object.orientation
+      Transform.placement 1 (Vector.vector 0 0 0) object.orientation
         |> Matrix.transpose
   }
 
 
 ortho : Float -> Camera
 ortho aspect =
-  { perspective = Mat4.makeOrtho2D -aspect aspect -1.0 1.0
-  , position = Vector.vector 0 0 0
-  , orientation = Matrix.identity
-  }
+  let
+    scale =
+      20
+  in
+    { perspective =
+        Mat4.makeOrtho2D (-scale * aspect) (scale * aspect) -scale scale
+    , position = Vector.vector 0 0 0
+    , orientation = Matrix.identity
+    }
