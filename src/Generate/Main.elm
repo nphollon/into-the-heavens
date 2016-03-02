@@ -7,6 +7,7 @@ import Generate.Json as Json exposing (Vertex)
 import Generate.Sphere as Sphere
 import Generate.Cluster as Cluster
 import Generate.Ship as Ship
+import Generate.Missile as Missile
 
 
 writeModels : IO ()
@@ -17,6 +18,7 @@ writeModels =
     [ ( Sphere.mesh, "sphere.json" )
     , ( Cluster.mesh, "background.json" )
     , ( Ship.mesh, "ship.json" )
+    , ( Missile.mesh, "missile.json" )
     ]
 
 

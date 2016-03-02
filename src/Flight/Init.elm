@@ -60,7 +60,6 @@ game seed library =
               { bodyName = "planet"
               , meshName = "Sphere"
               , shader = Planet
-              , scale = Nothing
               }
           , Reticule "Crosshair"
           , Target
@@ -137,9 +136,9 @@ entityBody objType =
       }
 
     Missile parent target ->
-      { position = Transform.fromBodyFrame (Vector.vector 0 -0.3 0.2) parent
+      { position = Transform.fromBodyFrame (Vector.vector 0 -0.5 0.1) parent
       , velocity =
-          Vector.vector 0 0 -80
+          Vector.vector 0 0 -20
             |> Transform.rotate parent.orientation
             |> Vector.add parent.velocity
       , orientation = parent.orientation
@@ -158,15 +157,13 @@ entityGraphics name objType =
         { bodyName = name
         , meshName = "Ship"
         , shader = Matte Color.purple
-        , scale = Nothing
         }
 
     Missile _ _ ->
       Object
         { bodyName = name
-        , meshName = "Ship"
-        , shader = Matte Color.red
-        , scale = Just 0.1
+        , meshName = "Missile"
+        , shader = Decoration
         }
 
 

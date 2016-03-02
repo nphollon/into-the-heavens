@@ -56,9 +56,9 @@ scene width height { universe, library, graphics } =
             camera
             (Dict.get meshName library)
 
-        Object { bodyName, meshName, shader, scale } ->
+        Object { bodyName, meshName, shader } ->
           MaybeX.map3
-            (objectPlacement scale >> Foreground.entity shader)
+            (objectPlacement >> Foreground.entity shader)
             (Dict.get bodyName universe)
             camera
             (Dict.get meshName library)
@@ -87,10 +87,10 @@ scene width height { universe, library, graphics } =
       |> Html.fromElement
 
 
-objectPlacement : Maybe Float -> Body -> Matrix
-objectPlacement scale object =
+objectPlacement : Body -> Matrix
+objectPlacement object =
   Transform.placement
-    (Maybe.withDefault 1 scale)
+    1
     object.position
     object.orientation
 

@@ -21,6 +21,7 @@ menu seed =
         [ ( "Sphere", "$DOMAIN/data/sphere.json" )
         , ( "Background", "$DOMAIN/data/background.json" )
         , ( "Ship", "$DOMAIN/data/ship.json" )
+        , ( "Missile", "$DOMAIN/data/missile.json" )
         ]
   in
     (,)

@@ -105,7 +105,6 @@ type GraphicsObject
       { bodyName : String
       , meshName : String
       , shader : ShaderType
-      , scale : Maybe Float
       }
   | Target
       { meshName : String
