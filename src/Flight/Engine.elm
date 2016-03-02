@@ -28,11 +28,12 @@ spawnCheck model =
       ( spawnModel, spawnName ) =
         Init.spawn (Ship shipSeed) model
     in
-      { spawnModel
-        | seed = rootSeed
-        , score = model.score + 1
-        , target = spawnName
-      }
+      Init.updatePlayer
+        (\cockpit -> { cockpit | target = spawnName })
+        { spawnModel
+          | seed = rootSeed
+          , score = model.score + 1
+        }
   else
     model
 
@@ -45,48 +46,72 @@ thrust delta model =
 crashCheck : GameState -> GameState
 crashCheck model =
   let
-    ( points, hulls ) =
-      Dict.partition
-        (\_ body -> List.isEmpty body.hull)
-        model.universe
-
-    collidedWith pointLabel point accumulator =
-      Dict.foldl
-        (\hullLabel hull m ->
-          if Collision.isInside point.position hull then
-            m |> hit pointLabel |> hit hullLabel
-          else
-            m
-        )
-        accumulator
-        hulls
+    collidedWith pointLabel point hullLabel hull m =
+      if Collision.isInside point.position hull && pointLabel /= hullLabel then
+        m |> hit pointLabel |> hit hullLabel
+      else
+        m
   in
-    Dict.foldl collidedWith model points
+    Dict.foldl
+      (\label body updatedModel ->
+        Dict.foldl (collidedWith label body) updatedModel model.universe
+      )
+      model
+      model.universe
 
 
 fireCheck : GameState -> GameState
 fireCheck model =
-  case model.missileTrigger of
-    Ready ->
-      model
+  let
+    updateCockpit cockpit =
+      case cockpit.trigger of
+        Fire ->
+          Just { cockpit | trigger = Reset }
 
-    Fire ->
-      fireMissile { model | missileTrigger = Reset }
+        FireAndReset ->
+          Just { cockpit | trigger = Ready }
 
-    FireAndReset ->
-      fireMissile { model | missileTrigger = Ready }
+        _ ->
+          Nothing
 
-    Reset ->
-      model
+    getUpdateFor body =
+      case body.ai of
+        Just (PlayerControlled cockpit) ->
+          case updateCockpit cockpit of
+            Just newCockpit ->
+              Just ( { body | ai = Just (PlayerControlled newCockpit) }, Missile body cockpit.target )
 
+            Nothing ->
+              Nothing
 
-fireMissile : GameState -> GameState
-fireMissile model =
-  Init.getPlayer
-    (\p ->
-      fst (Init.spawn (Missile p model.target) model)
-    )
-    model
+        Just (Aimless ai) ->
+          case updateCockpit ai.cockpit of
+            Just newCockpit ->
+              Just
+                ( { body | ai = Just (Aimless { ai | cockpit = newCockpit }) }
+                , Missile body newCockpit.target
+                )
+
+            Nothing ->
+              Nothing
+
+        _ ->
+          Nothing
+
+    checkOne label body newModel =
+      case getUpdateFor body of
+        Just ( newBody, missile ) ->
+          { newModel
+            | universe =
+                Dict.insert label newBody newModel.universe
+          }
+            |> Init.spawn missile
+            |> fst
+
+        Nothing ->
+          newModel
+  in
+    Dict.foldl checkOne model model.universe
 
 
 hit : String -> GameState -> GameState

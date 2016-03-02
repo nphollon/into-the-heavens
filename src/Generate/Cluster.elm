@@ -68,7 +68,7 @@ starPoint =
   let
     toVertex density az cosAlt color =
       sphericalVector (density ^ 2) (acos cosAlt) az
-        |> Vector.add (Vector.vector 0 0.7 0.7)
+        |> Vector.add (Vector.vector 0 0.5 0.5)
         |> toCelestialSphere
         |> vertex color
   in

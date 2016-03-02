@@ -23,8 +23,6 @@ game seed library =
       , lag = 0
       , seed = seed
       , nextId = 0
-      , missileTrigger = Ready
-      , target = ""
       , score = -1
       , universe =
           Dict.fromList
@@ -33,9 +31,16 @@ game seed library =
                 , velocity = Vector.vector 0 0 0
                 , orientation = Vector.vector 0 0 0
                 , angVelocity = Vector.vector 0 0 0
-                , hull = []
+                , hull = Collision.hull .position Ship.triangles
                 , health = 1
-                , ai = Just (PlayerControlled inaction)
+                , ai =
+                    Just
+                      (PlayerControlled
+                        { action = inaction
+                        , target = ""
+                        , trigger = Ready
+                        }
+                      )
                 }
               )
             , ( "planet"
@@ -117,11 +122,22 @@ entityBody objType =
       , angVelocity = Vector.vector 0 0 0
       , hull = Collision.hull .position Ship.triangles
       , health = 1
-      , ai = Just (Aimless seed 4 inaction)
+      , ai =
+          Just
+            (Aimless
+              { seed = seed
+              , lifespan = 4
+              , cockpit =
+                  { action = inaction
+                  , target = "ship"
+                  , trigger = Ready
+                  }
+              }
+            )
       }
 
     Missile parent target ->
-      { position = Transform.fromBodyFrame (Vector.vector 0 -0.2 0.2) parent
+      { position = Transform.fromBodyFrame (Vector.vector 0 -0.3 0.2) parent
       , velocity =
           Vector.vector 0 0 -80
             |> Transform.rotate parent.orientation
@@ -166,9 +182,21 @@ hasCrashed model =
   not (Dict.member "ship" model.universe)
 
 
-updatePlayer : (Body -> Body) -> GameState -> GameState
-updatePlayer up model =
-  { model | universe = Dict.update "ship" (Maybe.map up) model.universe }
+updatePlayer : (Cockpit -> Cockpit) -> GameState -> GameState
+updatePlayer aiUpdate model =
+  let
+    bodyUpdate body =
+      case body.ai of
+        Just (PlayerControlled cockpit) ->
+          { body | ai = Just (PlayerControlled (aiUpdate cockpit)) }
+
+        _ ->
+          body
+  in
+    { model
+      | universe =
+          Dict.update "ship" (Maybe.map bodyUpdate) model.universe
+    }
 
 
 getPlayer : (Body -> GameState) -> GameState -> GameState

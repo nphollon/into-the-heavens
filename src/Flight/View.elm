@@ -27,15 +27,26 @@ view address model =
 
 
 scene : Int -> Int -> GameState -> Html
-scene width height { universe, library, graphics, target } =
+scene width height { universe, library, graphics } =
   let
     aspect =
       toFloat width / toFloat height
 
+    maybeShip =
+      Dict.get "ship" universe
+
     camera =
       Maybe.map
         (Camera.at aspect)
-        (Dict.get "ship" universe)
+        maybeShip
+
+    targetName =
+      case Maybe.andThen maybeShip .ai of
+        Just (PlayerControlled { target }) ->
+          target
+
+        _ ->
+          ""
 
     draw object =
       case object of
@@ -60,7 +71,7 @@ scene width height { universe, library, graphics, target } =
         Target { meshName } ->
           MaybeX.map3
             (\b c -> Foreground.entity Decoration (decorPlacement b c) c)
-            (Dict.get target universe)
+            (Dict.get targetName universe)
             camera
             (Dict.get meshName library)
 

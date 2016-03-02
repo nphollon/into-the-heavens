@@ -101,25 +101,30 @@ controlUpdate keysDown model =
     newAction =
       Set.foldl keyAct Init.inaction keysDown
 
-    modelWithAction =
-      Init.updatePlayer
-        (\p ->
-          { p | ai = Just (PlayerControlled newAction) }
-        )
-        model
-
     firing =
       Set.member (Char.toCode 'O') keysDown
+
+    newTrigger cockpit =
+      case ( firing, cockpit.trigger ) of
+        ( True, Ready ) ->
+          { cockpit
+            | action = newAction
+            , trigger = Fire
+          }
+
+        ( False, Fire ) ->
+          { cockpit
+            | action = newAction
+            , trigger = FireAndReset
+          }
+
+        ( False, Reset ) ->
+          { cockpit
+            | action = newAction
+            , trigger = Ready
+          }
+
+        _ ->
+          { cockpit | action = newAction }
   in
-    case ( firing, modelWithAction.missileTrigger ) of
-      ( True, Ready ) ->
-        { modelWithAction | missileTrigger = Fire }
-
-      ( False, Fire ) ->
-        { modelWithAction | missileTrigger = FireAndReset }
-
-      ( False, Reset ) ->
-        { modelWithAction | missileTrigger = Ready }
-
-      otherwise ->
-        modelWithAction
+    Init.updatePlayer newTrigger model

@@ -25,13 +25,16 @@ steerAi delta object universe =
     Nothing ->
       object
 
-    Just (Aimless seed t action) ->
-      if t > 0 then
-        { object | ai = Just (Aimless seed (t - delta) action) }
+    Just (Aimless ai) ->
+      if ai.lifespan > 0 then
+        { object
+          | ai =
+              Just (Aimless { ai | lifespan = ai.lifespan - delta })
+        }
       else
         let
           generator =
-            case action.thrust of
+            case ai.cockpit.action.thrust of
               -1 ->
                 aiThrustGenerator
 
@@ -42,11 +45,25 @@ steerAi delta object universe =
                 aiCoastGenerator
 
           ( nextMove, nextSeed ) =
-            Random.generate generator seed
+            Random.generate generator ai.seed
         in
           { object
             | ai =
-                Just (Aimless nextSeed nextMove.duration nextMove.action)
+                Just
+                  (Aimless
+                    { ai
+                      | seed = nextSeed
+                      , lifespan = nextMove.duration
+                      , cockpit =
+                          (\c ->
+                            { c
+                              | action = nextMove.action
+                              , trigger = FireAndReset
+                            }
+                          )
+                            ai.cockpit
+                    }
+                  )
           }
 
     Just (Seeking lifespan target) ->
@@ -105,11 +122,11 @@ acceleration universe object =
     Nothing ->
       defaultAcceleration
 
-    Just (Aimless _ _ action) ->
-      accelFromAction action object
+    Just (Aimless { cockpit }) ->
+      accelFromAction cockpit.action object
 
-    Just (PlayerControlled action) ->
-      accelFromAction action object
+    Just (PlayerControlled cockpit) ->
+      accelFromAction cockpit.action object
 
     Just (Seeking _ targetName) ->
       case Dict.get targetName universe of

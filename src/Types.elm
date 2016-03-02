@@ -29,9 +29,7 @@ type Mode
 
 
 type alias GameState =
-  { missileTrigger : Trigger
-  , target : String
-  , hasFocus : Bool
+  { hasFocus : Bool
   , nextId : Int
   , score : Int
   , seed : Random.Seed
@@ -41,13 +39,6 @@ type alias GameState =
   , graphics : List GraphicsObject
   , library : Library
   }
-
-
-type Trigger
-  = Ready
-  | Fire
-  | FireAndReset
-  | Reset
 
 
 type alias Body =
@@ -68,6 +59,30 @@ type alias Hull =
     }
 
 
+type alias Acceleration =
+  { linear : Vector
+  , angular : Vector
+  }
+
+
+type Ai
+  = Aimless
+      { seed : Random.Seed
+      , lifespan : Float
+      , cockpit : Cockpit
+      }
+  | PlayerControlled Cockpit
+  | Seeking Float String
+  | SelfDestruct
+
+
+type alias Cockpit =
+  { action : Action
+  , target : String
+  , trigger : Trigger
+  }
+
+
 type alias Action =
   { thrust : Int
   , pitch : Int
@@ -76,17 +91,11 @@ type alias Action =
   }
 
 
-type alias Acceleration =
-  { linear : Vector
-  , angular : Vector
-  }
-
-
-type Ai
-  = Aimless Random.Seed Float Action
-  | PlayerControlled Action
-  | Seeking Float String
-  | SelfDestruct
+type Trigger
+  = Ready
+  | Fire
+  | FireAndReset
+  | Reset
 
 
 type GraphicsObject
