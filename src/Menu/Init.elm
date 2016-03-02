@@ -16,12 +16,15 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 menu : ( Int, Int ) -> ( Mode, Effects Update )
 menu seed =
   let
+    pathTo =
+      (++) "$DOMAIN/data/"
+
     resources =
       Dict.fromList
-        [ ( "Sphere", "$DOMAIN/data/sphere.json" )
-        , ( "Background", "$DOMAIN/data/background.json" )
-        , ( "Ship", "$DOMAIN/data/ship.json" )
-        , ( "Missile", "$DOMAIN/data/missile.json" )
+        [ ( "Sphere", pathTo "sphere.json" )
+        , ( "Background", pathTo "background.json" )
+        , ( "Ship", pathTo "ship.json" )
+        , ( "Missile", pathTo "missile.json" )
         ]
   in
     (,)
