@@ -7,35 +7,85 @@ import Math.Collision as Collision
 import Flight.Init as Init
 import Flight.Ai as Ai
 import Flight.Mechanics as Mech
+import Flight.Spawn as Spawn
 
 
 update : Float -> GameState -> GameState
 update dt =
-  fireCheck
-    >> spawnCheck
-    >> Ai.aiUpdate dt
+  Ai.aiUpdate dt
+    >> check shouldSpawn
+    >> check shouldCrash
+    >> check shouldFire
     >> thrust dt
-    >> crashCheck
 
 
-spawnCheck : GameState -> GameState
-spawnCheck model =
-  if Init.visitorCount model == 0 then
-    let
-      ( rootSeed, shipSeed ) =
-        Random.split model.seed
+type EngineEffect
+  = IncreaseScore
+  | SpawnShip
+  | SpawnMissile String String
+  | SetTrigger String Trigger
+  | Collide String String
 
-      ( spawnModel, spawnName ) =
-        Init.spawn (Ship shipSeed) model
-    in
-      Init.updatePlayer
-        (\cockpit -> { cockpit | target = spawnName })
-        { spawnModel
-          | seed = rootSeed
-          , score = model.score + 1
+
+check : (GameState -> List EngineEffect) -> GameState -> GameState
+check up model =
+  List.foldl applyEffect model (up model)
+
+
+applyEffect : EngineEffect -> GameState -> GameState
+applyEffect effect model =
+  case effect of
+    IncreaseScore ->
+      { model | score = model.score + 1 }
+
+    SpawnShip ->
+      let
+        ( rootSeed, shipSeed ) =
+          Random.split model.seed
+
+        ( spawnModel, spawnName ) =
+          Spawn.spawn (Ship shipSeed) model
+      in
+        Init.updatePlayer
+          (\cockpit -> { cockpit | target = spawnName })
+          { spawnModel
+            | seed = rootSeed
+          }
+
+    SpawnMissile sourceName targetName ->
+      case Dict.get sourceName model.universe of
+        Just source ->
+          Spawn.spawn (Missile source targetName) model |> fst
+
+        Nothing ->
+          model
+
+    SetTrigger bodyName newTrigger ->
+      let
+        setTrigger cockpit =
+          { cockpit | trigger = newTrigger }
+
+        updateCockpit body =
+          case body.ai of
+            Just (PlayerControlled cockpit) ->
+              { body | ai = Just (PlayerControlled (setTrigger cockpit)) }
+
+            Just (Aimless ai) ->
+              { body
+                | ai =
+                    Just (Aimless { ai | cockpit = setTrigger ai.cockpit })
+              }
+
+            _ ->
+              body
+      in
+        { model
+          | universe =
+              Dict.update bodyName (Maybe.map updateCockpit) model.universe
         }
-  else
-    model
+
+    Collide a b ->
+      hit a (hit b model)
 
 
 thrust : Float -> GameState -> GameState
@@ -43,75 +93,61 @@ thrust delta model =
   { model | universe = Mech.evolve delta model.universe }
 
 
-crashCheck : GameState -> GameState
-crashCheck model =
+shouldCrash : GameState -> List EngineEffect
+shouldCrash model =
   let
-    collidedWith pointLabel point hullLabel hull m =
+    collidedWith pointLabel point hullLabel hull effects =
       if Collision.isInside point.position hull && pointLabel /= hullLabel then
-        m |> hit pointLabel |> hit hullLabel
+        Collide pointLabel hullLabel :: effects
       else
-        m
+        effects
   in
     Dict.foldl
-      (\label body updatedModel ->
-        Dict.foldl (collidedWith label body) updatedModel model.universe
+      (\label body effects ->
+        Dict.foldl (collidedWith label body) effects model.universe
       )
-      model
+      []
       model.universe
 
 
-fireCheck : GameState -> GameState
-fireCheck model =
+shouldSpawn : GameState -> List EngineEffect
+shouldSpawn model =
+  if Init.visitorCount model == 0 then
+    [ IncreaseScore, SpawnShip ]
+  else
+    []
+
+
+shouldFire : GameState -> List EngineEffect
+shouldFire model =
   let
-    updateCockpit cockpit =
+    next name cockpit effects =
       case cockpit.trigger of
         Fire ->
-          Just { cockpit | trigger = Reset }
+          SpawnMissile name cockpit.target
+            :: SetTrigger name Reset
+            :: effects
 
         FireAndReset ->
-          Just { cockpit | trigger = Ready }
+          SpawnMissile name cockpit.target
+            :: SetTrigger name Ready
+            :: effects
 
         _ ->
-          Nothing
+          effects
 
-    getUpdateFor body =
+    checkOne name body effects =
       case body.ai of
         Just (PlayerControlled cockpit) ->
-          case updateCockpit cockpit of
-            Just newCockpit ->
-              Just ( { body | ai = Just (PlayerControlled newCockpit) }, Missile body cockpit.target )
+          next name cockpit effects
 
-            Nothing ->
-              Nothing
-
-        Just (Aimless ai) ->
-          case updateCockpit ai.cockpit of
-            Just newCockpit ->
-              Just
-                ( { body | ai = Just (Aimless { ai | cockpit = newCockpit }) }
-                , Missile body newCockpit.target
-                )
-
-            Nothing ->
-              Nothing
+        Just (Aimless { cockpit }) ->
+          next name cockpit effects
 
         _ ->
-          Nothing
-
-    checkOne label body newModel =
-      case getUpdateFor body of
-        Just ( newBody, missile ) ->
-          { newModel
-            | universe =
-                Dict.insert label newBody newModel.universe
-          }
-            |> Init.spawn missile
-            |> fst
-
-        Nothing ->
-          newModel
+          effects
   in
-    Dict.foldl checkOne model model.universe
+    Dict.foldl checkOne [] model.universe
 
 
 hit : String -> GameState -> GameState
