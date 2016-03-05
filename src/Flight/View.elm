@@ -12,7 +12,7 @@ import Math.Matrix as Matrix exposing (Matrix)
 import Math.Transform as Transform
 import Flight.Background as Background
 import Flight.Foreground as Foreground
-import Flight.Guide as Guide
+import Flight.Static as Static
 import Flight.Camera as Camera
 import Frame
 
@@ -67,7 +67,7 @@ scene width height { universe, library, graphics } =
 
         Reticule meshName ->
           Maybe.map
-            (Guide.reticule (Camera.ortho aspect))
+            (Static.entity (Camera.ortho aspect))
             (Dict.get meshName library)
             |> MaybeX.maybeToList
 
