@@ -63,6 +63,17 @@ game seed library =
           , Target
               { meshName = "Crosshair"
               }
+          , Highlight
+              { meshName = "Crosshair"
+              , filter =
+                  \body ->
+                    case body.ai of
+                      Just (Seeking _ "ship") ->
+                        True
+
+                      _ ->
+                        False
+              }
           ]
       }
     )
