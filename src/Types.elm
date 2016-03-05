@@ -109,6 +109,10 @@ type GraphicsObject
   | Target
       { meshName : String
       }
+  | Highlight
+      { filter : Body -> Bool
+      , meshName : String
+      }
 
 
 type ShaderType
@@ -117,7 +121,7 @@ type ShaderType
   | Decoration
 
 
-type EntityType
+type EntityConstructor
   = Ship Random.Seed
   | Missile Body String
 

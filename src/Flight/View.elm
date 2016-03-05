@@ -55,6 +55,7 @@ scene width height { universe, library, graphics } =
             Background.entity
             camera
             (Dict.get meshName library)
+            |> MaybeX.maybeToList
 
         Object { bodyName, meshName, shader } ->
           MaybeX.map3
@@ -62,11 +63,13 @@ scene width height { universe, library, graphics } =
             (Dict.get bodyName universe)
             camera
             (Dict.get meshName library)
+            |> MaybeX.maybeToList
 
         Reticule meshName ->
           Maybe.map
             (Guide.reticule (Camera.ortho aspect))
             (Dict.get meshName library)
+            |> MaybeX.maybeToList
 
         Target { meshName } ->
           MaybeX.map3
@@ -74,6 +77,21 @@ scene width height { universe, library, graphics } =
             (Dict.get targetName universe)
             camera
             (Dict.get meshName library)
+            |> MaybeX.maybeToList
+
+        Highlight { filter, meshName } ->
+          MaybeX.map2
+            (\c m ->
+              Dict.values universe
+                |> List.filter filter
+                |> List.map
+                    (\body ->
+                      Foreground.entity Decoration (decorPlacement body c) c m
+                    )
+            )
+            camera
+            (Dict.get meshName library)
+            |> Maybe.withDefault []
 
     webgl =
       WebGL.webglWithConfig
@@ -82,7 +100,7 @@ scene width height { universe, library, graphics } =
         ]
         ( width, height )
   in
-    List.filterMap draw graphics
+    List.concatMap draw graphics
       |> webgl
       |> Html.fromElement
 

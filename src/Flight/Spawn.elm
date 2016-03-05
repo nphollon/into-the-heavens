@@ -11,7 +11,7 @@ import Math.Transform as Transform
 import Math.Vector as Vector
 
 
-spawn : EntityType -> GameState -> ( GameState, String )
+spawn : EntityConstructor -> GameState -> ( GameState, String )
 spawn objType model =
   let
     name =
@@ -32,7 +32,7 @@ spawn objType model =
       name
 
 
-entityString : EntityType -> String
+entityString : EntityConstructor -> String
 entityString objType =
   case objType of
     Ship _ ->
@@ -42,7 +42,7 @@ entityString objType =
       "missile"
 
 
-entityBody : EntityType -> Body
+entityBody : EntityConstructor -> Body
 entityBody objType =
   case objType of
     Ship seed ->
@@ -80,7 +80,7 @@ entityBody objType =
       }
 
 
-entityGraphics : String -> EntityType -> GraphicsObject
+entityGraphics : String -> EntityConstructor -> GraphicsObject
 entityGraphics name objType =
   case objType of
     Ship _ ->
