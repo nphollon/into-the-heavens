@@ -30,7 +30,10 @@ menu seed =
 
     localResources =
       Dict.fromList
-        [ ( "Crosshair", Guides.crosshair ) ]
+        [ ( "Reticule", Guides.crosshair )
+        , ( "TargetDecor", Guides.target )
+        , ( "IncomingDecor", Guides.incoming )
+        ]
   in
     (,)
       (MenuMode

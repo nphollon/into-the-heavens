@@ -59,12 +59,12 @@ game seed library =
               , meshName = "Sphere"
               , shader = Planet
               }
-          , Reticule "Crosshair"
+          , Reticule "Reticule"
           , Target
-              { meshName = "Crosshair"
+              { meshName = "TargetDecor"
               }
           , Highlight
-              { meshName = "Crosshair"
+              { meshName = "IncomingDecor"
               , filter =
                   \body ->
                     case body.ai of
