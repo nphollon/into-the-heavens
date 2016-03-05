@@ -46,9 +46,9 @@ entityBody : EntityConstructor -> Body
 entityBody objType =
   case objType of
     Ship seed ->
-      { position = Vector.vector 5 200 -20
-      , velocity = Vector.vector 0 -50 0
-      , orientation = Vector.vector (-0.5 * pi) 0 0
+      { position = Vector.vector 5 -200 -20
+      , velocity = Vector.vector 0 50 0
+      , orientation = Vector.vector (0.5 * pi) 0 0
       , angVelocity = Vector.vector 0 0 0
       , hull = Collision.hull .position Ship.triangles
       , health = 1
@@ -56,7 +56,7 @@ entityBody objType =
           Just
             (Aimless
               { seed = seed
-              , lifespan = 4
+              , lifespan = 2
               , cockpit =
                   { action = Init.inaction
                   , target = "ship"
