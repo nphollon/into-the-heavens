@@ -11,6 +11,7 @@ import Random.PCG as Random
 import WebGL exposing (Drawable(..))
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
+import Generate.Guides as Guides
 
 
 menu : ( Int, Int ) -> ( Mode, Effects Update )
@@ -19,13 +20,17 @@ menu seed =
     pathTo =
       (++) "$DOMAIN/data/"
 
-    resources =
+    remoteResources =
       Dict.fromList
         [ ( "Sphere", pathTo "sphere.json" )
         , ( "Background", pathTo "background.json" )
         , ( "Ship", pathTo "ship.json" )
         , ( "Missile", pathTo "missile.json" )
         ]
+
+    localResources =
+      Dict.fromList
+        [ ( "Crosshair", Guides.crosshair ) ]
   in
     (,)
       (MenuMode
@@ -33,30 +38,31 @@ menu seed =
         , seed = uncurry Random.initialSeed2 seed
         }
       )
-      (request resources)
+      (buildLibrary localResources remoteResources)
 
 
-request : Dict String String -> Effects Update
-request queries =
+buildLibrary : Library -> Dict String String -> Effects Update
+buildLibrary localResources remoteResources =
   let
     get ( id, url ) =
       Task.map ((,) id) (Http.get Decode.value url)
   in
-    Dict.toList queries
+    Dict.toList remoteResources
       |> List.map get
       |> Task.sequence
-      |> Task.map toLibrary
+      |> Task.map (addTo localResources)
       |> flip
           Task.onError
           (\e -> Task.succeed (Meshes (Err e)))
       |> Effects.task
 
 
-toLibrary : List ( String, Value ) -> Update
-toLibrary list =
-  Encode.object list
+addTo : Library -> List ( String, Value ) -> Update
+addTo localResources responses =
+  Encode.object responses
     |> Decode.decodeValue decode
     |> Result.formatError Http.UnexpectedPayload
+    |> Result.map (Dict.union localResources)
     |> Meshes
 
 

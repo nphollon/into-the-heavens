@@ -9,8 +9,6 @@ import Http
 import Effects exposing (Effects)
 import Frame
 import Flight.Init
-import Dict
-import Generate.Guides as Guides
 
 
 update : Update -> MenuState -> ( Mode, Effects Update )
@@ -26,8 +24,7 @@ update input model =
       Keys keySet ->
         case ( model.response, Set.member (Char.toCode 'N') keySet ) of
           ( Just (Ok library), True ) ->
-            Dict.insert "Crosshair" Guides.crosshair library
-              |> Flight.Init.game model.seed
+            Flight.Init.game model.seed library
 
           ( _, _ ) ->
             noEffects (MenuMode model)
