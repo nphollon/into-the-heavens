@@ -4,6 +4,7 @@ import Task exposing (Task)
 import Console
 import ElmTest exposing (..)
 import CollisionTest
+import AiTest
 
 
 testSuite : Test
@@ -11,6 +12,7 @@ testSuite =
   suite
     "All tests"
     [ CollisionTest.testSuite
+    , AiTest.testSuite
     ]
 
 
