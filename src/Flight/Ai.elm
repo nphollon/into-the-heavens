@@ -1,4 +1,4 @@
-module Flight.Ai (aiUpdate, acceleration) where
+module Flight.Ai (aiUpdate, steerAi, acceleration) where
 
 import Dict exposing (Dict)
 import Random.PCG as Random
@@ -13,24 +13,26 @@ aiUpdate delta model =
     | universe =
         model.universe
           |> Dict.map
-              (\_ object -> steerAi delta object model.universe)
+              (\_ object ->
+                { object
+                  | ai =
+                      steerAi delta object model.universe
+                }
+              )
           |> Dict.filter
               (\_ object -> object.ai /= Just SelfDestruct)
   }
 
 
-steerAi : Float -> Body -> Dict String Body -> Body
+steerAi : Float -> Body -> Dict String Body -> Maybe Ai
 steerAi delta object universe =
   case object.ai of
     Nothing ->
-      object
+      Nothing
 
     Just (Aimless ai) ->
       if ai.lifespan > 0 then
-        { object
-          | ai =
-              Just (Aimless { ai | lifespan = ai.lifespan - delta })
-        }
+        Just (Aimless { ai | lifespan = ai.lifespan - delta })
       else
         let
           generator =
@@ -47,36 +49,33 @@ steerAi delta object universe =
           ( nextMove, nextSeed ) =
             Random.generate generator ai.seed
         in
-          { object
-            | ai =
-                Just
-                  (Aimless
-                    { ai
-                      | seed = nextSeed
-                      , lifespan = nextMove.duration
-                      , cockpit =
-                          (\c ->
-                            { c
-                              | action = nextMove.action
-                              , trigger = FireAndReset
-                            }
-                          )
-                            ai.cockpit
-                    }
-                  )
-          }
+          Just
+            (Aimless
+              { ai
+                | seed = nextSeed
+                , lifespan = nextMove.duration
+                , cockpit =
+                    (\c ->
+                      { c
+                        | action = nextMove.action
+                        , trigger = FireAndReset
+                      }
+                    )
+                      ai.cockpit
+              }
+            )
 
     Just (Seeking lifespan target) ->
       if lifespan > 0 then
-        { object | ai = Just (Seeking (lifespan - delta) target) }
+        Just (Seeking (lifespan - delta) target)
       else
-        { object | ai = Just SelfDestruct }
+        Just SelfDestruct
 
     Just (PlayerControlled _) ->
-      object
+      object.ai
 
     Just SelfDestruct ->
-      object
+      object.ai
 
 
 type alias AiMove =
