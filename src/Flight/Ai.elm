@@ -30,6 +30,19 @@ steerAi delta object universe =
     Nothing ->
       Nothing
 
+    Just (Hostile ai) ->
+      let
+        facesTarget =
+          Dict.get ai.target universe
+            |> Maybe.map
+                (\t -> Transform.degreesFromForward t.position object < degrees 15)
+            |> Maybe.withDefault False
+      in
+        if facesTarget then
+          Just (Hostile { ai | trigger = FireAndReset })
+        else
+          object.ai
+
     Just (Aimless ai) ->
       if ai.lifespan > 0 then
         Just (Aimless { ai | lifespan = ai.lifespan - delta })
@@ -119,7 +132,10 @@ acceleration : Dict String Body -> Body -> Acceleration
 acceleration universe object =
   case object.ai of
     Nothing ->
-      defaultAcceleration
+      noAcceleration
+
+    Just (Hostile _) ->
+      noAcceleration
 
     Just (Aimless { cockpit }) ->
       accelFromAction cockpit.action object
@@ -133,10 +149,10 @@ acceleration universe object =
           accelTowards target object
 
         Nothing ->
-          defaultAcceleration
+          noAcceleration
 
     Just SelfDestruct ->
-      defaultAcceleration
+      noAcceleration
 
 
 accelFromAction : Action -> Body -> Acceleration
@@ -182,8 +198,8 @@ accelTowards target missile =
     }
 
 
-defaultAcceleration : Acceleration
-defaultAcceleration =
+noAcceleration : Acceleration
+noAcceleration =
   { linear = Vector.vector 0 0 0
   , angular = Vector.vector 0 0 0
   }

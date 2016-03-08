@@ -4,7 +4,6 @@ import Color
 import Dict
 import String
 import Types exposing (..)
-import Flight.Init as Init
 import Generate.Ship as Ship
 import Math.Collision as Collision
 import Math.Transform as Transform
@@ -47,23 +46,12 @@ entityBody objType =
   case objType of
     Ship seed ->
       { position = Vector.vector 5 -200 -20
-      , velocity = Vector.vector 0 50 0
+      , velocity = Vector.vector 0 0 0
       , orientation = Vector.vector (0.5 * pi) 0 0
       , angVelocity = Vector.vector 0 0 0
       , hull = Collision.hull .position Ship.triangles
       , health = 1
-      , ai =
-          Just
-            (Aimless
-              { seed = seed
-              , lifespan = 2
-              , cockpit =
-                  { action = Init.inaction
-                  , target = "ship"
-                  , trigger = Ready
-                  }
-              }
-            )
+      , ai = Just (Hostile { target = "ship", trigger = Ready })
       }
 
     Missile parent target ->

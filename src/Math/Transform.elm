@@ -1,4 +1,4 @@
-module Math.Transform (rotate, rotationFor, placement, toBodyFrame, fromBodyFrame, mulOrient) where
+module Math.Transform (rotate, rotationFor, placement, toBodyFrame, fromBodyFrame, degreesFromForward, mulOrient) where
 
 import Types exposing (Body)
 import Math.Matrix as Matrix exposing (Matrix)
@@ -44,6 +44,14 @@ toBodyFrame point body =
 fromBodyFrame : Vector -> Body -> Vector
 fromBodyFrame point body =
   Vector.add body.position (rotate body.orientation point)
+
+
+degreesFromForward : Vector -> Body -> Float
+degreesFromForward point body =
+  toBodyFrame point body
+    |> Vector.normalize
+    |> Vector.dot (Vector.vector 0 0 -1)
+    |> acos
 
 
 {-| Combine two orientations

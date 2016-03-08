@@ -73,6 +73,10 @@ type Ai
       }
   | PlayerControlled Cockpit
   | Seeking Float String
+  | Hostile
+      { target : String
+      , trigger : Trigger
+      }
   | SelfDestruct
 
 

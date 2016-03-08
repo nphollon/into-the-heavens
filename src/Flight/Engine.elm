@@ -144,6 +144,9 @@ shouldFire model =
         Just (Aimless { cockpit }) ->
           next name cockpit effects
 
+        Just (Hostile cockpit) ->
+          next name cockpit effects
+
         _ ->
           effects
   in
