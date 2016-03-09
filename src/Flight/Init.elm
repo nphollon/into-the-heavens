@@ -1,7 +1,6 @@
-module Flight.Init (game, inaction, visitorCount, hasCrashed, updatePlayer, getPlayer) where
+module Flight.Init (game, inaction) where
 
 import Dict
-import String
 import Random.PCG as Random exposing (Seed)
 import Effects exposing (Effects)
 import Types exposing (..)
@@ -32,13 +31,11 @@ game seed library =
                 , hull = Collision.hull .position Ship.triangles
                 , health = 1
                 , ai =
-                    Just
-                      (PlayerControlled
-                        { action = inaction
-                        , target = ""
-                        , trigger = Ready
-                        }
-                      )
+                    PlayerControlled
+                      { action = inaction
+                      , target = ""
+                      , trigger = Ready
+                      }
                 }
               )
             , ( "planet"
@@ -48,7 +45,7 @@ game seed library =
                 , angVelocity = Vector.vector 0 3.0e-2 0
                 , hull = Collision.hull .position Sphere.triangles
                 , health = 1.0e10
-                , ai = Nothing
+                , ai = Dumb
                 }
               )
             ]
@@ -68,7 +65,7 @@ game seed library =
               , filter =
                   \body ->
                     case body.ai of
-                      Just (Seeking _ "ship") ->
+                      Seeking _ "ship" ->
                         True
 
                       _ ->
@@ -87,42 +84,3 @@ inaction =
   , yaw = 0
   , roll = 0
   }
-
-
-visitorCount : GameState -> Int
-visitorCount model =
-  Dict.keys model.universe
-    |> List.filter (String.startsWith "visitor")
-    |> List.length
-
-
-hasCrashed : GameState -> Bool
-hasCrashed model =
-  not (Dict.member "ship" model.universe)
-
-
-updatePlayer : (Cockpit -> Cockpit) -> GameState -> GameState
-updatePlayer aiUpdate model =
-  let
-    bodyUpdate body =
-      case body.ai of
-        Just (PlayerControlled cockpit) ->
-          { body | ai = Just (PlayerControlled (aiUpdate cockpit)) }
-
-        _ ->
-          body
-  in
-    { model
-      | universe =
-          Dict.update "ship" (Maybe.map bodyUpdate) model.universe
-    }
-
-
-getPlayer : (Body -> GameState) -> GameState -> GameState
-getPlayer f model =
-  case Dict.get "ship" model.universe of
-    Just ship ->
-      f ship
-
-    Nothing ->
-      model

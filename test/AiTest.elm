@@ -27,7 +27,7 @@ noAi =
   in
     test "Steering object without AI returns nothing"
       <| assertEqual
-          Nothing
+          Dumb
           (Ai.steerAi 0 body universe)
 
 
@@ -96,7 +96,7 @@ assertTriggerChange shouldFire position orientation targetPosition =
       , velocity = Vec.vector 0 0 0
       , angVelocity = Vec.vector 0 0 0
       , hull = []
-      , ai = Just (Hostile ai)
+      , ai = Hostile ai
       , health = 0
       }
 
@@ -110,7 +110,7 @@ assertTriggerChange shouldFire position orientation targetPosition =
         ]
   in
     assertEqual
-      (Just (Hostile expectedAi))
+      (Hostile expectedAi)
       (Ai.steerAi 0 body universe)
 
 
@@ -137,6 +137,6 @@ stillBody position orientation =
   , velocity = Vec.vector 0 0 0
   , angVelocity = Vec.vector 0 0 0
   , hull = []
-  , ai = Nothing
+  , ai = Dumb
   , health = 0
   }

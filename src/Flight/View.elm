@@ -41,7 +41,7 @@ scene width height { universe, library, graphics } =
         maybeShip
 
     targetName =
-      case Maybe.andThen maybeShip .ai of
+      case Maybe.map .ai maybeShip of
         Just (PlayerControlled { target }) ->
           target
 

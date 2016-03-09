@@ -6,6 +6,7 @@ import Time exposing (Time)
 import Effects exposing (Effects)
 import Types exposing (..)
 import Flight.Init as Init
+import Flight.Spawn as Spawn
 import Flight.Engine as Engine
 import GameOver.Init
 
@@ -14,7 +15,7 @@ update : Update -> GameState -> ( Mode, Effects Update )
 update input model =
   case input of
     Tick clockTime ->
-      if Init.hasCrashed model then
+      if Spawn.hasCrashed model then
         GameOver.Init.gameOver model.seed model.library
       else if model.hasFocus then
         timeUpdate clockTime model
@@ -127,4 +128,4 @@ controlUpdate keysDown model =
         _ ->
           { cockpit | action = newAction }
   in
-    Init.updatePlayer newTrigger model
+    Spawn.updatePlayer newTrigger model

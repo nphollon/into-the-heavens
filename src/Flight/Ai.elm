@@ -1,7 +1,6 @@
 module Flight.Ai (aiUpdate, steerAi, acceleration) where
 
 import Dict exposing (Dict)
-import Random.PCG as Random
 import Types exposing (..)
 import Math.Vector as Vector
 import Math.Transform as Transform
@@ -20,17 +19,17 @@ aiUpdate delta model =
                 }
               )
           |> Dict.filter
-              (\_ object -> object.ai /= Just SelfDestruct)
+              (\_ object -> object.ai /= SelfDestruct)
   }
 
 
-steerAi : Float -> Body -> Dict String Body -> Maybe Ai
+steerAi : Float -> Body -> Dict String Body -> Ai
 steerAi delta object universe =
   case object.ai of
-    Nothing ->
-      Nothing
+    Dumb ->
+      Dumb
 
-    Just (Hostile ai) ->
+    Hostile ai ->
       let
         facesTarget =
           Dict.get ai.target universe
@@ -39,111 +38,36 @@ steerAi delta object universe =
             |> Maybe.withDefault False
       in
         if facesTarget then
-          Just (Hostile { ai | trigger = FireAndReset })
+          Hostile { ai | trigger = FireAndReset }
         else
           object.ai
 
-    Just (Aimless ai) ->
-      if ai.lifespan > 0 then
-        Just (Aimless { ai | lifespan = ai.lifespan - delta })
-      else
-        let
-          generator =
-            case ai.cockpit.action.thrust of
-              -1 ->
-                aiThrustGenerator
-
-              0 ->
-                aiTurnGenerator
-
-              _ ->
-                aiCoastGenerator
-
-          ( nextMove, nextSeed ) =
-            Random.generate generator ai.seed
-        in
-          Just
-            (Aimless
-              { ai
-                | seed = nextSeed
-                , lifespan = nextMove.duration
-                , cockpit =
-                    (\c ->
-                      { c
-                        | action = nextMove.action
-                        , trigger = FireAndReset
-                      }
-                    )
-                      ai.cockpit
-              }
-            )
-
-    Just (Seeking lifespan target) ->
+    Seeking lifespan target ->
       if lifespan > 0 then
-        Just (Seeking (lifespan - delta) target)
+        Seeking (lifespan - delta) target
       else
-        Just SelfDestruct
+        SelfDestruct
 
-    Just (PlayerControlled _) ->
+    PlayerControlled _ ->
       object.ai
 
-    Just SelfDestruct ->
+    SelfDestruct ->
       object.ai
-
-
-type alias AiMove =
-  { duration : Float, action : Action }
-
-
-aiMove : Float -> Action -> AiMove
-aiMove dur act =
-  { duration = dur
-  , action = act
-  }
-
-
-aiThrustGenerator : Random.Generator AiMove
-aiThrustGenerator =
-  Random.map
-    (flip aiMove { thrust = 1, pitch = 0, yaw = 0, roll = 0 })
-    (Random.float 0.1 2)
-
-
-aiCoastGenerator : Random.Generator AiMove
-aiCoastGenerator =
-  Random.map
-    (flip aiMove { thrust = 0, pitch = 0, yaw = 0, roll = 0 })
-    (Random.float 0 1)
-
-
-aiTurnGenerator : Random.Generator AiMove
-aiTurnGenerator =
-  let
-    action pitch yaw =
-      { thrust = -1, pitch = pitch, yaw = yaw, roll = 0 }
-  in
-    Random.map2
-      aiMove
-      (Random.float 0 0.7)
-      (Random.map2 action (Random.int -1 1) (Random.int -1 1))
 
 
 acceleration : Dict String Body -> Body -> Acceleration
 acceleration universe object =
   case object.ai of
-    Nothing ->
+    Dumb ->
       noAcceleration
 
-    Just (Hostile _) ->
+    Hostile _ ->
       noAcceleration
 
-    Just (Aimless { cockpit }) ->
+    PlayerControlled cockpit ->
       accelFromAction cockpit.action object
 
-    Just (PlayerControlled cockpit) ->
-      accelFromAction cockpit.action object
-
-    Just (Seeking _ targetName) ->
+    Seeking _ targetName ->
       case Dict.get targetName universe of
         Just target ->
           accelTowards target object
@@ -151,7 +75,7 @@ acceleration universe object =
         Nothing ->
           noAcceleration
 
-    Just SelfDestruct ->
+    SelfDestruct ->
       noAcceleration
 
 

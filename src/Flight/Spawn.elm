@@ -1,4 +1,4 @@
-module Flight.Spawn (spawn) where
+module Flight.Spawn (spawn, updatePlayer, visitorCount, hasCrashed) where
 
 import Color
 import Dict
@@ -51,7 +51,7 @@ entityBody objType =
       , angVelocity = Vector.vector 0 0 0
       , hull = Collision.hull .position Ship.triangles
       , health = 1
-      , ai = Just (Hostile { target = "ship", trigger = Ready })
+      , ai = Hostile { target = "ship", trigger = Ready }
       }
 
     Missile parent target ->
@@ -64,7 +64,7 @@ entityBody objType =
       , angVelocity = Vector.vector 0 0 0
       , hull = []
       , health = 1
-      , ai = Just (Seeking 4 target)
+      , ai = Seeking 4 target
       }
 
 
@@ -103,8 +103,8 @@ updatePlayer aiUpdate model =
   let
     bodyUpdate body =
       case body.ai of
-        Just (PlayerControlled cockpit) ->
-          { body | ai = Just (PlayerControlled (aiUpdate cockpit)) }
+        PlayerControlled cockpit ->
+          { body | ai = PlayerControlled (aiUpdate cockpit) }
 
         _ ->
           body
@@ -113,13 +113,3 @@ updatePlayer aiUpdate model =
       | universe =
           Dict.update "ship" (Maybe.map bodyUpdate) model.universe
     }
-
-
-getPlayer : (Body -> GameState) -> GameState -> GameState
-getPlayer f model =
-  case Dict.get "ship" model.universe of
-    Just ship ->
-      f ship
-
-    Nothing ->
-      model

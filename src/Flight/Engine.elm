@@ -4,7 +4,6 @@ import Dict exposing (Dict)
 import Random.PCG as Random
 import Types exposing (..)
 import Math.Collision as Collision
-import Flight.Init as Init
 import Flight.Ai as Ai
 import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
@@ -46,7 +45,7 @@ applyEffect effect model =
         ( spawnModel, spawnName ) =
           Spawn.spawn (Ship shipSeed) model
       in
-        Init.updatePlayer
+        Spawn.updatePlayer
           (\cockpit -> { cockpit | target = spawnName })
           { spawnModel
             | seed = rootSeed
@@ -67,14 +66,8 @@ applyEffect effect model =
 
         updateCockpit body =
           case body.ai of
-            Just (PlayerControlled cockpit) ->
-              { body | ai = Just (PlayerControlled (setTrigger cockpit)) }
-
-            Just (Aimless ai) ->
-              { body
-                | ai =
-                    Just (Aimless { ai | cockpit = setTrigger ai.cockpit })
-              }
+            PlayerControlled cockpit ->
+              { body | ai = PlayerControlled (setTrigger cockpit) }
 
             _ ->
               body
@@ -112,7 +105,7 @@ shouldCrash model =
 
 shouldSpawn : GameState -> List EngineEffect
 shouldSpawn model =
-  if Init.visitorCount model == 0 then
+  if Spawn.visitorCount model == 0 then
     [ IncreaseScore, SpawnShip ]
   else
     []
@@ -138,13 +131,10 @@ shouldFire model =
 
     checkOne name body effects =
       case body.ai of
-        Just (PlayerControlled cockpit) ->
+        PlayerControlled cockpit ->
           next name cockpit effects
 
-        Just (Aimless { cockpit }) ->
-          next name cockpit effects
-
-        Just (Hostile cockpit) ->
+        Hostile cockpit ->
           next name cockpit effects
 
         _ ->

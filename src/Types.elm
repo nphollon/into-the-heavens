@@ -48,7 +48,7 @@ type alias Body =
   , angVelocity : Vector
   , hull : Hull
   , health : Float
-  , ai : Maybe Ai
+  , ai : Ai
   }
 
 
@@ -66,11 +66,7 @@ type alias Acceleration =
 
 
 type Ai
-  = Aimless
-      { seed : Random.Seed
-      , lifespan : Float
-      , cockpit : Cockpit
-      }
+  = Dumb
   | PlayerControlled Cockpit
   | Seeking Float String
   | Hostile

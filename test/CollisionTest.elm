@@ -3,7 +3,7 @@ module CollisionTest (testSuite) where
 import ElmTest exposing (..)
 import Math.Vector as Vec exposing (Vector)
 import Math.Collision as Collision exposing (isInside)
-import Types exposing (Hull, Body)
+import Types exposing (..)
 import Flight.Init
 
 
@@ -110,7 +110,7 @@ stillBody position orientation =
   , velocity = Vec.vector 0 0 0
   , angVelocity = Vec.vector 0 0 0
   , hull = hull
-  , ai = Nothing
+  , ai = Dumb
   , health = 0
   }
 
