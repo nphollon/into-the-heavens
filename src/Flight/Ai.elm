@@ -68,7 +68,7 @@ acceleration universe object =
     Dumb ->
       noAcceleration
 
-    Hostile _ ->
+    Hostile ai ->
       noAcceleration
 
     PlayerControlled cockpit ->
@@ -77,7 +77,7 @@ acceleration universe object =
     Seeking _ targetName ->
       case Dict.get targetName universe of
         Just target ->
-          accelTowards target object
+          accelTowards 0.7 target object
 
         Nothing ->
           noAcceleration
@@ -109,8 +109,8 @@ accelFromAction action object =
     }
 
 
-accelTowards : Body -> Body -> Acceleration
-accelTowards target missile =
+accelTowards : Float -> Body -> Body -> Acceleration
+accelTowards scale target missile =
   let
     range =
       Vector.sub target.position missile.position
@@ -122,7 +122,7 @@ accelTowards target missile =
       Vector.distanceSquared target.position missile.position
 
     lineOfSightRotation =
-      Vector.scale (0.7 / rSquared) (Vector.cross range velocity)
+      Vector.scale (scale / rSquared) (Vector.cross range velocity)
   in
     { linear = Vector.cross velocity lineOfSightRotation
     , angular = Vector.vector 0 0 0
