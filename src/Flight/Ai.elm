@@ -69,7 +69,12 @@ acceleration universe object =
       noAcceleration
 
     Hostile ai ->
-      noAcceleration
+      case Dict.get ai.target universe of
+        Nothing ->
+          noAcceleration
+
+        Just target ->
+          smartAccel object target
 
     PlayerControlled cockpit ->
       accelFromAction cockpit.action object
@@ -84,6 +89,40 @@ acceleration universe object =
 
     SelfDestruct ->
       noAcceleration
+
+
+smartAccel : Body -> Body -> Acceleration
+smartAccel object target =
+  let
+    relativePosition =
+      Vector.sub target.position object.position
+
+    relativeVelocity =
+      Vector.sub target.velocity object.velocity
+
+    scale =
+      1.0
+
+    damping =
+      0.3
+
+    max m v =
+      let
+        mag =
+          Vector.length v
+      in
+        if mag > m then
+          Vector.scale (m / mag) v
+        else
+          v
+  in
+    { linear =
+        Vector.scale (0.25 / damping) relativePosition
+          |> Vector.add relativeVelocity
+          |> Vector.scale scale
+          |> max 10
+    , angular = Vector.vector 0 0 0
+    }
 
 
 accelFromAction : Action -> Body -> Acceleration
