@@ -82,7 +82,11 @@ assertTriggerChange : Bool -> Vector -> Vector -> Vector -> Assertion
 assertTriggerChange shouldFire position orientation targetPosition =
   let
     ai =
-      { target = "target", trigger = Ready }
+      { target = "target"
+      , trigger = Ready
+      , cooldown = 0
+      , timeUntilReady = 0
+      }
 
     expectedAi =
       if shouldFire then

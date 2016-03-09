@@ -37,8 +37,15 @@ steerAi delta object universe =
                 (\t -> Transform.degreesFromForward t.position object < degrees 15)
             |> Maybe.withDefault False
       in
-        if facesTarget then
-          Hostile { ai | trigger = FireAndReset }
+        if ai.timeUntilReady > 0 then
+          Hostile
+            { ai | timeUntilReady = ai.timeUntilReady - delta }
+        else if facesTarget then
+          Hostile
+            { ai
+              | trigger = FireAndReset
+              , timeUntilReady = ai.cooldown
+            }
         else
           object.ai
 

@@ -51,7 +51,13 @@ entityBody objType =
       , angVelocity = Vector.vector 0 0 0
       , hull = Collision.hull .position Ship.triangles
       , health = 1
-      , ai = Hostile { target = "ship", trigger = Ready }
+      , ai =
+          Hostile
+            { target = "ship"
+            , trigger = Ready
+            , cooldown = 2
+            , timeUntilReady = 0
+            }
       }
 
     Missile parent target ->

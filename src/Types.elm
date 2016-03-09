@@ -72,6 +72,8 @@ type Ai
   | Hostile
       { target : String
       , trigger : Trigger
+      , cooldown : Float
+      , timeUntilReady : Float
       }
   | SelfDestruct
 

@@ -69,6 +69,9 @@ applyEffect effect model =
             PlayerControlled cockpit ->
               { body | ai = PlayerControlled (setTrigger cockpit) }
 
+            Hostile ai ->
+              { body | ai = Hostile (setTrigger ai) }
+
             _ ->
               body
       in
