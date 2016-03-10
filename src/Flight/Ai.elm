@@ -1,8 +1,8 @@
-module Flight.Ai (aiUpdate, steerAi, acceleration) where
+module Flight.Ai (aiUpdate, steerAi, acceleration, angleSpring) where
 
 import Dict exposing (Dict)
 import Types exposing (..)
-import Math.Vector as Vector
+import Math.Vector as Vector exposing (Vector)
 import Math.Transform as Transform
 
 
@@ -123,6 +123,17 @@ smartAccel object target =
           |> max 10
     , angular = Vector.vector 0 0 0
     }
+
+
+angleSpring : Float -> Vector -> Body -> Vector
+angleSpring c targetPosition body =
+  let
+    rotation =
+      Transform.rotationFor
+        (Transform.rotate body.orientation (Vector.vector 0 0 1))
+        (Vector.sub targetPosition body.position)
+  in
+    Vector.scale (-0.25 * c) rotation
 
 
 accelFromAction : Action -> Body -> Acceleration

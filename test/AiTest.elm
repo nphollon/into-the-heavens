@@ -77,9 +77,19 @@ hostileSteering : Test
 hostileSteering =
   suite
     "damped spring rotation to face target"
-    [ test "target at +X, facing +Y, rotation in -Z"
-        <| assertEqual 0 0
+    [ test "target at +X, facing -Z, rotation in -Y"
+        <| assertAboutEqual
+            (Vec.vector 0 -5 0)
+            (Ai.angleSpring (80 / turns 1) (Vec.vector 1 0 0) stillBody)
     ]
+
+
+assertAboutEqual : Vector -> Vector -> Assertion
+assertAboutEqual a b =
+  if Vec.distanceSquared a b < 1.0e-10 then
+    assert True
+  else
+    assertEqual a b
 
 
 assertFire : Vector -> Vector -> Vector -> Assertion
