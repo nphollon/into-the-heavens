@@ -13,6 +13,7 @@ testSuite =
     "AI tests"
     [ noAi
     , hostileFiring
+    , hostileSteering
     ]
 
 
@@ -20,7 +21,10 @@ noAi : Test
 noAi =
   let
     body =
-      stillBody (Vec.vector 0 0 0) (Vec.vector 0 0 0)
+      { stillBody
+        | position = Vec.vector 0 0 0
+        , orientation = Vec.vector 0 0 0
+      }
 
     universe =
       Dict.singleton "dummy" body
@@ -65,6 +69,16 @@ hostileFiring =
             (Vec.vector 0 0 0)
             (Vec.vector (degrees 14.9) 0 0)
             (Vec.vector 0 0 -10)
+      -- not covered : cooldown!
+    ]
+
+
+hostileSteering : Test
+hostileSteering =
+  suite
+    "damped spring rotation to face target"
+    [ test "target at +X, facing +Y, rotation in -Z"
+        <| assertEqual 0 0
     ]
 
 
@@ -95,17 +109,17 @@ assertTriggerChange shouldFire position orientation targetPosition =
         ai
 
     body =
-      { position = position
-      , orientation = orientation
-      , velocity = Vec.vector 0 0 0
-      , angVelocity = Vec.vector 0 0 0
-      , hull = []
-      , ai = Hostile ai
-      , health = 0
+      { stillBody
+        | position = position
+        , orientation = orientation
+        , ai = Hostile ai
       }
 
     target =
-      stillBody targetPosition (Vec.vector 0 0 0)
+      { stillBody
+        | position = targetPosition
+        , orientation = Vec.vector 0 0 0
+      }
 
     universe =
       Dict.fromList
@@ -134,10 +148,10 @@ Firing
 -}
 
 
-stillBody : Vector -> Vector -> Body
-stillBody position orientation =
-  { position = position
-  , orientation = orientation
+stillBody : Body
+stillBody =
+  { position = Vec.vector 0 0 0
+  , orientation = Vec.vector 0 0 0
   , velocity = Vec.vector 0 0 0
   , angVelocity = Vec.vector 0 0 0
   , hull = []
