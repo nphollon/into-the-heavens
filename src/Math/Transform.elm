@@ -10,12 +10,9 @@ rotate orientation =
   Matrix.transform (Matrix.makeRotate orientation)
 
 
-rotationFor : Vector -> Vector
-rotationFor v =
+rotationFor : Vector -> Vector -> Vector
+rotationFor u v =
   let
-    u =
-      Vector.vector 0 0 1
-
     cross =
       Vector.cross u v
 
@@ -25,7 +22,10 @@ rotationFor v =
     angle =
       atan2 crossMag (Vector.dot u v)
   in
-    Vector.scale (angle / crossMag) cross
+    if crossMag == 0 then
+      Vector.vector 0 0 0
+    else
+      Vector.scale (angle / crossMag) cross
 
 
 placement : Float -> Vector -> Vector -> Matrix

@@ -123,7 +123,7 @@ decorPlacement object camera =
       Vector.scale 0.1 direction
         |> Vector.add camera.position
   in
-    Transform.rotationFor direction
+    Transform.rotationFor (Vector.vector 0 0 1) direction
       |> Transform.placement 1.0e-2 position
 
 
