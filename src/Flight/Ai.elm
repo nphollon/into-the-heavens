@@ -95,7 +95,7 @@ smartAccel : Body -> Body -> Acceleration
 smartAccel object target =
   let
     relativePosition =
-      Vector.sub target.position object.position
+      Vector.sub (target.position |> Debug.log "pos") object.position
 
     relativeVelocity =
       Vector.sub target.velocity object.velocity
@@ -117,23 +117,28 @@ smartAccel object target =
           v
   in
     { linear =
+        Vector.vector 0 0 0
+        {-
         Vector.scale (0.25 / damping) relativePosition
           |> Vector.add relativeVelocity
           |> Vector.scale scale
           |> max 10
-    , angular = Vector.vector 0 0 0
+        -}
+    , angular = Vector.scale (80 / turns 1) (angleSpring 0.1 target.position object)
     }
 
 
 angleSpring : Float -> Vector -> Body -> Vector
-angleSpring c targetPosition body =
+angleSpring damping targetPosition body =
   let
     rotation =
       Transform.rotationFor
-        (Transform.rotate body.orientation (Vector.vector 0 0 1))
+        (Transform.rotate body.orientation (Vector.vector 0 0 -1))
         (Vector.sub targetPosition body.position)
   in
-    Vector.scale (-0.25 * c) rotation
+    Vector.sub
+      (Vector.scale (0.25 / damping) rotation)
+      body.angVelocity
 
 
 accelFromAction : Action -> Body -> Acceleration

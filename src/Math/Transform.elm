@@ -22,8 +22,12 @@ rotationFor u v =
     angle =
       atan2 crossMag (Vector.dot u v)
   in
-    if crossMag == 0 then
+    if angle == 0 then
       Vector.vector 0 0 0
+    else if crossMag == 0 then
+      Vector.vector 1.0e-10 0 0
+        |> Vector.add v
+        |> rotationFor u
     else
       Vector.scale (angle / crossMag) cross
 

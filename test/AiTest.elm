@@ -75,18 +75,114 @@ hostileFiring =
 
 hostileSteering : Test
 hostileSteering =
-  suite
-    "damped spring rotation to face target"
-    [ test "target at +X, facing -Z, rotation in -Y"
-        <| assertAboutEqual
-            (Vec.vector 0 -5 0)
-            (Ai.angleSpring (80 / turns 1) (Vec.vector 1 0 0) stillBody)
-    ]
+  let
+    criticalDamping =
+      Ai.angleSpring 1 (Vec.vector 0 0 -1)
+        >> Vec.scale (80 / turns 1)
+
+    underdamping =
+      Ai.angleSpring 0.5 (Vec.vector 0 0 -1)
+        >> Vec.scale (80 / turns 1)
+  in
+    suite
+      "damped spring rotation to face target"
+      [ test "No acceleration if facing target and no velocity"
+          <| assertEqualVector
+              (Vec.vector 0 0 0)
+              (criticalDamping stillBody)
+      , test "Accelerates towards target if yaw 90 degrees"
+          <| assertEqualVector
+              (Vec.vector 0 -5 0)
+              (criticalDamping
+                { stillBody | orientation = Vec.vector 0 (turns 0.25) 0 }
+              )
+      , test "Accelerates towards target if pitch 90 degrees"
+          <| assertEqualVector
+              (Vec.vector -5 0 0)
+              (criticalDamping
+                { stillBody | orientation = Vec.vector (turns 0.25) 0 0 }
+              )
+      , test "Acceleration ignores roll"
+          <| assertEqualVector
+              (Vec.vector 0 0 0)
+              (criticalDamping
+                { stillBody | orientation = Vec.vector 0 0 (turns 0.25) }
+              )
+      , test "Accelerates towards target if rotated on oblique axis"
+          <| assertEqualVector
+              (Vec.vector -1.0e-2 -1.0e-2 0)
+              (criticalDamping
+                { stillBody
+                  | orientation = Vec.vector (turns 5.0e-4) (turns 5.0e-4) 0
+                }
+              )
+      , test "Accelerate in some direction if facing directly away from target"
+          <| assertEqualFloat
+              10
+              (criticalDamping
+                { stillBody | position = Vec.vector 0 0 -2 }
+                |> Vec.length
+              )
+      , test "Acceleration opposes velocity if facing target"
+          <| assertEqualVector
+              (Vec.vector 0 -1 0)
+              (criticalDamping
+                { stillBody | angVelocity = Vec.vector 0 (turns 1.25e-2) 0 }
+              )
+      , test "coaxial velocity & orientation, critically damped"
+          <| assertEqualVector
+              (Vec.vector 0 -12 0)
+              (criticalDamping
+                { stillBody
+                  | orientation = Vec.vector 0 (turns 0.1) 0
+                  , angVelocity = Vec.vector 0 (turns 0.125) 0
+                }
+              )
+      , test "coaxial velocity & orientation, underdamped"
+          <| assertEqualVector
+              (Vec.vector 0 -14 0)
+              (underdamping
+                { stillBody
+                  | orientation = Vec.vector 0 (turns 0.1) 0
+                  , angVelocity = Vec.vector 0 (turns 0.125) 0
+                }
+              )
+      , test "orientation perpendicular to velocity"
+          <| assertEqualVector
+              (Vec.vector 0 -5 -20)
+              (criticalDamping
+                { stillBody
+                  | orientation = Vec.vector 0 (turns 0.25) 0
+                  , angVelocity = Vec.vector 0 0 (turns 0.25)
+                }
+              )
+      , test "oblique orientation"
+          <| assertEqualVector
+              (Vec.vector
+                (20 / (turns (sqrt 26)) * acos (2 / sqrt 30))
+                0
+                (-100 / (turns (sqrt 26)) * acos (2 / sqrt 30))
+              )
+              (criticalDamping
+                { stillBody
+                  | orientation = Vec.vector (turns 0.25) 0 0
+                  , position = Vec.vector -5 -2 -2
+                }
+              )
+      ]
 
 
-assertAboutEqual : Vector -> Vector -> Assertion
-assertAboutEqual a b =
+assertEqualVector : Vector -> Vector -> Assertion
+assertEqualVector a b =
   if Vec.distanceSquared a b < 1.0e-10 then
+    assert True
+  else
+    assertEqual a b
+
+
+assertEqualFloat : Float -> Float -> Assertion
+assertEqualFloat a b =
+  if (a - b) ^ 2 < 1.0e-10 then
     assert True
   else
     assertEqual a b
