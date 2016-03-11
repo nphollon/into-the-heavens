@@ -61,7 +61,7 @@ toTriangles positions =
         toVertex p =
           { position = p
           , normal = normal
-          , color = Vec4.vec4 0.8 1 0.9 1
+          , color = Vec4.vec4 0.8 1 0 1
           }
       in
         List.map2
