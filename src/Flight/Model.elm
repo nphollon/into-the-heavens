@@ -102,30 +102,39 @@ controlUpdate keysDown model =
     newAction =
       Set.foldl keyAct Init.inaction keysDown
 
+    shieldsUp =
+      Set.member (Char.toCode 'J') keysDown
+
     firing =
       Set.member (Char.toCode 'O') keysDown
 
     newTrigger cockpit =
-      case ( firing, cockpit.trigger ) of
+      case ( firing && not shieldsUp, cockpit.trigger ) of
         ( True, Ready ) ->
           { cockpit
             | action = newAction
             , trigger = Fire
+            , shieldsUp = shieldsUp
           }
 
         ( False, Fire ) ->
           { cockpit
             | action = newAction
             , trigger = FireAndReset
+            , shieldsUp = shieldsUp
           }
 
         ( False, Reset ) ->
           { cockpit
             | action = newAction
             , trigger = Ready
+            , shieldsUp = shieldsUp
           }
 
         _ ->
-          { cockpit | action = newAction }
+          { cockpit
+            | action = newAction
+            , shieldsUp = shieldsUp
+          }
   in
     Spawn.updatePlayer newTrigger model

@@ -82,6 +82,7 @@ type alias Cockpit =
   { action : Action
   , target : String
   , trigger : Trigger
+  , shieldsUp : Bool
   }
 
 
@@ -103,14 +104,13 @@ type Trigger
 type GraphicsObject
   = Background String
   | Reticule String
+  | Shield String
   | Object
       { bodyName : String
       , meshName : String
       , shader : ShaderType
       }
-  | Target
-      { meshName : String
-      }
+  | Target String
   | Highlight
       { filter : Body -> Bool
       , meshName : String

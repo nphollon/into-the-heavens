@@ -10,6 +10,7 @@ import Types exposing (..)
 import Math.Vector as Vector
 import Math.Matrix as Matrix exposing (Matrix)
 import Math.Transform as Transform
+import Flight.Init as Init
 import Flight.Background as Background
 import Flight.Foreground as Foreground
 import Flight.Static as Static
@@ -40,13 +41,13 @@ scene width height { universe, library, graphics } =
         (Camera.at aspect)
         maybeShip
 
-    targetName =
+    cockpit =
       case Maybe.map .ai maybeShip of
-        Just (PlayerControlled { target }) ->
-          target
+        Just (PlayerControlled c) ->
+          c
 
         _ ->
-          ""
+          Init.defaultCockpit
 
     draw object =
       case object of
@@ -71,10 +72,10 @@ scene width height { universe, library, graphics } =
             (Dict.get meshName library)
             |> MaybeX.maybeToList
 
-        Target { meshName } ->
+        Target meshName ->
           MaybeX.map3
             (\b c -> Foreground.entity Decoration (decorPlacement b c) c)
-            (Dict.get targetName universe)
+            (Dict.get cockpit.target universe)
             camera
             (Dict.get meshName library)
             |> MaybeX.maybeToList
@@ -92,6 +93,15 @@ scene width height { universe, library, graphics } =
             camera
             (Dict.get meshName library)
             |> Maybe.withDefault []
+
+        Shield meshName ->
+          if cockpit.shieldsUp then
+            Maybe.map
+              (Static.entity (Camera.ortho aspect))
+              (Dict.get meshName library)
+              |> MaybeX.maybeToList
+          else
+            []
 
     webgl =
       WebGL.webglWithConfig

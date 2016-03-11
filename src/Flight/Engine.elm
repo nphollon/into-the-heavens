@@ -153,7 +153,15 @@ hit label model =
       if body.health > 1 then
         Just { body | health = body.health - 1 }
       else
-        Nothing
+        case body.ai of
+          PlayerControlled { shieldsUp } ->
+            if shieldsUp then
+              Just body
+            else
+              Nothing
+
+          _ ->
+            Nothing
   in
     { model
       | universe =

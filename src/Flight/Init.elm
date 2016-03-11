@@ -1,4 +1,4 @@
-module Flight.Init (game, inaction) where
+module Flight.Init (game, inaction, defaultCockpit) where
 
 import Dict
 import Random.PCG as Random exposing (Seed)
@@ -30,12 +30,7 @@ game seed library =
                 , angVelocity = Vector.vector 0 0 0
                 , hull = Collision.hull .position Ship.triangles
                 , health = 1
-                , ai =
-                    PlayerControlled
-                      { action = inaction
-                      , target = ""
-                      , trigger = Ready
-                      }
+                , ai = PlayerControlled defaultCockpit
                 }
               )
             , ( "planet"
@@ -57,9 +52,7 @@ game seed library =
               , shader = Planet
               }
           , Reticule "Reticule"
-          , Target
-              { meshName = "TargetDecor"
-              }
+          , Target "TargetDecor"
           , Highlight
               { meshName = "IncomingDecor"
               , filter =
@@ -71,7 +64,7 @@ game seed library =
                       _ ->
                         False
               }
-          , Reticule "Shield"
+          , Shield "Shield"
           ]
       }
     )
@@ -84,4 +77,13 @@ inaction =
   , pitch = 0
   , yaw = 0
   , roll = 0
+  }
+
+
+defaultCockpit : Cockpit
+defaultCockpit =
+  { action = inaction
+  , target = ""
+  , trigger = Ready
+  , shieldsUp = False
   }
