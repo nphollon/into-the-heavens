@@ -33,6 +33,7 @@ menu seed =
         [ ( "Reticule", Guides.crosshair )
         , ( "TargetDecor", Guides.target )
         , ( "IncomingDecor", Guides.incoming )
+        , ( "Shield", Guides.shield )
         ]
   in
     (,)

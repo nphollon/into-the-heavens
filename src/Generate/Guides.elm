@@ -1,4 +1,4 @@
-module Generate.Guides (crosshair, target, incoming) where
+module Generate.Guides (crosshair, target, incoming, shield) where
 
 import WebGL exposing (Drawable(..))
 import Types exposing (Vertex)
@@ -25,16 +25,45 @@ incoming =
 
 ngon : Int -> Float -> Vec4 -> List Vertex
 ngon sides radius color =
+  [0..sides]
+    |> List.map (\i -> turns (toFloat i / toFloat sides))
+    |> List.map (toVertex color radius)
+
+
+shield : Drawable Vertex
+shield =
   let
-    toVertex angle =
-      { vertPosition = toPosition radius angle
-      , vertColor = color
-      , normal = Vec3.vec3 0 0 0
-      }
+    tip =
+      ( 20, Vec4.vec4 0.6 0.6 0.3 1 )
+
+    rim =
+      ( 35, Vec4.vec4 0 0 0.1 1 )
   in
-    [0..sides]
-      |> List.map (\i -> turns (toFloat i / toFloat sides))
-      |> List.map toVertex
+    dashes 25 tip rim
+      |> (++) (dashes 25 rim tip)
+      |> Lines
+
+
+dashes : Int -> ( Float, Vec4 ) -> ( Float, Vec4 ) -> List ( Vertex, Vertex )
+dashes strokes ( innerRadius, innerColor ) ( outerRadius, outerColor ) =
+  let
+    angleOf i =
+      turns (toFloat i / toFloat strokes)
+
+    toStroke i =
+      ( toVertex innerColor innerRadius (angleOf i)
+      , toVertex outerColor outerRadius (angleOf (i + 1))
+      )
+  in
+    List.map toStroke [0..strokes]
+
+
+toVertex : Vec4 -> Float -> Float -> Vertex
+toVertex color radius angle =
+  { vertPosition = toPosition radius angle
+  , vertColor = color
+  , normal = Vec3.vec3 0 0 0
+  }
 
 
 toPosition : Float -> Float -> Vec3

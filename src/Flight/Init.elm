@@ -71,6 +71,7 @@ game seed library =
                       _ ->
                         False
               }
+          , Reticule "Shield"
           ]
       }
     )
