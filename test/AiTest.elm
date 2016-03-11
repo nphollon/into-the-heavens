@@ -160,8 +160,8 @@ hostileSteering =
           <| assertEqualVector
               (Vec.vector
                 (20 / (turns (sqrt 26)) * acos (2 / sqrt 30))
-                0
                 (-100 / (turns (sqrt 26)) * acos (2 / sqrt 30))
+                0
               )
               (criticalDamping
                 { stillBody
