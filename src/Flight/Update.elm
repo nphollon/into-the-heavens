@@ -116,7 +116,7 @@ controlUpdate keysDown model =
         , trigger = nextTrigger firing shieldsUp cockpit
       }
   in
-    Util.updatePlayer newCockpit model
+    Util.updatePlayerCockpit newCockpit model
 
 
 nextTrigger : Bool -> Bool -> Cockpit -> Trigger

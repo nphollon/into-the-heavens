@@ -1,7 +1,6 @@
 module Flight.Engine (update) where
 
 import Dict exposing (Dict)
-import Random.PCG as Random
 import Types exposing (..)
 import Math.Collision as Collision
 import Flight.Ai as Ai
@@ -27,6 +26,7 @@ type EngineEffect
   | SetTrigger String Trigger
   | Collide String String
   | MissileHit String String
+  | ChangeTarget
 
 
 check : (GameState -> List EngineEffect) -> GameState -> GameState
@@ -41,23 +41,15 @@ applyEffect effect model =
       { model | score = model.score + 1 }
 
     SpawnShip ->
-      let
-        ( rootSeed, shipSeed ) =
-          Random.split model.seed
+      Util.mapRandom (Ship >> Spawn.spawn) model
 
-        ( spawnModel, spawnName ) =
-          Spawn.spawn (Ship shipSeed) model
-      in
-        Util.updatePlayer
-          (\cockpit -> { cockpit | target = spawnName })
-          { spawnModel
-            | seed = rootSeed
-          }
+    ChangeTarget ->
+      Util.setPlayerTarget model
 
     SpawnMissile sourceName targetName ->
       case Dict.get sourceName model.universe of
         Just source ->
-          Spawn.spawn (Missile source targetName) model |> fst
+          Spawn.spawn (Missile source targetName) model
 
         Nothing ->
           model
@@ -104,7 +96,7 @@ shouldCrash model =
     collidedWith pointLabel point hullLabel hull effects =
       if Collision.isOutside point.position hull || pointLabel == hullLabel then
         effects
-      else if isMissile point then
+      else if Util.isMissile point then
         MissileHit pointLabel hullLabel :: effects
       else
         Collide pointLabel hullLabel :: effects
@@ -115,11 +107,6 @@ shouldCrash model =
       )
       []
       model.universe
-
-
-isMissile : Body -> Bool
-isMissile body =
-  List.isEmpty body.hull
 
 
 shieldsUp : Body -> Bool
@@ -135,7 +122,7 @@ shieldsUp body =
 shouldSpawn : GameState -> List EngineEffect
 shouldSpawn model =
   if Spawn.visitorCount model == 0 then
-    [ IncreaseScore, SpawnShip ]
+    [ IncreaseScore, SpawnShip, ChangeTarget ]
   else
     []
 

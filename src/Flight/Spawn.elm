@@ -10,7 +10,7 @@ import Math.Transform as Transform
 import Math.Vector as Vector
 
 
-spawn : EntityConstructor -> GameState -> ( GameState, String )
+spawn : EntityConstructor -> GameState -> GameState
 spawn objType model =
   let
     name =
@@ -22,13 +22,11 @@ spawn objType model =
     graphics =
       entityGraphics name objType
   in
-    (,)
-      { model
-        | universe = Dict.insert name body model.universe
-        , nextId = model.nextId + 1
-        , graphics = graphics :: model.graphics
-      }
-      name
+    { model
+      | universe = Dict.insert name body model.universe
+      , nextId = model.nextId + 1
+      , graphics = graphics :: model.graphics
+    }
 
 
 entityString : EntityConstructor -> String
