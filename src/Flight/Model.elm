@@ -6,8 +6,8 @@ import Time exposing (Time)
 import Effects exposing (Effects)
 import Types exposing (..)
 import Flight.Init as Init
-import Flight.Spawn as Spawn
 import Flight.Engine as Engine
+import Flight.Util as Util
 import GameOver.Init
 
 
@@ -15,12 +15,7 @@ update : Update -> GameState -> ( Mode, Effects Update )
 update input model =
   case input of
     Tick clockTime ->
-      if Spawn.hasCrashed model then
-        GameOver.Init.gameOver model.seed model.library
-      else if model.hasFocus then
-        timeUpdate clockTime model
-      else
-        ( GameMode { model | clockTime = Nothing }, Effects.none )
+      timeUpdate clockTime model
 
     Keys keysDown ->
       ( GameMode (controlUpdate keysDown model), Effects.none )
@@ -37,24 +32,30 @@ update input model =
 
 timeUpdate : Time -> GameState -> ( Mode, Effects Update )
 timeUpdate clockTime model =
-  let
-    newModel =
-      case model.clockTime of
-        Just prevClockTime ->
-          loop
-            { model
-              | clockTime = Just clockTime
-              , lag = model.lag + clockTime - prevClockTime
-            }
-
-        Nothing ->
-          { model | clockTime = Just clockTime }
-  in
-    ( GameMode newModel, Effects.tick Tick )
+  if Util.hasCrashed model then
+    GameOver.Init.gameOver model.seed model.library
+  else if model.hasFocus then
+    ( GameMode (engineUpdate clockTime model), Effects.tick Tick )
+  else
+    ( GameMode { model | clockTime = Nothing }, Effects.none )
 
 
-loop : GameState -> GameState
-loop model =
+engineUpdate : Time -> GameState -> GameState
+engineUpdate clockTime model =
+  case model.clockTime of
+    Just prevClockTime ->
+      reduceLag
+        { model
+          | clockTime = Just clockTime
+          , lag = model.lag + clockTime - prevClockTime
+        }
+
+    Nothing ->
+      { model | clockTime = Just clockTime }
+
+
+reduceLag : GameState -> GameState
+reduceLag model =
   let
     updateDelta =
       Time.second / 60
@@ -64,7 +65,7 @@ loop model =
     else
       { model | lag = model.lag - updateDelta }
         |> Engine.update (Time.inSeconds updateDelta)
-        |> loop
+        |> reduceLag
 
 
 controlUpdate : Set KeyCode -> GameState -> GameState
@@ -108,33 +109,27 @@ controlUpdate keysDown model =
     firing =
       Set.member (Char.toCode 'J') keysDown
 
-    newTrigger cockpit =
-      case ( firing && not shieldsUp, cockpit.trigger ) of
-        ( True, Ready ) ->
-          { cockpit
-            | action = newAction
-            , trigger = Fire
-            , shieldsUp = shieldsUp
-          }
-
-        ( False, Fire ) ->
-          { cockpit
-            | action = newAction
-            , trigger = FireAndReset
-            , shieldsUp = shieldsUp
-          }
-
-        ( False, Reset ) ->
-          { cockpit
-            | action = newAction
-            , trigger = Ready
-            , shieldsUp = shieldsUp
-          }
-
-        _ ->
-          { cockpit
-            | action = newAction
-            , shieldsUp = shieldsUp
-          }
+    newCockpit cockpit =
+      { cockpit
+        | action = newAction
+        , shieldsUp = shieldsUp
+        , trigger = nextTrigger firing shieldsUp cockpit
+      }
   in
-    Spawn.updatePlayer newTrigger model
+    Util.updatePlayer newCockpit model
+
+
+nextTrigger : Bool -> Bool -> Cockpit -> Trigger
+nextTrigger isFiring shieldsUp cockpit =
+  case ( isFiring && not shieldsUp, cockpit.trigger ) of
+    ( True, Ready ) ->
+      Fire
+
+    ( False, Fire ) ->
+      FireAndReset
+
+    ( False, Reset ) ->
+      Ready
+
+    _ ->
+      cockpit.trigger

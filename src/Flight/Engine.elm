@@ -7,6 +7,7 @@ import Math.Collision as Collision
 import Flight.Ai as Ai
 import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
+import Flight.Util as Util
 import Maybe.Extra as MaybeX
 
 
@@ -47,7 +48,7 @@ applyEffect effect model =
         ( spawnModel, spawnName ) =
           Spawn.spawn (Ship shipSeed) model
       in
-        Spawn.updatePlayer
+        Util.updatePlayer
           (\cockpit -> { cockpit | target = spawnName })
           { spawnModel
             | seed = rootSeed

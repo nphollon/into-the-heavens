@@ -1,4 +1,4 @@
-module Flight.Spawn (spawn, updatePlayer, visitorCount, hasCrashed) where
+module Flight.Spawn (spawn, visitorCount) where
 
 import Color
 import Dict
@@ -97,25 +97,3 @@ visitorCount model =
   Dict.keys model.universe
     |> List.filter (String.startsWith "visitor")
     |> List.length
-
-
-hasCrashed : GameState -> Bool
-hasCrashed model =
-  not (Dict.member "ship" model.universe)
-
-
-updatePlayer : (Cockpit -> Cockpit) -> GameState -> GameState
-updatePlayer aiUpdate model =
-  let
-    bodyUpdate body =
-      case body.ai of
-        PlayerControlled cockpit ->
-          { body | ai = PlayerControlled (aiUpdate cockpit) }
-
-        _ ->
-          body
-  in
-    { model
-      | universe =
-          Dict.update "ship" (Maybe.map bodyUpdate) model.universe
-    }
