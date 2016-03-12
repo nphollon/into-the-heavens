@@ -7,6 +7,7 @@ import Math.Collision as Collision
 import Flight.Ai as Ai
 import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
+import Maybe.Extra as MaybeX
 
 
 update : Float -> GameState -> GameState
@@ -24,6 +25,7 @@ type EngineEffect
   | SpawnMissile String String
   | SetTrigger String Trigger
   | Collide String String
+  | MissileHit String String
 
 
 check : (GameState -> List EngineEffect) -> GameState -> GameState
@@ -83,6 +85,12 @@ applyEffect effect model =
     Collide a b ->
       hit a (hit b model)
 
+    MissileHit a b ->
+      if MaybeX.mapDefault False shieldsUp (Dict.get b model.universe) then
+        hit a model
+      else
+        hit a (hit b model)
+
 
 thrust : Float -> GameState -> GameState
 thrust delta model =
@@ -93,10 +101,12 @@ shouldCrash : GameState -> List EngineEffect
 shouldCrash model =
   let
     collidedWith pointLabel point hullLabel hull effects =
-      if Collision.isInside point.position hull && pointLabel /= hullLabel then
-        Collide pointLabel hullLabel :: effects
-      else
+      if Collision.isOutside point.position hull || pointLabel == hullLabel then
         effects
+      else if isMissile point then
+        MissileHit pointLabel hullLabel :: effects
+      else
+        Collide pointLabel hullLabel :: effects
   in
     Dict.foldl
       (\label body effects ->
@@ -104,6 +114,21 @@ shouldCrash model =
       )
       []
       model.universe
+
+
+isMissile : Body -> Bool
+isMissile body =
+  List.isEmpty body.hull
+
+
+shieldsUp : Body -> Bool
+shieldsUp body =
+  case body.ai of
+    PlayerControlled cockpit ->
+      cockpit.shieldsUp
+
+    _ ->
+      False
 
 
 shouldSpawn : GameState -> List EngineEffect
@@ -153,15 +178,7 @@ hit label model =
       if body.health > 1 then
         Just { body | health = body.health - 1 }
       else
-        case body.ai of
-          PlayerControlled { shieldsUp } ->
-            if shieldsUp then
-              Just body
-            else
-              Nothing
-
-          _ ->
-            Nothing
+        Nothing
   in
     { model
       | universe =

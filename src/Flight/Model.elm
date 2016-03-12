@@ -103,10 +103,10 @@ controlUpdate keysDown model =
       Set.foldl keyAct Init.inaction keysDown
 
     shieldsUp =
-      Set.member (Char.toCode 'J') keysDown
+      Set.member (Char.toCode 'O') keysDown
 
     firing =
-      Set.member (Char.toCode 'O') keysDown
+      Set.member (Char.toCode 'J') keysDown
 
     newTrigger cockpit =
       case ( firing && not shieldsUp, cockpit.trigger ) of
