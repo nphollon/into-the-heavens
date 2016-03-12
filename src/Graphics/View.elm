@@ -1,4 +1,4 @@
-module Flight.View (view) where
+module Graphics.View (view) where
 
 import String
 import Dict exposing (Dict)
@@ -11,10 +11,10 @@ import Math.Vector as Vector
 import Math.Matrix as Matrix exposing (Matrix)
 import Math.Transform as Transform
 import Flight.Init as Init
-import Flight.Background as Background
-import Flight.Foreground as Foreground
-import Flight.Static as Static
-import Flight.Camera as Camera
+import Graphics.Background as Background
+import Graphics.Foreground as Foreground
+import Graphics.Static as Static
+import Graphics.Camera as Camera
 import Frame
 
 

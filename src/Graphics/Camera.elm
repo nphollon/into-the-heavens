@@ -1,4 +1,4 @@
-module Flight.Camera (at, ortho) where
+module Graphics.Camera (at, ortho) where
 
 import Math.Matrix as Matrix
 import Math.Matrix4 as Mat4

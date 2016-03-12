@@ -1,4 +1,4 @@
-module Flight.Background (entity) where
+module Graphics.Background (entity) where
 
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 as Mat4 exposing (Mat4)

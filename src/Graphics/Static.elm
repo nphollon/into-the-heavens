@@ -1,4 +1,4 @@
-module Flight.Static (entity) where
+module Graphics.Static (entity) where
 
 import Math.Vector4 exposing (Vec4)
 import Math.Matrix4 exposing (Mat4)
