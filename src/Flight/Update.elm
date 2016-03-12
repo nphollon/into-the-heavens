@@ -1,4 +1,4 @@
-module Flight.Model (update) where
+module Flight.Update (update) where
 
 import Set exposing (Set)
 import Char exposing (KeyCode)
