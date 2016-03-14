@@ -1,5 +1,6 @@
 module Flight.Update (update) where
 
+import Dict exposing (Dict)
 import Set exposing (Set)
 import Char exposing (KeyCode)
 import Time exposing (Time)
@@ -73,46 +74,81 @@ reduceLag model =
         |> reduceLag
 
 
+type PlayerAction
+  = LeftTurn
+  | RightTurn
+  | UpTurn
+  | DownTurn
+  | ClockwiseRoll
+  | CounterclockwiseRoll
+  | Thrust
+  | Brake
+  | Firing
+  | ShieldsUp
+
+
 controlUpdate : Set KeyCode -> GameState -> GameState
-controlUpdate keysDown model =
+controlUpdate keysDown =
   let
-    keyAct key action =
-      case (Char.fromCode key) of
-        'D' ->
+    keyMap =
+      Dict.fromList
+        [ ( 'D', RightTurn )
+        , ( 'A', LeftTurn )
+        , ( 'S', DownTurn )
+        , ( 'W', UpTurn )
+        , ( 'Q', CounterclockwiseRoll )
+        , ( 'E', ClockwiseRoll )
+        , ( 'I', Thrust )
+        , ( 'M', Brake )
+        , ( 'O', ShieldsUp )
+        , ( 'J', Firing )
+        ]
+  in
+    Set.toList keysDown
+      |> List.filterMap (Char.fromCode >> flip Dict.get keyMap)
+      |> processActions
+
+
+processActions : List PlayerAction -> GameState -> GameState
+processActions playerActions model =
+  let
+    keyAct playerAction action =
+      case playerAction of
+        RightTurn ->
           { action | yaw = action.yaw - 1 }
 
-        'A' ->
+        LeftTurn ->
           { action | yaw = action.yaw + 1 }
 
-        'S' ->
+        DownTurn ->
           { action | pitch = action.pitch - 1 }
 
-        'W' ->
+        UpTurn ->
           { action | pitch = action.pitch + 1 }
 
-        'Q' ->
+        CounterclockwiseRoll ->
           { action | roll = action.roll + 1 }
 
-        'E' ->
+        ClockwiseRoll ->
           { action | roll = action.roll - 1 }
 
-        'I' ->
+        Thrust ->
           { action | thrust = action.thrust + 1 }
 
-        'M' ->
+        Brake ->
           { action | thrust = action.thrust - 1 }
 
         _ ->
           action
 
     newAction =
-      Set.foldl keyAct Init.inaction keysDown
+      List.foldl keyAct Init.inaction playerActions
 
     shieldsUp =
-      Set.member (Char.toCode 'O') keysDown
+      List.member ShieldsUp playerActions
 
     firing =
-      Set.member (Char.toCode 'J') keysDown
+      List.member Firing playerActions
 
     newCockpit cockpit =
       { cockpit
