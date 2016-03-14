@@ -1,9 +1,12 @@
 module Flight.Ai (aiUpdate, steerAi, acceleration, angleSpring) where
 
 import Dict exposing (Dict)
+import Maybe.Extra as MaybeX
 import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
 import Math.Transform as Transform
+import Flight.Switch as Switch
+import Flight.Util as Util
 
 
 aiUpdate : Float -> GameState -> GameState
@@ -30,24 +33,14 @@ steerAi delta object universe =
       Dumb
 
     Hostile ai ->
-      let
-        facesTarget =
-          Dict.get ai.target universe
-            |> Maybe.map
-                (\t -> Transform.degreesFromForward t.position object < degrees 15)
-            |> Maybe.withDefault False
-      in
-        if ai.timeUntilReady > 0 then
-          Hostile
-            { ai | timeUntilReady = ai.timeUntilReady - delta }
-        else if facesTarget then
-          Hostile
-            { ai
-              | trigger = FireAndReset
-              , timeUntilReady = ai.cooldown
-            }
-        else
-          object.ai
+      Hostile
+        { ai
+          | trigger =
+              Switch.repeat
+                delta
+                (Util.faces ai.target object universe)
+                ai.trigger
+        }
 
     Seeking lifespan target ->
       if lifespan > 0 then

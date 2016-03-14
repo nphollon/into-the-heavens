@@ -1,16 +1,27 @@
-module Flight.Util (hasCrashed, getPlayer, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile) where
+module Flight.Util (hasCrashed, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile) where
 
-import Dict
 import List.Extra as ListX
+import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
 import Random.PCG as Random
 import Types exposing (..)
+import Math.Transform as Transform
 import Flight.Init as Init
 
 
 hasCrashed : GameState -> Bool
 hasCrashed model =
   not (Dict.member Init.playerName model.universe)
+
+
+faces : String -> Body -> Dict String Body -> Bool
+faces targetName viewer universe =
+  let
+    inRange t =
+      Transform.degreesFromForward t.position viewer < degrees 15
+  in
+    Dict.get targetName universe
+      |> MaybeX.mapDefault False inRange
 
 
 getPlayer : GameState -> { body : Body, cockpit : Cockpit }

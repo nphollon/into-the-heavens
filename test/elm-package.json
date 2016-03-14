@@ -9,6 +9,7 @@
     ],
     "exposed-modules": [],
     "dependencies": {
+        "circuithub/elm-list-extra": "3.10.0 <= v < 4.0.0",
         "circuithub/elm-maybe-extra": "1.6.0 <= v < 2.0.0",
         "deadfoxygrandpa/elm-test": "3.0.1 <= v < 4.0.0",
         "elm-community/elm-linear-algebra": "1.0.1 <= v < 2.0.0",

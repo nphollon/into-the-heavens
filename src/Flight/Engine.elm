@@ -71,7 +71,6 @@ type EngineEffect
   = IncreaseScore
   | SpawnShip
   | SpawnMissile String String
-  | SetTrigger String Trigger
   | Collide String String
   | MissileHit String String
   | ChangeTarget
@@ -101,24 +100,6 @@ applyEffect effect model =
 
         Nothing ->
           model
-
-    SetTrigger bodyName newTrigger ->
-      let
-        setTrigger cockpit =
-          { cockpit | trigger = newTrigger }
-
-        updateCockpit body =
-          case body.ai of
-            Hostile ai ->
-              { body | ai = Hostile (setTrigger ai) }
-
-            _ ->
-              body
-      in
-        { model
-          | universe =
-              Dict.update bodyName (Maybe.map updateCockpit) model.universe
-        }
 
     Collide a b ->
       hit a (hit b model)
@@ -175,36 +156,24 @@ shouldSpawn model =
 shouldFire : GameState -> List EngineEffect
 shouldFire model =
   let
-    next name cockpit effects =
-      case cockpit.trigger of
-        Fire ->
-          SpawnMissile name cockpit.target
-            :: SetTrigger name Reset
-            :: effects
+    checkTrigger name cockpit effects =
+      if cockpit.trigger.value == 1 then
+        SpawnMissile name cockpit.target :: effects
+      else
+        effects
 
-        FireAndReset ->
-          SpawnMissile name cockpit.target
-            :: SetTrigger name Ready
-            :: effects
-
-        _ ->
-          effects
-
-    checkOne name body effects =
+    checkCockpit name body effects =
       case body.ai of
         PlayerControlled cockpit ->
-          if cockpit.trigger.value == 1 then
-            SpawnMissile name cockpit.target :: effects
-          else
-            effects
+          checkTrigger name cockpit effects
 
         Hostile cockpit ->
-          next name cockpit effects
+          checkTrigger name cockpit effects
 
         _ ->
           effects
   in
-    Dict.foldl checkOne [] model.universe
+    Dict.foldl checkCockpit [] model.universe
 
 
 hit : String -> GameState -> GameState

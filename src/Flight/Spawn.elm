@@ -53,9 +53,7 @@ entityBody objType =
       , ai =
           Hostile
             { target = Init.playerName
-            , trigger = Ready
-            , cooldown = 2
-            , timeUntilReady = 0
+            , trigger = { value = 0, decay = 2 }
             }
       }
 

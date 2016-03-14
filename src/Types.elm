@@ -85,9 +85,7 @@ type Ai
   | Seeking Float String
   | Hostile
       { target : String
-      , trigger : Trigger
-      , cooldown : Float
-      , timeUntilReady : Float
+      , trigger : RepeatSwitch
       }
   | SelfDestruct
 
