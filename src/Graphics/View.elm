@@ -81,7 +81,7 @@ scene width height model =
             |> Maybe.withDefault []
 
         Shield meshName ->
-          if player.cockpit.shieldsUp then
+          if player.cockpit.shields.on then
             Maybe.map
               (Static.entity (Camera.ortho aspect))
               (Dict.get meshName model.library)
@@ -148,7 +148,7 @@ dashboard model =
     div
       [ class "dashboard" ]
       [ p [] [ printInt "Visitors Destroyed" model.score ]
-      , p [] [ printPercent "Shield Power" player.cockpit.shieldPower ]
+      , p [] [ printPercent "Shield Power" player.cockpit.shields.value ]
       , p [] [ printNumber "X" shipPosition.x ]
       , p [] [ printNumber "Y" shipPosition.y ]
       , p [] [ printNumber "Z" shipPosition.z ]

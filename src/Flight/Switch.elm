@@ -1,17 +1,6 @@
 module Flight.Switch (repeat, drain) where
 
-
-type alias RepeatSwitch =
-  { value : Float
-  , decay : Float
-  }
-
-
-type alias DrainSwitch =
-  { value : Float
-  , decay : Float
-  , recover : Float
-  }
+import Types exposing (..)
 
 
 repeat : Float -> Bool -> RepeatSwitch -> RepeatSwitch
@@ -31,6 +20,12 @@ repeat dt isOn switch =
 drain : Float -> Bool -> DrainSwitch -> DrainSwitch
 drain dt isOn switch =
   if isOn then
-    { switch | value = max 0 (switch.value - dt / switch.decay) }
+    { switch
+      | value = max 0 (switch.value - dt / switch.decay)
+      , on = dt < switch.value * switch.decay
+    }
   else
-    { switch | value = min 1 (switch.value + dt / switch.recover) }
+    { switch
+      | value = min 1 (switch.value + dt / switch.recover)
+      , on = False
+    }

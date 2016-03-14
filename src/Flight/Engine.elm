@@ -6,13 +6,14 @@ import Math.Collision as Collision
 import Flight.Ai as Ai
 import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
+import Flight.Switch as Switch
 import Flight.Util as Util
 import Maybe.Extra as MaybeX
 
 
 update : Float -> GameState -> GameState
 update dt =
-  processActions
+  processActions dt
     >> Ai.aiUpdate dt
     >> check shouldSpawn
     >> check shouldCrash
@@ -20,8 +21,8 @@ update dt =
     >> thrust dt
 
 
-processActions : GameState -> GameState
-processActions model =
+processActions : Float -> GameState -> GameState
+processActions dt model =
   let
     shieldsUp =
       toggle ShieldsUp
@@ -51,7 +52,7 @@ processActions model =
             , roll = twoWayToggle CounterclockwiseRoll ClockwiseRoll
             , thrust = twoWayToggle Brake Thrust
             }
-        , shieldsUp = toggle ShieldsUp
+        , shields = Switch.drain dt (toggle ShieldsUp) cockpit.shields
         , trigger = nextTrigger firing shieldsUp cockpit
       }
   in
@@ -168,7 +169,7 @@ shieldsUp : Body -> Bool
 shieldsUp body =
   case body.ai of
     PlayerControlled cockpit ->
-      cockpit.shieldsUp
+      cockpit.shields.on
 
     _ ->
       False

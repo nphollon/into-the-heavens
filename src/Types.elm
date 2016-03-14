@@ -96,8 +96,21 @@ type alias Cockpit =
   { action : Action
   , target : String
   , trigger : Trigger
-  , shieldsUp : Bool
-  , shieldPower : Float
+  , shields : DrainSwitch
+  }
+
+
+type alias RepeatSwitch =
+  { value : Float
+  , decay : Float
+  }
+
+
+type alias DrainSwitch =
+  { value : Float
+  , decay : Float
+  , recover : Float
+  , on : Bool
   }
 
 

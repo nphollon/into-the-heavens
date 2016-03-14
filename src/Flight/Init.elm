@@ -81,8 +81,7 @@ defaultCockpit =
   { action = inaction
   , target = ""
   , trigger = Ready
-  , shieldsUp = False
-  , shieldPower = 1.0
+  , shields = { value = 1, decay = 2, recover = 5, on = False }
   }
 
 
