@@ -1,6 +1,5 @@
 module Graphics.View (view) where
 
-import String
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
 import Html exposing (..)
@@ -10,11 +9,12 @@ import Types exposing (..)
 import Math.Vector as Vector
 import Math.Matrix as Matrix exposing (Matrix)
 import Math.Transform as Transform
-import Flight.Init as Init
+import Flight.Util as Util
 import Graphics.Background as Background
 import Graphics.Foreground as Foreground
 import Graphics.Static as Static
 import Graphics.Camera as Camera
+import Graphics.Format as Format
 import Frame
 
 
@@ -28,77 +28,63 @@ view address model =
 
 
 scene : Int -> Int -> GameState -> Html
-scene width height { universe, library, graphics } =
+scene width height model =
   let
     aspect =
       toFloat width / toFloat height
 
-    maybeShip =
-      Dict.get "ship" universe
+    player =
+      Util.getPlayer model
 
     camera =
-      Maybe.map
-        (Camera.at aspect)
-        maybeShip
-
-    cockpit =
-      case Maybe.map .ai maybeShip of
-        Just (PlayerControlled c) ->
-          c
-
-        _ ->
-          Init.defaultCockpit
+      Camera.at aspect player.body
 
     draw object =
       case object of
         Background meshName ->
-          MaybeX.map2
-            Background.entity
-            camera
-            (Dict.get meshName library)
+          Maybe.map
+            (Background.entity camera)
+            (Dict.get meshName model.library)
             |> MaybeX.maybeToList
 
         Object { bodyName, meshName, shader } ->
-          MaybeX.map3
-            (objectPlacement >> Foreground.entity shader)
-            (Dict.get bodyName universe)
-            camera
-            (Dict.get meshName library)
+          MaybeX.map2
+            (\b -> Foreground.entity shader (objectPlacement b) camera)
+            (Dict.get bodyName model.universe)
+            (Dict.get meshName model.library)
             |> MaybeX.maybeToList
 
         Reticule meshName ->
           Maybe.map
             (Static.entity (Camera.ortho aspect))
-            (Dict.get meshName library)
+            (Dict.get meshName model.library)
             |> MaybeX.maybeToList
 
         Target meshName ->
-          MaybeX.map3
-            (\b c -> Foreground.entity Decoration (decorPlacement b c) c)
-            (Dict.get cockpit.target universe)
-            camera
-            (Dict.get meshName library)
+          MaybeX.map2
+            (\b -> Foreground.entity Decoration (decorPlacement b camera) camera)
+            (Dict.get player.cockpit.target model.universe)
+            (Dict.get meshName model.library)
             |> MaybeX.maybeToList
 
         Highlight { filter, meshName } ->
-          MaybeX.map2
-            (\c m ->
-              Dict.values universe
+          Maybe.map
+            (\m ->
+              Dict.values model.universe
                 |> List.filter filter
                 |> List.map
                     (\body ->
-                      Foreground.entity Decoration (decorPlacement body c) c m
+                      Foreground.entity Decoration (decorPlacement body camera) camera m
                     )
             )
-            camera
-            (Dict.get meshName library)
+            (Dict.get meshName model.library)
             |> Maybe.withDefault []
 
         Shield meshName ->
-          if cockpit.shieldsUp then
+          if player.cockpit.shieldsUp then
             Maybe.map
               (Static.entity (Camera.ortho aspect))
-              (Dict.get meshName library)
+              (Dict.get meshName model.library)
               |> MaybeX.maybeToList
           else
             []
@@ -110,7 +96,7 @@ scene width height { universe, library, graphics } =
         ]
         ( width, height )
   in
-    List.concatMap draw graphics
+    List.concatMap draw model.graphics
       |> webgl
       |> Html.fromElement
 
@@ -141,41 +127,28 @@ dashboard : GameState -> Html
 dashboard model =
   let
     printNumber label value =
-      let
-        sign =
-          if value > -5.0e-3 then
-            "+"
-          else
-            "-"
-
-        intPart =
-          floor (abs value)
-
-        centPart =
-          round (100 * abs value) - (100 * intPart)
-
-        decimal =
-          if centPart < 10 then
-            ".0"
-          else
-            "."
-      in
-        [ label, ": ", sign, toString intPart, decimal, toString centPart ]
-          |> String.concat
-          |> text
-
-    printInt label value =
-      [ label, ": ", toString value ]
-        |> String.concat
+      Format.float value
+        |> Format.tag label
         |> text
 
+    printInt label value =
+      toString value
+        |> Format.tag label
+        |> text
+
+    printPercent label value =
+      printInt label (Format.percent value)
+
+    player =
+      Util.getPlayer model
+
     shipPosition =
-      Dict.get "ship" model.universe
-        |> MaybeX.mapDefault (Vector.vector 0 0 0) .position
+      player.body.position
   in
     div
       [ class "dashboard" ]
       [ p [] [ printInt "Visitors Destroyed" model.score ]
+      , p [] [ printPercent "Shield Power" player.cockpit.shieldPower ]
       , p [] [ printNumber "X" shipPosition.x ]
       , p [] [ printNumber "Y" shipPosition.y ]
       , p [] [ printNumber "Z" shipPosition.z ]

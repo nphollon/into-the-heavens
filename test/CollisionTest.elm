@@ -4,7 +4,7 @@ import ElmTest exposing (..)
 import Math.Vector as Vec exposing (Vector)
 import Math.Collision as Collision exposing (isInside)
 import Types exposing (..)
-import Flight.Init
+import Flight.Init exposing (defaultBody)
 
 
 testSuite : Test
@@ -22,7 +22,7 @@ noTransform : Test
 noTransform =
   let
     body =
-      stillBody (Vec.vector 0 0 0) (Vec.vector 0 0 0)
+      { defaultBody | hull = hull }
   in
     suite
       "Hull with no transformation"
@@ -39,7 +39,10 @@ withTranslation : Test
 withTranslation =
   let
     body =
-      stillBody (Vec.vector 5 4 3) (Vec.vector 0 0 0)
+      { defaultBody
+        | position = Vec.vector 5 4 3
+        , hull = hull
+      }
   in
     suite
       "Hull with translation"
@@ -56,7 +59,10 @@ withRotation : Test
 withRotation =
   let
     body =
-      stillBody (Vec.vector 0 0 0) (Vec.vector 0 0 (pi / 2))
+      { defaultBody
+        | orientation = Vec.vector 0 0 (pi / 2)
+        , hull = hull
+      }
   in
     suite
       "Hull with rotation"
@@ -73,7 +79,11 @@ withTranslationAndRotation : Test
 withTranslationAndRotation =
   let
     body =
-      stillBody (Vec.vector 5 4 3) (Vec.vector 0 0 (pi / 2))
+      { defaultBody
+        | position = Vec.vector 5 4 3
+        , orientation = Vec.vector 0 0 (pi / 2)
+        , hull = hull
+      }
   in
     suite
       "Hull with rotation and translation"
@@ -101,18 +111,6 @@ assertBoundary name position normal body =
           <| assertEqual True
           <| isInside (Vec.sub position delta) body
       ]
-
-
-stillBody : Vector -> Vector -> Body
-stillBody position orientation =
-  { position = position
-  , orientation = orientation
-  , velocity = Vec.vector 0 0 0
-  , angVelocity = Vec.vector 0 0 0
-  , hull = hull
-  , ai = Dumb
-  , health = 0
-  }
 
 
 hull : Hull

@@ -4,10 +4,11 @@ import Color
 import Dict
 import String
 import Types exposing (..)
-import Generate.Ship as Ship
 import Math.Collision as Collision
 import Math.Transform as Transform
 import Math.Vector as Vector
+import Generate.Ship as Ship
+import Flight.Init as Init
 
 
 spawn : EntityConstructor -> GameState -> GameState
@@ -51,7 +52,7 @@ entityBody objType =
       , health = 1
       , ai =
           Hostile
-            { target = "ship"
+            { target = Init.playerName
             , trigger = Ready
             , cooldown = 2
             , timeUntilReady = 0

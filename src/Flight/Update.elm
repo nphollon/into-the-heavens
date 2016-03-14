@@ -32,12 +32,17 @@ update input model =
 
 timeUpdate : Time -> GameState -> ( Mode, Effects Update )
 timeUpdate clockTime model =
-  if Util.hasCrashed model then
-    GameOver.Init.gameOver model.seed model.library
-  else if model.hasFocus then
-    ( GameMode (engineUpdate clockTime model), Effects.tick Tick )
-  else
-    ( GameMode { model | clockTime = Nothing }, Effects.none )
+  let
+    gameOverCheck newModel =
+      if Util.hasCrashed newModel then
+        GameOver.Init.gameOver newModel.seed newModel.library
+      else
+        ( GameMode newModel, Effects.tick Tick )
+  in
+    if model.hasFocus then
+      gameOverCheck (engineUpdate clockTime model)
+    else
+      ( GameMode { model | clockTime = Nothing }, Effects.none )
 
 
 engineUpdate : Time -> GameState -> GameState

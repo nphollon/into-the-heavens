@@ -1,32 +1,56 @@
-module Flight.Util (hasCrashed, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile) where
+module Flight.Util (hasCrashed, getPlayer, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile) where
 
 import Dict
-import Random.PCG as Random
 import List.Extra as ListX
 import Maybe.Extra as MaybeX
+import Random.PCG as Random
 import Types exposing (..)
+import Flight.Init as Init
 
 
 hasCrashed : GameState -> Bool
 hasCrashed model =
-  not (Dict.member "ship" model.universe)
+  not (Dict.member Init.playerName model.universe)
+
+
+getPlayer : GameState -> { body : Body, cockpit : Cockpit }
+getPlayer model =
+  let
+    body =
+      Dict.get Init.playerName model.universe
+        |> Maybe.withDefault Init.defaultBody
+
+    cockpit =
+      extractCockpit body.ai
+        |> Maybe.withDefault Init.defaultCockpit
+  in
+    { body = body
+    , cockpit = cockpit
+    }
 
 
 updatePlayerCockpit : (Cockpit -> Cockpit) -> GameState -> GameState
 updatePlayerCockpit aiUpdate model =
   let
     bodyUpdate body =
-      case body.ai of
-        PlayerControlled cockpit ->
-          { body | ai = PlayerControlled (aiUpdate cockpit) }
-
-        _ ->
-          body
+      Maybe.map
+        (\c -> { body | ai = PlayerControlled (aiUpdate c) })
+        (extractCockpit body.ai)
   in
     { model
       | universe =
-          Dict.update "ship" (Maybe.map bodyUpdate) model.universe
+          Dict.update Init.playerName (flip Maybe.andThen bodyUpdate) model.universe
     }
+
+
+extractCockpit : Ai -> Maybe Cockpit
+extractCockpit ai =
+  case ai of
+    PlayerControlled cockpit ->
+      Just cockpit
+
+    _ ->
+      Nothing
 
 
 setPlayerTarget : GameState -> GameState

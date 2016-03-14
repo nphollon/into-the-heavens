@@ -83,6 +83,7 @@ type alias Cockpit =
   , target : String
   , trigger : Trigger
   , shieldsUp : Bool
+  , shieldPower : Float
   }
 
 

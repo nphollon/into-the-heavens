@@ -1,4 +1,4 @@
-module Flight.Init (game, inaction, defaultCockpit) where
+module Flight.Init (game, defaultBody, inaction, defaultCockpit, playerName) where
 
 import Dict
 import Random.PCG as Random exposing (Seed)
@@ -23,24 +23,19 @@ game seed library =
       , score = -1
       , universe =
           Dict.fromList
-            [ ( "ship"
-              , { position = Vector.vector 0 0 0
-                , velocity = Vector.vector 0 0 0
-                , orientation = Vector.vector 0 0 0
-                , angVelocity = Vector.vector 0 0 0
-                , hull = Collision.hull .position Ship.triangles
-                , health = 1
-                , ai = PlayerControlled defaultCockpit
+            [ ( playerName
+              , { defaultBody
+                  | hull = Collision.hull .position Ship.triangles
+                  , health = 1
+                  , ai = PlayerControlled defaultCockpit
                 }
               )
             , ( "planet"
-              , { position = Vector.vector 0 -20 0
-                , velocity = Vector.vector 0 0 0
-                , orientation = Vector.vector 0 0 0
-                , angVelocity = Vector.vector 0 3.0e-2 0
-                , hull = Collision.hull .position Sphere.triangles
-                , health = 1.0e10
-                , ai = Dumb
+              , { defaultBody
+                  | position = Vector.vector 0 -20 0
+                  , angVelocity = Vector.vector 0 3.0e-2 0
+                  , hull = Collision.hull .position Sphere.triangles
+                  , health = 1.0e10
                 }
               )
             ]
@@ -58,8 +53,8 @@ game seed library =
               , filter =
                   \body ->
                     case body.ai of
-                      Seeking _ "ship" ->
-                        True
+                      Seeking _ x ->
+                        x == playerName
 
                       _ ->
                         False
@@ -86,4 +81,22 @@ defaultCockpit =
   , target = ""
   , trigger = Ready
   , shieldsUp = False
+  , shieldPower = 1.0
   }
+
+
+defaultBody : Body
+defaultBody =
+  { position = Vector.vector 0 0 0
+  , velocity = Vector.vector 0 0 0
+  , orientation = Vector.vector 0 0 0
+  , angVelocity = Vector.vector 0 0 0
+  , hull = []
+  , health = 0
+  , ai = Dumb
+  }
+
+
+playerName : String
+playerName =
+  "player"
