@@ -21,6 +21,7 @@ game seed library =
       , seed = seed
       , nextId = 0
       , score = -1
+      , playerActions = []
       , universe =
           Dict.fromList
             [ ( playerName

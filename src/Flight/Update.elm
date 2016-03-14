@@ -6,7 +6,6 @@ import Char exposing (KeyCode)
 import Time exposing (Time)
 import Effects exposing (Effects)
 import Types exposing (..)
-import Flight.Init as Init
 import Flight.Engine as Engine
 import Flight.Util as Util
 import GameOver.Init
@@ -74,21 +73,8 @@ reduceLag model =
         |> reduceLag
 
 
-type PlayerAction
-  = LeftTurn
-  | RightTurn
-  | UpTurn
-  | DownTurn
-  | ClockwiseRoll
-  | CounterclockwiseRoll
-  | Thrust
-  | Brake
-  | Firing
-  | ShieldsUp
-
-
 controlUpdate : Set KeyCode -> GameState -> GameState
-controlUpdate keysDown =
+controlUpdate keysDown model =
   let
     keyMap =
       Dict.fromList
@@ -104,73 +90,9 @@ controlUpdate keysDown =
         , ( 'J', Firing )
         ]
   in
-    Set.toList keysDown
-      |> List.filterMap (Char.fromCode >> flip Dict.get keyMap)
-      |> processActions
-
-
-processActions : List PlayerAction -> GameState -> GameState
-processActions playerActions model =
-  let
-    keyAct playerAction action =
-      case playerAction of
-        RightTurn ->
-          { action | yaw = action.yaw - 1 }
-
-        LeftTurn ->
-          { action | yaw = action.yaw + 1 }
-
-        DownTurn ->
-          { action | pitch = action.pitch - 1 }
-
-        UpTurn ->
-          { action | pitch = action.pitch + 1 }
-
-        CounterclockwiseRoll ->
-          { action | roll = action.roll + 1 }
-
-        ClockwiseRoll ->
-          { action | roll = action.roll - 1 }
-
-        Thrust ->
-          { action | thrust = action.thrust + 1 }
-
-        Brake ->
-          { action | thrust = action.thrust - 1 }
-
-        _ ->
-          action
-
-    newAction =
-      List.foldl keyAct Init.inaction playerActions
-
-    shieldsUp =
-      List.member ShieldsUp playerActions
-
-    firing =
-      List.member Firing playerActions
-
-    newCockpit cockpit =
-      { cockpit
-        | action = newAction
-        , shieldsUp = shieldsUp
-        , trigger = nextTrigger firing shieldsUp cockpit
-      }
-  in
-    Util.updatePlayerCockpit newCockpit model
-
-
-nextTrigger : Bool -> Bool -> Cockpit -> Trigger
-nextTrigger isFiring shieldsUp cockpit =
-  case ( isFiring && not shieldsUp, cockpit.trigger ) of
-    ( True, Ready ) ->
-      Fire
-
-    ( False, Fire ) ->
-      FireAndReset
-
-    ( False, Reset ) ->
-      Ready
-
-    _ ->
-      cockpit.trigger
+    { model
+      | playerActions =
+          List.filterMap
+            (Char.fromCode >> flip Dict.get keyMap)
+            (Set.toList keysDown)
+    }

@@ -3,6 +3,7 @@ module Flight.Engine (update) where
 import Dict exposing (Dict)
 import Types exposing (..)
 import Math.Collision as Collision
+import Flight.Init as Init
 import Flight.Ai as Ai
 import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
@@ -12,11 +13,79 @@ import Maybe.Extra as MaybeX
 
 update : Float -> GameState -> GameState
 update dt =
-  Ai.aiUpdate dt
+  processActions
+    >> Ai.aiUpdate dt
     >> check shouldSpawn
     >> check shouldCrash
     >> check shouldFire
     >> thrust dt
+
+
+processActions : GameState -> GameState
+processActions model =
+  let
+    keyAct playerAction action =
+      case playerAction of
+        RightTurn ->
+          { action | yaw = action.yaw - 1 }
+
+        LeftTurn ->
+          { action | yaw = action.yaw + 1 }
+
+        DownTurn ->
+          { action | pitch = action.pitch - 1 }
+
+        UpTurn ->
+          { action | pitch = action.pitch + 1 }
+
+        CounterclockwiseRoll ->
+          { action | roll = action.roll + 1 }
+
+        ClockwiseRoll ->
+          { action | roll = action.roll - 1 }
+
+        Thrust ->
+          { action | thrust = action.thrust + 1 }
+
+        Brake ->
+          { action | thrust = action.thrust - 1 }
+
+        _ ->
+          action
+
+    newAction =
+      List.foldl keyAct Init.inaction model.playerActions
+
+    shieldsUp =
+      List.member ShieldsUp model.playerActions
+
+    firing =
+      List.member Firing model.playerActions
+
+    newCockpit cockpit =
+      { cockpit
+        | action = newAction
+        , shieldsUp = shieldsUp
+        , trigger = nextTrigger firing shieldsUp cockpit
+      }
+  in
+    Util.updatePlayerCockpit newCockpit model
+
+
+nextTrigger : Bool -> Bool -> Cockpit -> Trigger
+nextTrigger isFiring shieldsUp cockpit =
+  case ( isFiring && not shieldsUp, cockpit.trigger ) of
+    ( True, Ready ) ->
+      Fire
+
+    ( False, Fire ) ->
+      FireAndReset
+
+    ( False, Reset ) ->
+      Ready
+
+    _ ->
+      cockpit.trigger
 
 
 type EngineEffect

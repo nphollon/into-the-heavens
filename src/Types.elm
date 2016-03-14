@@ -35,10 +35,24 @@ type alias GameState =
   , seed : Random.Seed
   , clockTime : Maybe Time
   , lag : Time
+  , playerActions : List PlayerAction
   , universe : Dict String Body
   , graphics : List GraphicsObject
   , library : Library
   }
+
+
+type PlayerAction
+  = LeftTurn
+  | RightTurn
+  | UpTurn
+  | DownTurn
+  | ClockwiseRoll
+  | CounterclockwiseRoll
+  | Thrust
+  | Brake
+  | Firing
+  | ShieldsUp
 
 
 type alias Body =
