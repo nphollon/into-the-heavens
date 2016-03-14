@@ -6,6 +6,7 @@ import ElmTest exposing (..)
 import CollisionTest
 import TransformTest
 import AiTest
+import FormatTest
 
 
 testSuite : Test
@@ -15,6 +16,7 @@ testSuite =
     [ CollisionTest.testSuite
     , TransformTest.testSuite
     , AiTest.testSuite
+    , FormatTest.testSuite
     ]
 
 
