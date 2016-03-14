@@ -24,12 +24,6 @@ update dt =
 processActions : Float -> GameState -> GameState
 processActions dt model =
   let
-    shieldsUp =
-      toggle ShieldsUp
-
-    firing =
-      toggle Firing
-
     toggle playerAction =
       List.member playerAction model.playerActions
 
@@ -44,35 +38,33 @@ processActions dt model =
         _ ->
           0
 
+    action =
+      { yaw = twoWayToggle RightTurn LeftTurn
+      , pitch = twoWayToggle DownTurn UpTurn
+      , roll = twoWayToggle CounterclockwiseRoll ClockwiseRoll
+      , thrust = twoWayToggle Brake Thrust
+      }
+
+    shields cockpit =
+      Switch.drain
+        dt
+        (toggle ShieldsUp)
+        cockpit.shields
+
+    trigger cockpit =
+      Switch.repeat
+        dt
+        (toggle Firing && not cockpit.shields.on)
+        cockpit.trigger
+
     newCockpit cockpit =
       { cockpit
-        | action =
-            { yaw = twoWayToggle RightTurn LeftTurn
-            , pitch = twoWayToggle DownTurn UpTurn
-            , roll = twoWayToggle CounterclockwiseRoll ClockwiseRoll
-            , thrust = twoWayToggle Brake Thrust
-            }
-        , shields = Switch.drain dt (toggle ShieldsUp) cockpit.shields
-        , trigger = nextTrigger firing shieldsUp cockpit
+        | action = action
+        , shields = shields cockpit
+        , trigger = trigger cockpit
       }
   in
     Util.updatePlayerCockpit newCockpit model
-
-
-nextTrigger : Bool -> Bool -> Cockpit -> Trigger
-nextTrigger isFiring shieldsUp cockpit =
-  case ( isFiring && not shieldsUp, cockpit.trigger ) of
-    ( True, Ready ) ->
-      Fire
-
-    ( False, Fire ) ->
-      FireAndReset
-
-    ( False, Reset ) ->
-      Ready
-
-    _ ->
-      cockpit.trigger
 
 
 type EngineEffect
@@ -117,9 +109,6 @@ applyEffect effect model =
 
         updateCockpit body =
           case body.ai of
-            PlayerControlled cockpit ->
-              { body | ai = PlayerControlled (setTrigger cockpit) }
-
             Hostile ai ->
               { body | ai = Hostile (setTrigger ai) }
 
@@ -204,7 +193,10 @@ shouldFire model =
     checkOne name body effects =
       case body.ai of
         PlayerControlled cockpit ->
-          next name cockpit effects
+          if cockpit.trigger.value == 1 then
+            SpawnMissile name cockpit.target :: effects
+          else
+            effects
 
         Hostile cockpit ->
           next name cockpit effects

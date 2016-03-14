@@ -95,7 +95,7 @@ type Ai
 type alias Cockpit =
   { action : Action
   , target : String
-  , trigger : Trigger
+  , trigger : RepeatSwitch
   , shields : DrainSwitch
   }
 

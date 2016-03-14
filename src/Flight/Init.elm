@@ -80,7 +80,7 @@ defaultCockpit : Cockpit
 defaultCockpit =
   { action = inaction
   , target = ""
-  , trigger = Ready
+  , trigger = { value = 0, decay = 0.75 }
   , shields = { value = 1, decay = 2, recover = 5, on = False }
   }
 
