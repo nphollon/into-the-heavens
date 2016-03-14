@@ -7,6 +7,7 @@ import CollisionTest
 import TransformTest
 import AiTest
 import FormatTest
+import SwitchTest
 
 
 testSuite : Test
@@ -17,6 +18,7 @@ testSuite =
     , TransformTest.testSuite
     , AiTest.testSuite
     , FormatTest.testSuite
+    , SwitchTest.testSuite
     ]
 
 

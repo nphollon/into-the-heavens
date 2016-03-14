@@ -3,7 +3,6 @@ module Flight.Engine (update) where
 import Dict exposing (Dict)
 import Types exposing (..)
 import Math.Collision as Collision
-import Flight.Init as Init
 import Flight.Ai as Ai
 import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
@@ -24,48 +23,35 @@ update dt =
 processActions : GameState -> GameState
 processActions model =
   let
-    keyAct playerAction action =
-      case playerAction of
-        RightTurn ->
-          { action | yaw = action.yaw - 1 }
-
-        LeftTurn ->
-          { action | yaw = action.yaw + 1 }
-
-        DownTurn ->
-          { action | pitch = action.pitch - 1 }
-
-        UpTurn ->
-          { action | pitch = action.pitch + 1 }
-
-        CounterclockwiseRoll ->
-          { action | roll = action.roll + 1 }
-
-        ClockwiseRoll ->
-          { action | roll = action.roll - 1 }
-
-        Thrust ->
-          { action | thrust = action.thrust + 1 }
-
-        Brake ->
-          { action | thrust = action.thrust - 1 }
-
-        _ ->
-          action
-
-    newAction =
-      List.foldl keyAct Init.inaction model.playerActions
-
     shieldsUp =
-      List.member ShieldsUp model.playerActions
+      toggle ShieldsUp
 
     firing =
-      List.member Firing model.playerActions
+      toggle Firing
+
+    toggle playerAction =
+      List.member playerAction model.playerActions
+
+    twoWayToggle neg pos =
+      case ( toggle neg, toggle pos ) of
+        ( True, False ) ->
+          -1
+
+        ( False, True ) ->
+          1
+
+        _ ->
+          0
 
     newCockpit cockpit =
       { cockpit
-        | action = newAction
-        , shieldsUp = shieldsUp
+        | action =
+            { yaw = twoWayToggle RightTurn LeftTurn
+            , pitch = twoWayToggle DownTurn UpTurn
+            , roll = twoWayToggle CounterclockwiseRoll ClockwiseRoll
+            , thrust = twoWayToggle Brake Thrust
+            }
+        , shieldsUp = toggle ShieldsUp
         , trigger = nextTrigger firing shieldsUp cockpit
       }
   in
