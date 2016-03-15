@@ -1,4 +1,4 @@
-module Flight.Spawn (spawnShip, spawnMissile, visitorCount) where
+module Flight.Spawn (spawnShip, visitorBodyAt, spawnMissile, visitorCount) where
 
 import Color
 import Dict
@@ -7,7 +7,8 @@ import Random.PCG as Random
 import Types exposing (..)
 import Math.Collision as Collision
 import Math.Transform as Transform
-import Math.Vector as Vector
+import Math.Vector as Vector exposing (Vector)
+import Math.Spherical as Spherical
 import Generate.Ship as Ship
 import Flight.Init as Init
 
@@ -19,18 +20,10 @@ spawnShip seed model =
       "visitor" ++ toString model.nextId
 
     body =
-      { position = Vector.vector 5 -200 -20
-      , velocity = Vector.vector 0 0 0
-      , orientation = Vector.vector (0.5 * pi) 0 0
-      , angVelocity = Vector.vector 0 0 0
-      , hull = Collision.hull .position Ship.triangles
-      , health = 1
-      , ai =
-          Hostile
-            { target = Init.playerName
-            , trigger = { value = 0, decay = 2 }
-            }
-      }
+      Spherical.random (always 300)
+        |> visitorBodyAt
+        |> flip Random.generate seed
+        |> fst
 
     graphics =
       Object
@@ -42,6 +35,29 @@ spawnShip seed model =
     spawn name body graphics model
 
 
+visitorBodyAt : Random.Generator Vector -> Random.Generator Body
+visitorBodyAt positionGenerator =
+  let
+    orientationFor position =
+      Transform.rotationFor (Vector.vector 0 0 1) position
+
+    place position =
+      { position = position
+      , velocity = Vector.scale -0.1 position
+      , orientation = orientationFor position
+      , angVelocity = Vector.vector 0 0 0
+      , hull = Collision.hull .position Ship.triangles
+      , health = 1
+      , ai =
+          Hostile
+            { target = Init.playerName
+            , trigger = { value = 0, decay = 4 }
+            }
+      }
+  in
+    Random.map place positionGenerator
+
+
 spawnMissile : Body -> String -> GameState -> GameState
 spawnMissile parent targetName model =
   let
@@ -51,7 +67,7 @@ spawnMissile parent targetName model =
     body =
       { position = Transform.fromBodyFrame (Vector.vector 0 -0.5 0.1) parent
       , velocity =
-          Vector.vector 0 0 -60
+          Vector.vector 0 0 -40
             |> Transform.rotate parent.orientation
             |> Vector.add parent.velocity
       , orientation = parent.orientation

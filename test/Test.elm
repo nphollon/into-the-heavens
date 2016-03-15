@@ -9,6 +9,7 @@ import AiTest
 import FormatTest
 import SwitchTest
 import SphericalTest
+import SpawnTest
 
 
 testSuite : Test
@@ -21,6 +22,7 @@ testSuite =
     , FormatTest.testSuite
     , SwitchTest.testSuite
     , SphericalTest.testSuite
+    , SpawnTest.testSuite
     ]
 
 
