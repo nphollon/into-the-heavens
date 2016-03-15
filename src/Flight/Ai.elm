@@ -1,7 +1,6 @@
 module Flight.Ai (aiUpdate, steerAi, acceleration, angleSpring) where
 
 import Dict exposing (Dict)
-import Maybe.Extra as MaybeX
 import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
 import Math.Transform as Transform

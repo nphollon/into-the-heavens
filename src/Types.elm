@@ -149,11 +149,6 @@ type ShaderType
   | Decoration
 
 
-type EntityConstructor
-  = Ship Random.Seed
-  | Missile Body String
-
-
 type alias Camera =
   { perspective : Mat4
   , orientation : Matrix

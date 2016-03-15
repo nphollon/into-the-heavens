@@ -88,7 +88,7 @@ applyEffect effect model =
       { model | score = model.score + 1 }
 
     SpawnShip ->
-      Util.mapRandom (Ship >> Spawn.spawn) model
+      Util.mapRandom (Spawn.spawnShip) model
 
     ChangeTarget ->
       Util.setPlayerTarget model
@@ -96,7 +96,7 @@ applyEffect effect model =
     SpawnMissile sourceName targetName ->
       case Dict.get sourceName model.universe of
         Just source ->
-          Spawn.spawn (Missile source targetName) model
+          Spawn.spawnMissile source targetName model
 
         Nothing ->
           model
