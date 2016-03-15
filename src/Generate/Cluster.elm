@@ -67,17 +67,14 @@ vertex hue position =
 starPoint : Random.Generator Vertex
 starPoint =
   let
-    toVertex density az sinAlt color =
-      Spherical.toRect (density ^ 2) (asin sinAlt) az
-        |> Vector.add (Vector.vector 0 0.5 0.5)
+    toVertex vec color =
+      Vector.add vec (Vector.vector 0 0.5 0.5)
         |> toCelestialSphere
         |> vertex color
   in
-    Random.map4
+    Random.map2
       toVertex
-      (Random.float 0 1)
-      (Random.float 0 (turns 1))
-      (Random.float -1 1)
+      (Spherical.random (\r -> r ^ 2))
       (Random.float 0 100)
 
 
