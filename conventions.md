@@ -1,0 +1,1 @@
+All models face down (towards z = -Inf)
