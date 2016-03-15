@@ -8,6 +8,7 @@ import TransformTest
 import AiTest
 import FormatTest
 import SwitchTest
+import SphericalTest
 
 
 testSuite : Test
@@ -19,6 +20,7 @@ testSuite =
     , AiTest.testSuite
     , FormatTest.testSuite
     , SwitchTest.testSuite
+    , SphericalTest.testSuite
     ]
 
 

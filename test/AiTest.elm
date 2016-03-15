@@ -1,6 +1,7 @@
 module AiTest (testSuite) where
 
 import ElmTest exposing (..)
+import Assertion exposing (..)
 import Dict
 import Types exposing (..)
 import Math.Vector as Vec exposing (Vector)
@@ -169,22 +170,6 @@ hostileSteering =
                 }
               )
       ]
-
-
-assertEqualVector : Vector -> Vector -> Assertion
-assertEqualVector a b =
-  if Vec.distanceSquared a b < 1.0e-10 then
-    assert True
-  else
-    assertEqual a b
-
-
-assertEqualFloat : Float -> Float -> Assertion
-assertEqualFloat a b =
-  if (a - b) ^ 2 < 1.0e-10 then
-    assert True
-  else
-    assertEqual a b
 
 
 assertFaces : Vector -> Vector -> Vector -> Assertion

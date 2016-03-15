@@ -2,9 +2,10 @@ module Generate.Cluster (mesh) where
 
 import Random.PCG as Random
 import Color exposing (Color)
+import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Vector as Vector exposing (Vector)
 import Math.Transform as Transform
-import Math.Vector4 as Vec4 exposing (Vec4)
+import Math.Spherical as Spherical
 import Generate.Json exposing (Vertex)
 import WebGL exposing (Drawable(..))
 
@@ -66,8 +67,8 @@ vertex hue position =
 starPoint : Random.Generator Vertex
 starPoint =
   let
-    toVertex density az cosAlt color =
-      sphericalVector (density ^ 2) (acos cosAlt) az
+    toVertex density az sinAlt color =
+      Spherical.toRect (density ^ 2) (asin sinAlt) az
         |> Vector.add (Vector.vector 0 0.5 0.5)
         |> toCelestialSphere
         |> vertex color
@@ -80,21 +81,6 @@ starPoint =
       (Random.float 0 100)
 
 
-sphericalVector : Float -> Float -> Float -> Vector
-sphericalVector radius latitude longitude =
-  let
-    x =
-      radius * sin latitude * cos longitude
-
-    y =
-      radius * sin latitude * sin longitude
-
-    z =
-      radius * cos latitude
-  in
-    Vector.vector x y z
-
-
 toCelestialSphere : Vector -> Vector
 toCelestialSphere v =
   let
@@ -104,4 +90,4 @@ toCelestialSphere v =
     flatR =
       200000.0 + r
   in
-    sphericalVector flatR (acos (v.z / r)) (atan2 v.y v.x)
+    Spherical.toRect flatR (asin (v.z / r)) (atan2 v.y v.x)
