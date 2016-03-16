@@ -15,7 +15,7 @@ crosshair =
 
 target : Drawable Vertex
 target =
-  LineLoop (ngon 30 1 (Vec4.vec4 0.1 0.1 0.5 1))
+  LineLoop (ngon 30 1 (Vec4.vec4 0.2 0.2 1 1))
 
 
 incoming : Drawable Vertex

@@ -67,7 +67,7 @@ spawnMissile parent targetName model =
     body =
       { position = Transform.fromBodyFrame (Vector.vector 0 -0.5 0.1) parent
       , velocity =
-          Vector.vector 0 0 -20
+          Vector.vector 0 0 -30
             |> Transform.rotate parent.orientation
             |> Vector.add parent.velocity
       , orientation = parent.orientation
