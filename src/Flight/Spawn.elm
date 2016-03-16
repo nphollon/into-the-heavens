@@ -67,14 +67,14 @@ spawnMissile parent targetName model =
     body =
       { position = Transform.fromBodyFrame (Vector.vector 0 -0.5 0.1) parent
       , velocity =
-          Vector.vector 0 0 -40
+          Vector.vector 0 0 -20
             |> Transform.rotate parent.orientation
             |> Vector.add parent.velocity
       , orientation = parent.orientation
       , angVelocity = Vector.vector 0 0 0
       , hull = []
       , health = 1
-      , ai = Seeking 2 targetName
+      , ai = Seeking 4 targetName
       }
 
     graphics =
