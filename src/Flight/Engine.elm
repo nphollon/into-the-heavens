@@ -123,9 +123,9 @@ shouldCrash model =
       if Collision.isOutside point.position hull || pointLabel == hullLabel then
         effects
       else if Util.isMissile point then
-        MissileHit pointLabel hullLabel :: effects
+        MissileHit pointLabel hullLabel :: ChangeTarget :: effects
       else
-        Collide pointLabel hullLabel :: effects
+        Collide pointLabel hullLabel :: ChangeTarget :: effects
   in
     Dict.foldl
       (\label body effects ->
@@ -148,7 +148,7 @@ shieldsUp body =
 shouldSpawn : GameState -> List EngineEffect
 shouldSpawn model =
   if Spawn.visitorCount model == 0 then
-    [ IncreaseScore, SpawnShip, ChangeTarget ]
+    [ IncreaseScore, SpawnShip, SpawnShip, SpawnShip, ChangeTarget ]
   else
     []
 
