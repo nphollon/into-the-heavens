@@ -119,13 +119,25 @@ thrust delta model =
 shouldCrash : GameState -> List EngineEffect
 shouldCrash model =
   let
+    pointEffects pointLabel point hullLabel =
+      if Util.isMissile point then
+        [ MissileHit pointLabel hullLabel ]
+      else
+        [ Collide pointLabel hullLabel ]
+
+    hullEffects hull =
+      if Util.isVisitor hull then
+        [ ChangeTarget, IncreaseScore ]
+      else
+        []
+
     collidedWith pointLabel point hullLabel hull effects =
       if Collision.isOutside point.position hull || pointLabel == hullLabel then
         effects
-      else if Util.isMissile point then
-        MissileHit pointLabel hullLabel :: ChangeTarget :: effects
       else
-        Collide pointLabel hullLabel :: ChangeTarget :: effects
+        pointEffects pointLabel point hullLabel
+          ++ hullEffects hull
+          ++ effects
   in
     Dict.foldl
       (\label body effects ->

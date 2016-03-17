@@ -1,4 +1,4 @@
-module Flight.Util (hasCrashed, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile) where
+module Flight.Util (hasCrashed, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile, isVisitor) where
 
 import List.Extra as ListX
 import Dict exposing (Dict)
