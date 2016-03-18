@@ -78,8 +78,12 @@ type EngineEffect
 
 check : (Dict String Body -> List EngineEffect) -> GameState -> GameState
 check up model =
-  up model.universe
-    |> List.foldl applyEffect model
+  applyEffectsTo model (up model.universe)
+
+
+applyEffectsTo : GameState -> List EngineEffect -> GameState
+applyEffectsTo model effects =
+  List.foldl applyEffect model effects
 
 
 applyEffect : EngineEffect -> GameState -> GameState
@@ -130,15 +134,16 @@ shouldCrash universe =
       if Collision.isOutside point.position hull || pointLabel == hullLabel then
         effects
       else if not (Util.isMissile point) then
-        [ DeductHealth hull.health pointLabel
-        , DeductHealth point.health hullLabel
-        ]
+        DeductHealth hull.health pointLabel
+          :: DeductHealth point.health hullLabel
+          :: effects
       else if Util.isShielded hull then
-        [ Destroy pointLabel ]
+        Destroy pointLabel
+          :: effects
       else
-        [ Destroy pointLabel
-        , DeductHealth point.health hullLabel
-        ]
+        Destroy pointLabel
+          :: DeductHealth point.health hullLabel
+          :: effects
   in
     Dict.foldl
       (\label body effects ->

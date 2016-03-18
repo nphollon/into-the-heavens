@@ -87,6 +87,17 @@ testSuite =
             [ ( "first", shielded 3 outHull )
             , ( "second", object 3 hitHull )
             ]
+    , test "Accumulate effects from multiple collisions"
+        <| assertEqual
+            [ Destroy "missile B"
+            , Destroy "missile A"
+            ]
+        <| shouldCrash
+        <| Dict.fromList
+            [ ( "missile A", missile 1 )
+            , ( "missile B", missile 1 )
+            , ( "visitor", shielded 1 hitHull )
+            ]
     ]
 
 
