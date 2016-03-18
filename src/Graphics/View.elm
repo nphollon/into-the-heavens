@@ -34,7 +34,7 @@ scene width height model =
       toFloat width / toFloat height
 
     player =
-      Util.getPlayer model
+      Util.getPlayer model.universe
 
     camera =
       Camera.at aspect player.body
@@ -140,7 +140,7 @@ dashboard model =
       printInt label (Format.percent value)
 
     player =
-      Util.getPlayer model
+      Util.getPlayer model.universe
 
     shipPosition =
       player.body.position

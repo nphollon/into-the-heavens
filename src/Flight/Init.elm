@@ -20,7 +20,7 @@ game seed library =
       , lag = 0
       , seed = seed
       , nextId = 0
-      , score = -1
+      , score = 0
       , playerActions = []
       , universe =
           Dict.fromList

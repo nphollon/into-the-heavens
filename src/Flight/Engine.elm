@@ -1,4 +1,4 @@
-module Flight.Engine (update) where
+module Flight.Engine (EngineEffect(..), update, shouldCrash) where
 
 import Dict exposing (Dict)
 import Types exposing (..)
@@ -8,7 +8,7 @@ import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
 import Flight.Switch as Switch
 import Flight.Util as Util
-import Maybe.Extra as MaybeX
+import Flight.Init as Init
 
 
 update : Float -> GameState -> GameState
@@ -16,6 +16,7 @@ update dt =
   processActions dt
     >> Ai.aiUpdate dt
     >> check shouldSpawn
+    >> check shouldChangeTarget
     >> check shouldCrash
     >> check shouldFire
     >> thrust dt
@@ -68,30 +69,24 @@ processActions dt model =
 
 
 type EngineEffect
-  = IncreaseScore
-  | SpawnShip
+  = SpawnShip
   | SpawnMissile String String
-  | Collide String String
-  | MissileHit String String
+  | Destroy String
   | ChangeTarget
+  | DeductHealth Float String
 
 
-check : (GameState -> List EngineEffect) -> GameState -> GameState
+check : (Dict String Body -> List EngineEffect) -> GameState -> GameState
 check up model =
-  List.foldl applyEffect model (up model)
+  up model.universe
+    |> List.foldl applyEffect model
 
 
 applyEffect : EngineEffect -> GameState -> GameState
 applyEffect effect model =
   case effect of
-    IncreaseScore ->
-      { model | score = model.score + 1 }
-
     SpawnShip ->
       Util.mapRandom (Spawn.spawnShip) model
-
-    ChangeTarget ->
-      Util.setPlayerTarget model
 
     SpawnMissile sourceName targetName ->
       case Dict.get sourceName model.universe of
@@ -101,14 +96,26 @@ applyEffect effect model =
         Nothing ->
           model
 
-    Collide a b ->
-      hit a (hit b model)
+    ChangeTarget ->
+      Util.setPlayerTarget model
 
-    MissileHit a b ->
-      if MaybeX.mapDefault False shieldsUp (Dict.get b model.universe) then
-        hit a model
-      else
-        hit a (hit b model)
+    Destroy name ->
+      let
+        isVisitor =
+          Dict.get name model.universe
+            |> Maybe.map Util.isVisitor
+            |> Maybe.withDefault False
+      in
+        if isVisitor then
+          { model
+            | universe = Dict.remove name model.universe
+            , score = model.score + 1
+          }
+        else
+          { model | universe = Dict.remove name model.universe }
+
+    DeductHealth n name ->
+      hit n name model
 
 
 thrust : Float -> GameState -> GameState
@@ -116,57 +123,41 @@ thrust delta model =
   { model | universe = Mech.evolve delta model.universe }
 
 
-shouldCrash : GameState -> List EngineEffect
-shouldCrash model =
+shouldCrash : Dict String Body -> List EngineEffect
+shouldCrash universe =
   let
-    pointEffects pointLabel point hullLabel =
-      if Util.isMissile point then
-        [ MissileHit pointLabel hullLabel ]
-      else
-        [ Collide pointLabel hullLabel ]
-
-    hullEffects hull =
-      if Util.isVisitor hull then
-        [ ChangeTarget, IncreaseScore ]
-      else
-        []
-
     collidedWith pointLabel point hullLabel hull effects =
       if Collision.isOutside point.position hull || pointLabel == hullLabel then
         effects
+      else if not (Util.isMissile point) then
+        [ DeductHealth hull.health pointLabel
+        , DeductHealth point.health hullLabel
+        ]
+      else if Util.isShielded hull then
+        [ Destroy pointLabel ]
       else
-        pointEffects pointLabel point hullLabel
-          ++ hullEffects hull
-          ++ effects
+        [ Destroy pointLabel
+        , DeductHealth point.health hullLabel
+        ]
   in
     Dict.foldl
       (\label body effects ->
-        Dict.foldl (collidedWith label body) effects model.universe
+        Dict.foldl (collidedWith label body) effects universe
       )
       []
-      model.universe
+      universe
 
 
-shieldsUp : Body -> Bool
-shieldsUp body =
-  case body.ai of
-    PlayerControlled cockpit ->
-      cockpit.shields.on
-
-    _ ->
-      False
-
-
-shouldSpawn : GameState -> List EngineEffect
+shouldSpawn : Dict String Body -> List EngineEffect
 shouldSpawn model =
   if Spawn.visitorCount model == 0 then
-    [ IncreaseScore, SpawnShip, SpawnShip, SpawnShip, ChangeTarget ]
+    [ SpawnShip, SpawnShip, SpawnShip ]
   else
     []
 
 
-shouldFire : GameState -> List EngineEffect
-shouldFire model =
+shouldFire : Dict String Body -> List EngineEffect
+shouldFire universe =
   let
     checkTrigger name cockpit effects =
       if cockpit.trigger.value == 1 then
@@ -185,19 +176,37 @@ shouldFire model =
         _ ->
           effects
   in
-    Dict.foldl checkCockpit [] model.universe
+    Dict.foldl checkCockpit [] universe
 
 
-hit : String -> GameState -> GameState
-hit label model =
+shouldChangeTarget : Dict String Body -> List EngineEffect
+shouldChangeTarget universe =
   let
-    deductHealth body =
-      if body.health > 1 then
-        Just { body | health = body.health - 1 }
-      else
-        Nothing
+    currentTarget =
+      Util.getPlayer universe |> .cockpit |> .target
   in
-    { model
-      | universe =
-          Dict.update label (flip Maybe.andThen deductHealth) model.universe
-    }
+    case Dict.get currentTarget universe of
+      Nothing ->
+        [ ChangeTarget ]
+
+      _ ->
+        []
+
+
+hit : Float -> String -> GameState -> GameState
+hit damage label model =
+  let
+    object =
+      Dict.get label model.universe
+        |> Maybe.withDefault Init.defaultBody
+  in
+    if object.health > damage then
+      { model
+        | universe =
+            Dict.insert
+              label
+              { object | health = object.health - damage }
+              model.universe
+      }
+    else
+      applyEffect (Destroy label) model

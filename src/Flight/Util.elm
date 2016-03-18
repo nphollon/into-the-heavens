@@ -1,4 +1,4 @@
-module Flight.Util (hasCrashed, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile, isVisitor) where
+module Flight.Util (hasCrashed, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile, isVisitor, isHealthy, isShielded) where
 
 import List.Extra as ListX
 import Dict exposing (Dict)
@@ -24,11 +24,11 @@ faces targetName viewer universe =
       |> MaybeX.mapDefault False inRange
 
 
-getPlayer : GameState -> { body : Body, cockpit : Cockpit }
-getPlayer model =
+getPlayer : Dict String Body -> { body : Body, cockpit : Cockpit }
+getPlayer universe =
   let
     body =
-      Dict.get Init.playerName model.universe
+      Dict.get Init.playerName universe
         |> Maybe.withDefault Init.defaultBody
 
     cockpit =
@@ -100,3 +100,18 @@ isVisitor body =
 isMissile : Body -> Bool
 isMissile body =
   List.isEmpty body.hull
+
+
+isHealthy : Body -> Bool
+isHealthy body =
+  body.health > 1
+
+
+isShielded : Body -> Bool
+isShielded body =
+  case body.ai of
+    PlayerControlled cockpit ->
+      cockpit.shields.on
+
+    _ ->
+      False

@@ -1,7 +1,7 @@
 module Flight.Spawn (spawnShip, visitorBodyAt, spawnMissile, visitorCount) where
 
 import Color
-import Dict
+import Dict exposing (Dict)
 import String
 import Random.PCG as Random
 import Types exposing (..)
@@ -96,8 +96,8 @@ spawn name body graphics model =
   }
 
 
-visitorCount : GameState -> Int
-visitorCount model =
-  Dict.keys model.universe
+visitorCount : Dict String Body -> Int
+visitorCount universe =
+  Dict.keys universe
     |> List.filter (String.startsWith "visitor")
     |> List.length
