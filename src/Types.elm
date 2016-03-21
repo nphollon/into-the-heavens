@@ -88,6 +88,7 @@ type Ai
       , trigger : RepeatSwitch
       }
   | SelfDestruct
+  | Waiting Float
 
 
 type alias Cockpit =
@@ -136,6 +137,10 @@ type GraphicsObject
       , meshName : String
       , shader : ShaderType
       }
+  | Explosion
+      { bodyName : String
+      , meshName : String
+      }
   | Target String
   | Highlight
       { filter : Body -> Bool
@@ -146,7 +151,7 @@ type GraphicsObject
 type ShaderType
   = Planet
   | Matte Color
-  | Decoration
+  | NoLighting
 
 
 type alias Camera =

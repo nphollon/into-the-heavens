@@ -75,7 +75,7 @@ entity objectType placement camera world =
         matteUniform color
           |> WebGL.render matteVertex matteFragment world
 
-      Decoration ->
+      NoLighting ->
         WebGL.render decorVertex decorFragment world uniform
 
 
@@ -110,6 +110,7 @@ planetVertex =
     vec3 placedNormal = vec3(vec4(normal, 0) * inversePlacement);
 
     cosAngleIncidence = dot(placedNormal/length(placedNormal), dirToLight);
+
     fragColor = vertColor;
   }
   |]

@@ -1,4 +1,4 @@
-module Flight.Spawn (spawnShip, visitorBodyAt, spawnMissile, visitorCount) where
+module Flight.Spawn (spawnShip, visitorBodyAt, spawnMissile, spawnExplosion, visitorCount) where
 
 import Color
 import Dict exposing (Dict)
@@ -81,7 +81,32 @@ spawnMissile parent targetName model =
       Object
         { bodyName = name
         , meshName = "Missile"
-        , shader = Decoration
+        , shader = NoLighting
+        }
+  in
+    spawn name body graphics model
+
+
+spawnExplosion : Body -> GameState -> GameState
+spawnExplosion parent model =
+  let
+    name =
+      "explosion" ++ toString model.nextId
+
+    body =
+      { position = parent.position
+      , velocity = parent.velocity
+      , orientation = Vector.vector 0 0 0
+      , angVelocity = Vector.vector 0 0 0
+      , hull = []
+      , health = 1
+      , ai = Waiting 3
+      }
+
+    graphics =
+      Explosion
+        { bodyName = name
+        , meshName = "Explosion"
         }
   in
     spawn name body graphics model

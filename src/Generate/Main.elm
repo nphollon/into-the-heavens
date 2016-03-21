@@ -8,6 +8,7 @@ import Generate.Sphere as Sphere
 import Generate.Cluster as Cluster
 import Generate.Ship as Ship
 import Generate.Missile as Missile
+import Generate.Explosion as Explosion
 
 
 writeModels : IO ()
@@ -19,6 +20,7 @@ writeModels =
     , ( Cluster.mesh, "background.json" )
     , ( Ship.mesh, "ship.json" )
     , ( Missile.mesh, "missile.json" )
+    , ( Explosion.mesh, "explosion.json" )
     ]
 
 

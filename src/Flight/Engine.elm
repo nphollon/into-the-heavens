@@ -104,19 +104,20 @@ applyEffect effect model =
       Util.setPlayerTarget model
 
     Destroy name ->
-      let
-        isVisitor =
-          Dict.get name model.universe
-            |> Maybe.map Util.isVisitor
-            |> Maybe.withDefault False
-      in
-        if isVisitor then
-          { model
-            | universe = Dict.remove name model.universe
-            , score = model.score + 1
-          }
-        else
-          { model | universe = Dict.remove name model.universe }
+      case Dict.get name model.universe of
+        Just visitor ->
+          if Util.isVisitor visitor then
+            Spawn.spawnExplosion
+              visitor
+              { model
+                | universe = Dict.remove name model.universe
+                , score = model.score + 1
+              }
+          else
+            { model | universe = Dict.remove name model.universe }
+
+        Nothing ->
+          model
 
     DeductHealth n name ->
       hit n name model

@@ -15,6 +15,7 @@ import Graphics.Foreground as Foreground
 import Graphics.Static as Static
 import Graphics.Camera as Camera
 import Graphics.Format as Format
+import Graphics.Explosion as Explosion
 import Frame
 
 
@@ -62,7 +63,7 @@ scene width height model =
 
         Target meshName ->
           MaybeX.map2
-            (\b -> Foreground.entity Decoration (decorPlacement b camera) camera)
+            (\b -> Foreground.entity NoLighting (decorPlacement b camera) camera)
             (Dict.get player.cockpit.target model.universe)
             (Dict.get meshName model.library)
             |> MaybeX.maybeToList
@@ -74,7 +75,7 @@ scene width height model =
                 |> List.filter filter
                 |> List.map
                     (\body ->
-                      Foreground.entity Decoration (decorPlacement body camera) camera m
+                      Foreground.entity NoLighting (decorPlacement body camera) camera m
                     )
             )
             (Dict.get meshName model.library)
@@ -88,6 +89,13 @@ scene width height model =
               |> MaybeX.maybeToList
           else
             []
+
+        Explosion { bodyName, meshName } ->
+          MaybeX.map2
+            (\b -> Explosion.entity (percentCountdown b) (objectPlacement b) camera)
+            (Dict.get bodyName model.universe)
+            (Dict.get meshName model.library)
+            |> MaybeX.maybeToList
 
     webgl =
       WebGL.webglWithConfig
@@ -107,6 +115,16 @@ objectPlacement object =
     1
     object.position
     object.orientation
+
+
+percentCountdown : Body -> Float
+percentCountdown object =
+  case object.ai of
+    Waiting x ->
+      x / 3.0
+
+    _ ->
+      0.5
 
 
 decorPlacement : Body -> Camera -> Matrix

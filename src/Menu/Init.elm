@@ -26,6 +26,7 @@ menu seed =
         , ( "Background", pathTo "background.json" )
         , ( "Ship", pathTo "ship.json" )
         , ( "Missile", pathTo "missile.json" )
+        , ( "Explosion", pathTo "explosion.json" )
         ]
 
     localResources =

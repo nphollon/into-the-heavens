@@ -37,6 +37,7 @@ vertexShader =
 
   void main() {
     gl_Position = perspective * vec4(vertPosition, 1);
+
     fragColor = vertColor;
   }
   |]

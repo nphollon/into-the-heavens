@@ -46,7 +46,7 @@ vertexShader =
     gl_Position =
       perspective * (cameraOrientation * worldPosition - projectionOffset);
 
-    gl_PointSize = 1.5;
+    gl_PointSize = 1.1;
 
     fragColor = vertColor;
   }

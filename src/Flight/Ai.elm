@@ -53,6 +53,12 @@ steerAi delta object universe =
     SelfDestruct ->
       object.ai
 
+    Waiting lifespan ->
+      if lifespan > 0 then
+        Waiting (lifespan - delta)
+      else
+        SelfDestruct
+
 
 acceleration : Dict String Body -> Body -> Acceleration
 acceleration universe object =
@@ -80,6 +86,9 @@ acceleration universe object =
           noAcceleration
 
     SelfDestruct ->
+      noAcceleration
+
+    Waiting _ ->
       noAcceleration
 
 
