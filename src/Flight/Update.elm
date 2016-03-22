@@ -87,12 +87,11 @@ controlUpdate keysDown model =
         , ( 'A', LeftTurn )
         , ( 'S', DownTurn )
         , ( 'W', UpTurn )
-        , ( 'Q', CounterclockwiseRoll )
-        , ( 'E', ClockwiseRoll )
         , ( 'I', Thrust )
-        , ( 'M', Brake )
-        , ( 'O', ShieldsUp )
+        , ( 'K', Brake )
+        , ( 'H', ShieldsUp )
         , ( 'J', Firing )
+        , ( 'L', TargetFacing )
         ]
   in
     { model

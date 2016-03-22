@@ -1,6 +1,5 @@
 module Flight.Util (hasCrashed, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile, isVisitor, isHealthy, isShielded) where
 
-import List.Extra as ListX
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
 import Random.PCG as Random
@@ -67,12 +66,26 @@ extractCockpit ai =
 setPlayerTarget : GameState -> GameState
 setPlayerTarget model =
   let
+    player =
+      .body (getPlayer model.universe)
+
+    closestVisitor name body ( winningName, winningDistance ) =
+      if isVisitor body then
+        let
+          distance =
+            Transform.degreesFromForward body.position player
+        in
+          if distance < winningDistance then
+            ( name, distance )
+          else
+            ( winningName, winningDistance )
+      else
+        ( winningName, winningDistance )
+
     setTarget cockpit =
       { cockpit
         | target =
-            Dict.toList model.universe
-              |> ListX.find (snd >> isVisitor)
-              |> MaybeX.mapDefault "" fst
+            fst <| Dict.foldl closestVisitor ( "", 1 / 0 ) model.universe
       }
   in
     updatePlayerCockpit setTarget model

@@ -55,6 +55,7 @@ type PlayerAction
   | Brake
   | Firing
   | ShieldsUp
+  | TargetFacing
 
 
 type alias Body =

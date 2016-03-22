@@ -65,7 +65,11 @@ processActions dt model =
         , trigger = trigger cockpit
       }
   in
-    Util.updatePlayerCockpit newCockpit model
+    if toggle TargetFacing then
+      Util.updatePlayerCockpit newCockpit model
+        |> Util.setPlayerTarget
+    else
+      Util.updatePlayerCockpit newCockpit model
 
 
 type EngineEffect
