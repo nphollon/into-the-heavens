@@ -32,9 +32,11 @@ type alias GameState =
   { hasFocus : Bool
   , nextId : Int
   , score : Int
+  , log : List ( Float, String )
   , seed : Random.Seed
   , clockTime : Maybe Time
   , lag : Time
+  , gameTime : Float
   , playerActions : List PlayerAction
   , universe : Dict String Body
   , graphics : List GraphicsObject

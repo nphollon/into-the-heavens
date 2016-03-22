@@ -49,11 +49,16 @@ engineUpdate : Time -> GameState -> GameState
 engineUpdate clockTime model =
   case model.clockTime of
     Just prevClockTime ->
-      reduceLag
-        { model
-          | clockTime = Just clockTime
-          , lag = model.lag + clockTime - prevClockTime
-        }
+      let
+        timeChange =
+          Time.inSeconds (clockTime - prevClockTime)
+      in
+        reduceLag
+          { model
+            | clockTime = Just clockTime
+            , lag = model.lag + timeChange
+            , gameTime = model.gameTime + timeChange
+          }
 
     Nothing ->
       { model | clockTime = Just clockTime }
@@ -63,13 +68,13 @@ reduceLag : GameState -> GameState
 reduceLag model =
   let
     updateDelta =
-      Time.second / 60
+      1.0 / 60
   in
     if model.lag < updateDelta then
       model
     else
       { model | lag = model.lag - updateDelta }
-        |> Engine.update (Time.inSeconds updateDelta)
+        |> Engine.update updateDelta
         |> reduceLag
 
 

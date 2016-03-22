@@ -18,9 +18,11 @@ game seed library =
       , hasFocus = True
       , clockTime = Nothing
       , lag = 0
+      , gameTime = 0
       , seed = seed
       , nextId = 0
       , score = 0
+      , log = [ ( 0, "Be careful up there." ) ]
       , playerActions = []
       , universe =
           Dict.fromList

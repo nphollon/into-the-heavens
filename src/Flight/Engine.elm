@@ -74,6 +74,7 @@ type EngineEffect
   | Destroy String
   | ChangeTarget
   | DeductHealth Float String
+  | Notify String
 
 
 check : (Dict String Body -> List EngineEffect) -> GameState -> GameState
@@ -122,6 +123,11 @@ applyEffect effect model =
     DeductHealth n name ->
       hit n name model
 
+    Notify message ->
+      { model
+        | log = ( model.gameTime, message ) :: model.log
+      }
+
 
 thrust : Float -> GameState -> GameState
 thrust delta model =
@@ -157,7 +163,7 @@ shouldCrash universe =
 shouldSpawn : Dict String Body -> List EngineEffect
 shouldSpawn model =
   if Spawn.visitorCount model == 0 then
-    [ SpawnShip, SpawnShip, SpawnShip ]
+    [ SpawnShip, SpawnShip, SpawnShip, Notify "You have new visitors." ]
   else
     []
 

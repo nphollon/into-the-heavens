@@ -51,6 +51,12 @@ body {
     height: 600px;
     display: flex;
     justify-content: center;
+    position: relative;
+}
+
+.log {
+    position: absolute;
+    left : 0px;
 }
 
 .bottom {

@@ -2,9 +2,10 @@ module Graphics.View (view) where
 
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
+import List.Extra as ListX
 import Html exposing (..)
 import Html.Attributes exposing (class)
-import WebGL exposing (Drawable)
+import WebGL exposing (Drawable, Renderable)
 import Types exposing (..)
 import Math.Vector as Vector
 import Math.Matrix as Matrix exposing (Matrix)
@@ -22,7 +23,9 @@ import Frame
 view : Signal.Address Update -> GameState -> Html
 view address model =
   Frame.view
-    [ scene 900 600 model ]
+    [ scene 900 600 model
+    , log model
+    ]
     [ dashboard model
     , instructions
     ]
@@ -40,32 +43,34 @@ scene width height model =
     camera =
       Camera.at aspect player.body
 
+    body name =
+      Dict.get name model.universe
+
+    mesh name =
+      Dict.get name model.library
+
     draw object =
       case object of
         Background meshName ->
-          Maybe.map
-            (Background.entity camera)
-            (Dict.get meshName model.library)
-            |> MaybeX.maybeToList
+          drawBackground camera (mesh meshName)
 
         Object { bodyName, meshName, shader } ->
-          MaybeX.map2
-            (\b -> Foreground.entity shader (objectPlacement b) camera)
-            (Dict.get bodyName model.universe)
-            (Dict.get meshName model.library)
-            |> MaybeX.maybeToList
+          drawObject shader camera (body bodyName) (mesh meshName)
+
+        Explosion { bodyName, meshName } ->
+          drawExplosion camera (body bodyName) (mesh meshName)
 
         Reticule meshName ->
           Maybe.map
             (Static.entity (Camera.ortho aspect))
-            (Dict.get meshName model.library)
+            (mesh meshName)
             |> MaybeX.maybeToList
 
         Target meshName ->
           MaybeX.map2
             (\b -> Foreground.entity NoLighting (decorPlacement b camera) camera)
-            (Dict.get player.cockpit.target model.universe)
-            (Dict.get meshName model.library)
+            (body player.cockpit.target)
+            (mesh meshName)
             |> MaybeX.maybeToList
 
         Highlight { filter, meshName } ->
@@ -74,28 +79,21 @@ scene width height model =
               Dict.values model.universe
                 |> List.filter filter
                 |> List.map
-                    (\body ->
-                      Foreground.entity NoLighting (decorPlacement body camera) camera m
+                    (\b ->
+                      Foreground.entity NoLighting (decorPlacement b camera) camera m
                     )
             )
-            (Dict.get meshName model.library)
+            (mesh meshName)
             |> Maybe.withDefault []
 
         Shield meshName ->
           if player.cockpit.shields.on then
             Maybe.map
               (Static.entity (Camera.ortho aspect))
-              (Dict.get meshName model.library)
+              (mesh meshName)
               |> MaybeX.maybeToList
           else
             []
-
-        Explosion { bodyName, meshName } ->
-          MaybeX.map2
-            (\b -> Explosion.entity (percentCountdown b) (objectPlacement b) camera)
-            (Dict.get bodyName model.universe)
-            (Dict.get meshName model.library)
-            |> MaybeX.maybeToList
 
     webgl =
       WebGL.webglWithConfig
@@ -107,6 +105,32 @@ scene width height model =
     List.concatMap draw model.graphics
       |> webgl
       |> Html.fromElement
+
+
+drawBackground : Camera -> Maybe (Drawable Vertex) -> List Renderable
+drawBackground camera mesh =
+  Maybe.map (Background.entity camera) mesh
+    |> MaybeX.maybeToList
+
+
+drawObject : ShaderType -> Camera -> Maybe Body -> Maybe (Drawable Vertex) -> List Renderable
+drawObject shader camera body mesh =
+  MaybeX.map2
+    (\b m -> Foreground.entity shader (objectPlacement b) camera m)
+    body
+    mesh
+    |> MaybeX.maybeToList
+
+
+drawExplosion : Camera -> Maybe Body -> Maybe (Drawable Vertex) -> List Renderable
+drawExplosion camera body mesh =
+  MaybeX.map2
+    (\b m ->
+      Explosion.entity (percentCountdown b) (objectPlacement b) camera m
+    )
+    body
+    mesh
+    |> MaybeX.maybeToList
 
 
 objectPlacement : Body -> Matrix
@@ -139,6 +163,22 @@ decorPlacement object camera =
   in
     Transform.rotationFor (Vector.vector 0 0 1) direction
       |> Transform.placement 1.0e-2 position
+
+
+log : GameState -> Html
+log model =
+  let
+    lineHtml ( timestamp, message ) =
+      p [] [ text message ]
+
+    cutoffTime =
+      model.gameTime - 3
+  in
+    model.log
+      |> ListX.takeWhile (\( t, _ ) -> t > cutoffTime)
+      |> List.reverse
+      |> List.map lineHtml
+      |> div [ class "log" ]
 
 
 dashboard : GameState -> Html
