@@ -5,7 +5,7 @@ import Assertion exposing (..)
 import Dict
 import Types exposing (..)
 import Math.Vector as Vec exposing (Vector)
-import Flight.Init exposing (defaultBody)
+import Flight.Spawn exposing (defaultBody)
 import Flight.Ai as Ai
 import Flight.Util as Util
 

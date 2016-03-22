@@ -4,7 +4,7 @@ import ElmTest exposing (..)
 import Math.Vector as Vec exposing (Vector)
 import Math.Collision as Collision exposing (isInside)
 import Types exposing (..)
-import Flight.Init exposing (defaultBody)
+import Flight.Spawn exposing (defaultBody)
 
 
 testSuite : Test

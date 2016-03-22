@@ -1,4 +1,4 @@
-module Flight.Init (game, defaultBody, inaction, defaultCockpit, playerName) where
+module Flight.Init (game) where
 
 import Dict
 import Random.PCG as Random exposing (Seed)
@@ -8,6 +8,8 @@ import Generate.Ship as Ship
 import Generate.Sphere as Sphere
 import Math.Collision as Collision
 import Math.Vector as Vector
+import Flight.Util as Util
+import Flight.Spawn as Spawn exposing (defaultBody)
 
 
 game : Seed -> Library -> ( Mode, Effects Update )
@@ -26,11 +28,11 @@ game seed library =
       , playerActions = []
       , universe =
           Dict.fromList
-            [ ( playerName
+            [ ( Spawn.playerName
               , { defaultBody
                   | hull = Collision.hull .position Ship.triangles
                   , health = 1
-                  , ai = PlayerControlled defaultCockpit
+                  , ai = PlayerControlled Spawn.defaultCockpit
                 }
               )
             , ( "planet"
@@ -53,52 +55,14 @@ game seed library =
           , Target "TargetDecor"
           , Highlight
               { meshName = "IncomingDecor"
-              , filter =
-                  \body ->
-                    case body.ai of
-                      Seeking _ x ->
-                        x == playerName
-
-                      _ ->
-                        False
+              , filter = Util.isSeekingPlayer
+              }
+          , Highlight
+              { meshName = "VisitorDecor"
+              , filter = Util.isVisitor
               }
           , Shield "Shield"
           ]
       }
     )
     (Effects.tick Tick)
-
-
-inaction : Action
-inaction =
-  { thrust = 0
-  , pitch = 0
-  , yaw = 0
-  , roll = 0
-  }
-
-
-defaultCockpit : Cockpit
-defaultCockpit =
-  { action = inaction
-  , target = ""
-  , trigger = { value = 0, decay = 0.3 }
-  , shields = { value = 1, decay = 5, recover = 10, on = False }
-  }
-
-
-defaultBody : Body
-defaultBody =
-  { position = Vector.vector 0 0 0
-  , velocity = Vector.vector 0 0 0
-  , orientation = Vector.vector 0 0 0
-  , angVelocity = Vector.vector 0 0 0
-  , hull = []
-  , health = 0
-  , ai = Dumb
-  }
-
-
-playerName : String
-playerName =
-  "player"

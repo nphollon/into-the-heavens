@@ -1,4 +1,4 @@
-module Generate.Guides (crosshair, target, incoming, shield) where
+module Generate.Guides (crosshair, target, targetable, incoming, shield) where
 
 import WebGL exposing (Drawable(..))
 import Types exposing (Vertex)
@@ -18,6 +18,11 @@ target =
   LineLoop (ngon 30 1 (Vec4.vec4 0.2 0.2 1 1))
 
 
+targetable : Drawable Vertex
+targetable =
+  Lines (dashedNgon 15 1 (Vec4.vec4 0.2 0.2 1 1))
+
+
 incoming : Drawable Vertex
 incoming =
   LineLoop (ngon 30 0.4 (Vec4.vec4 1 0 0 1))
@@ -30,6 +35,18 @@ ngon sides radius color =
     |> List.map (toVertex color radius)
 
 
+dashedNgon : Int -> Float -> Vec4 -> List ( Vertex, Vertex )
+dashedNgon sides radius color =
+  let
+    vertex i =
+      toVertex color radius (turns (i / toFloat sides))
+  in
+    [0..sides]
+      |> List.map toFloat
+      |> List.map
+          (\i -> ( vertex i, vertex (i + 0.4) ))
+
+
 shield : Drawable Vertex
 shield =
   let
@@ -39,13 +56,13 @@ shield =
     rim =
       ( 35, Vec4.vec4 0 0 0.1 1 )
   in
-    dashes 25 tip rim
-      |> (++) (dashes 25 rim tip)
+    skewStroke 25 tip rim
+      |> (++) (skewStroke 25 rim tip)
       |> Lines
 
 
-dashes : Int -> ( Float, Vec4 ) -> ( Float, Vec4 ) -> List ( Vertex, Vertex )
-dashes strokes ( innerRadius, innerColor ) ( outerRadius, outerColor ) =
+skewStroke : Int -> ( Float, Vec4 ) -> ( Float, Vec4 ) -> List ( Vertex, Vertex )
+skewStroke strokes ( innerRadius, innerColor ) ( outerRadius, outerColor ) =
   let
     angleOf i =
       turns (toFloat i / toFloat strokes)

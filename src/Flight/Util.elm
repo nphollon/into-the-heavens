@@ -1,16 +1,16 @@
-module Flight.Util (hasCrashed, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile, isVisitor, isHealthy, isShielded) where
+module Flight.Util (hasCrashed, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer) where
 
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
 import Random.PCG as Random
 import Types exposing (..)
 import Math.Transform as Transform
-import Flight.Init as Init
+import Flight.Spawn as Spawn
 
 
 hasCrashed : GameState -> Bool
 hasCrashed model =
-  not (Dict.member Init.playerName model.universe)
+  not (Dict.member Spawn.playerName model.universe)
 
 
 faces : String -> Body -> Dict String Body -> Bool
@@ -27,12 +27,12 @@ getPlayer : Dict String Body -> { body : Body, cockpit : Cockpit }
 getPlayer universe =
   let
     body =
-      Dict.get Init.playerName universe
-        |> Maybe.withDefault Init.defaultBody
+      Dict.get Spawn.playerName universe
+        |> Maybe.withDefault Spawn.defaultBody
 
     cockpit =
       extractCockpit body.ai
-        |> Maybe.withDefault Init.defaultCockpit
+        |> Maybe.withDefault Spawn.defaultCockpit
   in
     { body = body
     , cockpit = cockpit
@@ -49,7 +49,7 @@ updatePlayerCockpit aiUpdate model =
   in
     { model
       | universe =
-          Dict.update Init.playerName (flip Maybe.andThen bodyUpdate) model.universe
+          Dict.update Spawn.playerName (flip Maybe.andThen bodyUpdate) model.universe
     }
 
 
@@ -125,6 +125,23 @@ isShielded body =
   case body.ai of
     PlayerControlled cockpit ->
       cockpit.shields.on
+
+    _ ->
+      False
+
+
+visitorCount : Dict String Body -> Int
+visitorCount universe =
+  Dict.values universe
+    |> List.filter isVisitor
+    |> List.length
+
+
+isSeekingPlayer : Body -> Bool
+isSeekingPlayer body =
+  case body.ai of
+    Seeking _ x ->
+      x == Spawn.playerName
 
     _ ->
       False

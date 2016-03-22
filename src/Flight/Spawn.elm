@@ -1,8 +1,7 @@
-module Flight.Spawn (spawnShip, visitorBodyAt, spawnMissile, spawnExplosion, visitorCount) where
+module Flight.Spawn (spawnShip, visitorBodyAt, spawnMissile, spawnExplosion, defaultCockpit, defaultBody, playerName, inaction) where
 
 import Color
 import Dict exposing (Dict)
-import String
 import Random.PCG as Random
 import Types exposing (..)
 import Math.Collision as Collision
@@ -10,7 +9,6 @@ import Math.Transform as Transform
 import Math.Vector as Vector exposing (Vector)
 import Math.Spherical as Spherical
 import Generate.Ship as Ship
-import Flight.Init as Init
 
 
 spawnShip : Random.Seed -> GameState -> GameState
@@ -50,7 +48,7 @@ visitorBodyAt positionGenerator =
       , health = 1
       , ai =
           Hostile
-            { target = Init.playerName
+            { target = playerName
             , trigger = { value = 0, decay = 4 }
             }
       }
@@ -121,8 +119,36 @@ spawn name body graphics model =
   }
 
 
-visitorCount : Dict String Body -> Int
-visitorCount universe =
-  Dict.keys universe
-    |> List.filter (String.startsWith "visitor")
-    |> List.length
+defaultCockpit : Cockpit
+defaultCockpit =
+  { action = inaction
+  , target = ""
+  , trigger = { value = 0, decay = 0.3 }
+  , shields = { value = 1, decay = 5, recover = 10, on = False }
+  }
+
+
+defaultBody : Body
+defaultBody =
+  { position = Vector.vector 0 0 0
+  , velocity = Vector.vector 0 0 0
+  , orientation = Vector.vector 0 0 0
+  , angVelocity = Vector.vector 0 0 0
+  , hull = []
+  , health = 0
+  , ai = Dumb
+  }
+
+
+inaction : Action
+inaction =
+  { thrust = 0
+  , pitch = 0
+  , yaw = 0
+  , roll = 0
+  }
+
+
+playerName : String
+playerName =
+  "player"

@@ -8,7 +8,6 @@ import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
 import Flight.Switch as Switch
 import Flight.Util as Util
-import Flight.Init as Init
 
 
 update : Float -> GameState -> GameState
@@ -166,7 +165,7 @@ shouldCrash universe =
 
 shouldSpawn : Dict String Body -> List EngineEffect
 shouldSpawn model =
-  if Spawn.visitorCount model == 0 then
+  if Util.visitorCount model == 0 then
     [ SpawnShip, SpawnShip, SpawnShip, Notify "You have new visitors." ]
   else
     []
@@ -214,7 +213,7 @@ hit damage label model =
   let
     object =
       Dict.get label model.universe
-        |> Maybe.withDefault Init.defaultBody
+        |> Maybe.withDefault Spawn.defaultBody
   in
     if object.health > damage then
       { model

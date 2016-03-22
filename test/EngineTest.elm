@@ -5,7 +5,7 @@ import Dict exposing (Dict)
 import Types exposing (..)
 import Math.Vector as Vec
 import Math.Collision as Collision
-import Flight.Init exposing (defaultBody, defaultCockpit)
+import Flight.Spawn exposing (defaultBody, defaultCockpit)
 import Flight.Engine exposing (..)
 
 
