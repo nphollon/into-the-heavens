@@ -121,13 +121,6 @@ type alias Action =
   }
 
 
-type Trigger
-  = Ready
-  | Fire
-  | FireAndReset
-  | Reset
-
-
 type GraphicsObject
   = Background String
   | Reticule String
