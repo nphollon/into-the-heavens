@@ -1,4 +1,4 @@
-module Generate.Guides (crosshair, target, targetable, incoming, shield) where
+module Generate.Guides (crosshair, target, targetable, incoming, shield, bar) where
 
 import WebGL exposing (Drawable(..))
 import Types exposing (Vertex)
@@ -59,6 +59,57 @@ shield =
     skewStroke 25 tip rim
       |> (++) (skewStroke 25 rim tip)
       |> Lines
+
+
+bar : Drawable Vertex
+bar =
+  let
+    full =
+      Vec4.vec4 1 1 1 1
+
+    empty =
+      Vec4.vec4 0 0 0 1
+
+    topLeftX =
+      28
+
+    topLeftY =
+      -5
+
+    width =
+      1
+
+    height =
+      15
+
+    upperRight =
+      { vertPosition = Vec3.vec3 (topLeftX + width) topLeftY 0
+      , vertColor = full
+      , normal = Vec3.vec3 0 0 0
+      }
+
+    upperLeft =
+      { vertPosition = Vec3.vec3 topLeftX topLeftY 0
+      , vertColor = full
+      , normal = Vec3.vec3 0 0 0
+      }
+
+    lowerRight =
+      { vertPosition = Vec3.vec3 (topLeftX + width) (topLeftY - height) 0
+      , vertColor = empty
+      , normal = Vec3.vec3 0 0 0
+      }
+
+    lowerLeft =
+      { vertPosition = Vec3.vec3 topLeftX (topLeftY - height) 0
+      , vertColor = empty
+      , normal = Vec3.vec3 0 0 0
+      }
+  in
+    Triangle
+      [ ( upperRight, upperLeft, lowerRight )
+      , ( lowerRight, upperLeft, lowerLeft )
+      ]
 
 
 skewStroke : Int -> ( Float, Vec4 ) -> ( Float, Vec4 ) -> List ( Vertex, Vertex )

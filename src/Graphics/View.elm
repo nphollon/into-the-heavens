@@ -13,7 +13,7 @@ import Math.Transform as Transform
 import Flight.Util as Util
 import Graphics.Background as Background
 import Graphics.Foreground as Foreground
-import Graphics.Static as Static
+import Graphics.Flat as Flat
 import Graphics.Camera as Camera
 import Graphics.Format as Format
 import Graphics.Explosion as Explosion
@@ -62,7 +62,7 @@ scene width height model =
 
         Reticule meshName ->
           Maybe.map
-            (Static.entity (Camera.ortho aspect))
+            (Flat.entity (Camera.ortho aspect))
             (mesh meshName)
             |> MaybeX.maybeToList
 
@@ -86,14 +86,12 @@ scene width height model =
             (mesh meshName)
             |> Maybe.withDefault []
 
-        Shield meshName ->
-          if player.cockpit.shields.on then
-            Maybe.map
-              (Static.entity (Camera.ortho aspect))
-              (mesh meshName)
-              |> MaybeX.maybeToList
-          else
-            []
+        Shield shieldMesh energyBarMesh ->
+          drawShieldSystem
+            player.cockpit.shields
+            (Camera.ortho aspect)
+            (mesh shieldMesh)
+            (mesh energyBarMesh)
 
     webgl =
       WebGL.webglWithConfig
@@ -105,6 +103,21 @@ scene width height model =
     List.concatMap draw model.graphics
       |> webgl
       |> Html.fromElement
+
+
+drawShieldSystem : DrainSwitch -> Camera -> Maybe (Drawable Vertex) -> Maybe (Drawable Vertex) -> List Renderable
+drawShieldSystem switch camera shieldMesh barMesh =
+  case ( switch.on, shieldMesh, barMesh ) of
+    ( True, Just shield, Just bar ) ->
+      [ Flat.entity camera shield
+      , Flat.bar switch.value camera bar
+      ]
+
+    ( _, _, Just bar ) ->
+      [ Flat.bar switch.value camera bar ]
+
+    _ ->
+      []
 
 
 drawBackground : Camera -> Maybe (Drawable Vertex) -> List Renderable
@@ -194,9 +207,6 @@ dashboard model =
         |> Format.tag label
         |> text
 
-    printPercent label value =
-      printInt label (Format.percent value)
-
     player =
       Util.getPlayer model.universe
 
@@ -206,7 +216,6 @@ dashboard model =
     div
       [ class "dashboard" ]
       [ p [] [ printInt "Visitors Destroyed" model.score ]
-      , p [] [ printPercent "Shield Power" player.cockpit.shields.value ]
       , p [] [ printNumber "X" shipPosition.x ]
       , p [] [ printNumber "Y" shipPosition.y ]
       , p [] [ printNumber "Z" shipPosition.z ]

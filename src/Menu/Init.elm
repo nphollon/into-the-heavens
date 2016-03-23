@@ -36,6 +36,7 @@ menu seed =
         , ( "IncomingDecor", Guides.incoming )
         , ( "VisitorDecor", Guides.targetable )
         , ( "Shield", Guides.shield )
+        , ( "EnergyBar", Guides.bar )
         ]
   in
     (,)

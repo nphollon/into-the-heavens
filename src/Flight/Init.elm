@@ -51,7 +51,6 @@ game seed library =
               , meshName = "Sphere"
               , shader = Planet
               }
-          , Reticule "Reticule"
           , Target "TargetDecor"
           , Highlight
               { meshName = "IncomingDecor"
@@ -61,7 +60,8 @@ game seed library =
               { meshName = "VisitorDecor"
               , filter = Util.isVisitor
               }
-          , Shield "Shield"
+          , Shield "Shield" "EnergyBar"
+          , Reticule "Reticule"
           ]
       }
     )

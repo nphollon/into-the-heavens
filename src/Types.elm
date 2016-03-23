@@ -127,7 +127,7 @@ type alias Action =
 type GraphicsObject
   = Background String
   | Reticule String
-  | Shield String
+  | Shield String String
   | Object
       { bodyName : String
       , meshName : String
