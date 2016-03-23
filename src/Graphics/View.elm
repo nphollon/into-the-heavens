@@ -212,10 +212,14 @@ dashboard model =
 
     shipPosition =
       player.body.position
+
+    speed =
+      Vector.length player.body.velocity
   in
     div
       [ class "dashboard" ]
       [ p [] [ printInt "Visitors Destroyed" model.score ]
+      , p [] [ printNumber "Speed" speed ]
       , p [] [ printNumber "X" shipPosition.x ]
       , p [] [ printNumber "Y" shipPosition.y ]
       , p [] [ printNumber "Z" shipPosition.z ]
