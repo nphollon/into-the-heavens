@@ -7,7 +7,7 @@ import Types exposing (Update(..), Mode(..), MenuState)
 import Html.Attributes exposing (..)
 import Http
 import Effects exposing (Effects)
-import Frame
+import Graphics.AppFrame as AppFrame
 import Flight.Init
 
 
@@ -47,7 +47,7 @@ view isMobile address state =
         Just (Ok lib) ->
           ready isMobile
   in
-    Frame.view
+    AppFrame.view
       [ top ]
       [ p
           []

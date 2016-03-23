@@ -11,18 +11,18 @@ import Math.Vector as Vector
 import Math.Matrix as Matrix exposing (Matrix)
 import Math.Transform as Transform
 import Flight.Util as Util
+import Graphics.AppFrame as AppFrame
 import Graphics.Background as Background
 import Graphics.Foreground as Foreground
 import Graphics.Flat as Flat
 import Graphics.Camera as Camera
 import Graphics.Format as Format
 import Graphics.Explosion as Explosion
-import Frame
 
 
 view : Signal.Address Update -> GameState -> Html
 view address model =
-  Frame.view
+  AppFrame.view
     [ scene 900 600 model
     , log model
     ]

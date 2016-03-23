@@ -5,7 +5,7 @@ import Html.Attributes exposing (..)
 import Effects exposing (Effects)
 import Set
 import Char
-import Frame
+import Graphics.AppFrame as AppFrame
 import Types exposing (..)
 import Flight.Init
 
@@ -29,7 +29,7 @@ update input model =
 
 view : Signal.Address Update -> GameOverState -> Html
 view address model =
-  Frame.view
+  AppFrame.view
     [ div
         []
         [ h1 [ class "title" ] [ text "You crashed" ]

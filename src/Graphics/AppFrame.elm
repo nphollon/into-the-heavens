@@ -1,4 +1,4 @@
-module Frame (..) where
+module Graphics.AppFrame (..) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
