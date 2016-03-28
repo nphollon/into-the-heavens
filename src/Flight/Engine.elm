@@ -72,7 +72,7 @@ processActions dt model =
 
 
 type EngineEffect
-  = SpawnShip
+  = SpawnShips
   | SpawnMissile String String
   | Destroy String
   | ChangeTarget
@@ -93,8 +93,17 @@ applyEffectsTo model effects =
 applyEffect : EngineEffect -> GameState -> GameState
 applyEffect effect model =
   case effect of
-    SpawnShip ->
-      Util.mapRandom (Spawn.spawnShip) model
+    SpawnShips ->
+      case model.difficulty of
+        Easy ->
+          Util.mapRandom (Spawn.spawnShip) model
+
+        Hard ->
+          model
+            |> Util.mapRandom (Spawn.spawnShip)
+            |> Util.mapRandom (Spawn.spawnShip)
+            |> Util.mapRandom (Spawn.spawnShip)
+            |> Util.mapRandom (Spawn.spawnShip)
 
     SpawnMissile sourceName targetName ->
       case Dict.get sourceName model.universe of
@@ -166,7 +175,7 @@ shouldCrash universe =
 shouldSpawn : Dict String Body -> List EngineEffect
 shouldSpawn model =
   if Util.visitorCount model == 0 then
-    [ SpawnShip, SpawnShip, SpawnShip, Notify "You have new visitors." ]
+    [ SpawnShips, Notify "You have new visitors." ]
   else
     []
 

@@ -25,6 +25,7 @@ type Update
 type Mode
   = GameMode GameState
   | LoadingMode LoadingState
+  | MenuMode MenuState
   | GameOverMode GameOverState
 
 
@@ -37,11 +38,17 @@ type alias GameState =
   , clockTime : Maybe Time
   , lag : Time
   , gameTime : Float
+  , difficulty : Difficulty
   , playerActions : List PlayerAction
   , universe : Dict String Body
   , graphics : List GraphicsObject
   , library : Library
   }
+
+
+type Difficulty
+  = Easy
+  | Hard
 
 
 type PlayerAction
@@ -163,6 +170,19 @@ type alias LoadingState =
   }
 
 
+type alias MenuState =
+  { library : Library
+  , seed : Random.Seed
+  }
+
+
+type alias GameOverState =
+  { library : Library
+  , seed : Random.Seed
+  , difficulty : Difficulty
+  }
+
+
 type alias Library =
   Dict String (Drawable Vertex)
 
@@ -175,10 +195,4 @@ type alias Vertex =
   { vertPosition : Vec3
   , vertColor : Vec4
   , normal : Vec3
-  }
-
-
-type alias GameOverState =
-  { library : Library
-  , seed : Random.Seed
   }

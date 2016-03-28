@@ -12,8 +12,8 @@ import Flight.Util as Util
 import Flight.Spawn as Spawn exposing (defaultBody)
 
 
-game : Seed -> Library -> ( Mode, Effects Update )
-game seed library =
+game : Seed -> Library -> Difficulty -> ( Mode, Effects Update )
+game seed library difficulty =
   (,)
     (GameMode
       { library = library
@@ -26,6 +26,7 @@ game seed library =
       , score = 0
       , log = [ ( 0, "Be careful up there." ) ]
       , playerActions = []
+      , difficulty = difficulty
       , universe =
           Dict.fromList
             [ ( Spawn.playerName

@@ -8,7 +8,7 @@ import Html.Attributes exposing (..)
 import Http
 import Effects exposing (Effects)
 import Graphics.AppFrame as AppFrame
-import Flight.Init
+import Menu.Init
 
 
 update : Update -> LoadingState -> ( Mode, Effects Update )
@@ -24,7 +24,7 @@ update input model =
       Keys keySet ->
         case ( model.response, Set.member (Char.toCode 'N') keySet ) of
           ( Just (Ok library), True ) ->
-            Flight.Init.game model.seed library
+            Menu.Init.menu model.seed library
 
           ( _, _ ) ->
             noEffects (LoadingMode model)

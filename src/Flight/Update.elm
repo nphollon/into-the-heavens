@@ -35,7 +35,10 @@ timeUpdate clockTime model =
   let
     gameOverCheck newModel =
       if Util.hasCrashed newModel then
-        GameOver.Init.gameOver newModel.seed newModel.library
+        GameOver.Init.gameOver
+          newModel.seed
+          newModel.library
+          newModel.difficulty
       else
         ( GameMode newModel, Effects.tick Tick )
   in

@@ -1,6 +1,7 @@
 module Main (..) where
 
 import Keyboard
+import Signal exposing (forwardTo)
 import Html exposing (Html)
 import StartApp
 import Effects exposing (Effects, Never)
@@ -8,6 +9,7 @@ import Task exposing (Task)
 import Types exposing (..)
 import Loading
 import Loading.Init
+import Menu
 import Flight
 import GameOver
 
@@ -20,44 +22,63 @@ main =
 app : StartApp.App Mode
 app =
   StartApp.start
-    { init = Loading.Init.menu seed
+    { init = Loading.Init.menu seed |> wrap
     , inputs = inputs
     , update = update
     , view = view
     }
 
 
-inputs : List (Signal Update)
+inputs : List (Signal MainUpdate)
 inputs =
-  [ Signal.map Keys Keyboard.keysDown
-  , Signal.map Focus hasFocus
+  [ Signal.map (Keys >> Normal) Keyboard.keysDown
+  , Signal.map (Focus >> Normal) hasFocus
   ]
 
 
-update : Update -> Mode -> ( Mode, Effects Update )
-update up mode =
-  case mode of
-    GameMode data ->
-      Flight.update up data
-
-    GameOverMode data ->
-      GameOver.update up data
-
-    LoadingMode data ->
-      Loading.update up data
+wrap : ( a, Effects Update ) -> ( a, Effects MainUpdate )
+wrap ( a, b ) =
+  ( a, Effects.map Normal b )
 
 
-view : Signal.Address Update -> Mode -> Html
+update : MainUpdate -> Mode -> ( Mode, Effects MainUpdate )
+update action mode =
+  case ( action, mode ) of
+    ( Normal up, GameMode data ) ->
+      Flight.update up data |> wrap
+
+    ( Normal up, GameOverMode data ) ->
+      GameOver.update up data |> wrap
+
+    ( Normal up, LoadingMode data ) ->
+      Loading.update up data |> wrap
+
+    ( MenuOption up, MenuMode data ) ->
+      Menu.update up data |> wrap
+
+    _ ->
+      ( mode, Effects.none )
+
+
+view : Signal.Address MainUpdate -> Mode -> Html
 view address mode =
   case mode of
     GameMode data ->
-      Flight.view address data
+      Flight.view (forwardTo address Normal) data
 
     GameOverMode data ->
-      GameOver.view address data
+      GameOver.view (forwardTo address Normal) data
 
     LoadingMode data ->
-      Loading.view isMobile address data
+      Loading.view isMobile (forwardTo address Normal) data
+
+    MenuMode data ->
+      Menu.view (forwardTo address MenuOption) data
+
+
+type MainUpdate
+  = Normal Update
+  | MenuOption Menu.Action
 
 
 port hasFocus : Signal Bool
