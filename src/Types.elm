@@ -24,7 +24,7 @@ type Update
 
 type Mode
   = GameMode GameState
-  | MenuMode MenuState
+  | LoadingMode LoadingState
   | GameOverMode GameOverState
 
 
@@ -157,7 +157,7 @@ type alias Camera =
   }
 
 
-type alias MenuState =
+type alias LoadingState =
   { response : Maybe Response
   , seed : Random.Seed
   }

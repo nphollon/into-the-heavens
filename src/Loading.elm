@@ -1,9 +1,9 @@
-module Menu (update, view) where
+module Loading (update, view) where
 
 import Html exposing (..)
 import Char
 import Set
-import Types exposing (Update(..), Mode(..), MenuState)
+import Types exposing (Update(..), Mode(..), LoadingState)
 import Html.Attributes exposing (..)
 import Http
 import Effects exposing (Effects)
@@ -11,7 +11,7 @@ import Graphics.AppFrame as AppFrame
 import Flight.Init
 
 
-update : Update -> MenuState -> ( Mode, Effects Update )
+update : Update -> LoadingState -> ( Mode, Effects Update )
 update input model =
   let
     noEffects =
@@ -19,7 +19,7 @@ update input model =
   in
     case input of
       Meshes response ->
-        noEffects (MenuMode { model | response = Just response })
+        noEffects (LoadingMode { model | response = Just response })
 
       Keys keySet ->
         case ( model.response, Set.member (Char.toCode 'N') keySet ) of
@@ -27,13 +27,13 @@ update input model =
             Flight.Init.game model.seed library
 
           ( _, _ ) ->
-            noEffects (MenuMode model)
+            noEffects (LoadingMode model)
 
       otherwise ->
-        noEffects (MenuMode model)
+        noEffects (LoadingMode model)
 
 
-view : Bool -> Signal.Address Update -> MenuState -> Html
+view : Bool -> Signal.Address Update -> LoadingState -> Html
 view isMobile address state =
   let
     top =

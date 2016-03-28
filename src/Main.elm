@@ -6,8 +6,8 @@ import StartApp
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
 import Types exposing (..)
-import Menu
-import Menu.Init
+import Loading
+import Loading.Init
 import Flight
 import GameOver
 
@@ -20,7 +20,7 @@ main =
 app : StartApp.App Mode
 app =
   StartApp.start
-    { init = Menu.Init.menu seed
+    { init = Loading.Init.menu seed
     , inputs = inputs
     , update = update
     , view = view
@@ -43,8 +43,8 @@ update up mode =
     GameOverMode data ->
       GameOver.update up data
 
-    MenuMode data ->
-      Menu.update up data
+    LoadingMode data ->
+      Loading.update up data
 
 
 view : Signal.Address Update -> Mode -> Html
@@ -56,8 +56,8 @@ view address mode =
     GameOverMode data ->
       GameOver.view address data
 
-    MenuMode data ->
-      Menu.view isMobile address data
+    LoadingMode data ->
+      Loading.view isMobile address data
 
 
 port hasFocus : Signal Bool

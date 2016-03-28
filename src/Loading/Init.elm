@@ -1,4 +1,4 @@
-module Menu.Init (menu) where
+module Loading.Init (menu) where
 
 import Types exposing (..)
 import Effects exposing (Effects)
@@ -40,7 +40,7 @@ menu seed =
         ]
   in
     (,)
-      (MenuMode
+      (LoadingMode
         { response = Nothing
         , seed = uncurry Random.initialSeed2 seed
         }
