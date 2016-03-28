@@ -24,9 +24,21 @@ view : Signal.Address Action -> MenuState -> Html
 view address state =
   AppFrame.view
     [ div
-        [ class "level-menu" ]
-        [ button [ onClick address (StartGame Easy) ] [ text "Easy" ]
-        , button [ onClick address (StartGame Hard) ] [ text "Hard" ]
+        [ class "menu" ]
+        [ h2 [] [ text "Select a level" ]
+        , levelButton
+            (onClick address (StartGame Easy))
+            "One on one"
+        , levelButton
+            (onClick address (StartGame Hard))
+            "Outnumbered"
         ]
     ]
     []
+
+
+levelButton : Attribute -> String -> Html
+levelButton action label =
+  div
+    [ class "menu-item" ]
+    [ button [ action ] [ text label ] ]

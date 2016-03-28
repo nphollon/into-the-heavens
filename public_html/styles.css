@@ -54,6 +54,10 @@ body {
     position: relative;
 }
 
+.menu {
+    flex-direction: column;
+}
+
 .log {
     position: absolute;
     left : 0px;
@@ -108,4 +112,18 @@ a {
 .footnote {
     font-style: italic;
     font-size: 0.8em;
+}
+
+button {
+    border: none;
+    font-family: 'PT Serif', serif;
+    font-weight: normal;
+    font-size: 13pt;
+    line-height: 2.0;
+    color: #F2F2CB;
+    background-color: #33273B;
+}
+
+.menu-item {
+    margin: 1em;
 }
