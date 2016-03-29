@@ -94,12 +94,7 @@ applyEffect : EngineEffect -> GameState -> GameState
 applyEffect effect model =
   case effect of
     SpawnShips ->
-      case model.difficulty of
-        Easy ->
-          Spawn.spawnShip 1 model
-
-        Hard ->
-          Spawn.spawnShip 3 model
+      Spawn.spawnShip 3 model
 
     SpawnMissile sourceName targetName ->
       case Dict.get sourceName model.universe of

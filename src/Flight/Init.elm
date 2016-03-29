@@ -13,8 +13,8 @@ import Flight.Util as Util
 import Flight.Spawn as Spawn exposing (defaultBody)
 
 
-game : (Time -> a) -> Seed -> Library -> Difficulty -> ( Mode, Effects a )
-game tick seed library difficulty =
+game : (Time -> a) -> Seed -> Library -> ( Mode, Effects a )
+game tick seed library =
   (,)
     (GameMode
       { library = library
@@ -27,7 +27,6 @@ game tick seed library difficulty =
       , score = 0
       , log = [ ( 0, "Be careful up there." ) ]
       , playerActions = []
-      , difficulty = difficulty
       , universe =
           Dict.fromList
             [ ( Spawn.playerName

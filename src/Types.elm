@@ -31,17 +31,11 @@ type alias GameState =
   , clockTime : Maybe Time
   , lag : Time
   , gameTime : Float
-  , difficulty : Difficulty
   , playerActions : List PlayerAction
   , universe : Dict String Body
   , graphics : List GraphicsObject
   , library : Library
   }
-
-
-type Difficulty
-  = Easy
-  | Hard
 
 
 type PlayerAction
@@ -172,7 +166,6 @@ type alias MenuState =
 type alias GameOverState =
   { library : Library
   , seed : Random.Seed
-  , difficulty : Difficulty
   }
 
 

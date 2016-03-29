@@ -11,18 +11,14 @@ import Flight.Init
 
 
 type Action
-  = StartGame Difficulty
+  = StartGame
 
 
 update : (Time -> a) -> Action -> MenuState -> ( Mode, Effects a )
 update tick input model =
   case input of
-    StartGame difficulty ->
-      Flight.Init.game
-        tick
-        model.seed
-        model.library
-        difficulty
+    StartGame ->
+      Flight.Init.game tick model.seed model.library
 
 
 view : Signal.Address Action -> MenuState -> Html
@@ -32,10 +28,7 @@ view address state =
         [ class "menu" ]
         [ h2 [] [ text "Select a level" ]
         , levelButton
-            (onClick address (StartGame Easy))
-            "One on one"
-        , levelButton
-            (onClick address (StartGame Hard))
+            (onClick address StartGame)
             "Outnumbered"
         ]
     ]

@@ -27,11 +27,7 @@ timeUpdate tick clockTime model =
     gameOverCheck newModel =
       if Util.hasCrashed newModel then
         (,)
-          (GameOver.Init.gameOver
-            newModel.seed
-            newModel.library
-            newModel.difficulty
-          )
+          (GameOver.Init.gameOver newModel.seed newModel.library)
           Effects.none
       else
         ( GameMode newModel, Effects.tick tick )

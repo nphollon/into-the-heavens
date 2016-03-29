@@ -4,10 +4,9 @@ import Types exposing (..)
 import Random.PCG exposing (Seed)
 
 
-gameOver : Seed -> Library -> Difficulty -> Mode
-gameOver seed library difficulty =
+gameOver : Seed -> Library -> Mode
+gameOver seed library =
   GameOverMode
     { library = library
     , seed = seed
-    , difficulty = difficulty
     }

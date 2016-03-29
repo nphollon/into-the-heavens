@@ -14,11 +14,7 @@ import Flight.Init
 keyUpdate : (Time -> a) -> Set KeyCode -> GameOverState -> ( Mode, Effects a )
 keyUpdate tick keySet model =
   if Set.member (Char.toCode 'N') keySet then
-    Flight.Init.game
-      tick
-      model.seed
-      model.library
-      model.difficulty
+    Flight.Init.game tick model.seed model.library
   else
     ( GameOverMode model, Effects.none )
 
