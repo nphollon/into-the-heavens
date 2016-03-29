@@ -20,18 +20,25 @@ keyUpdate keySet model =
 
 view : GameOverState -> Html
 view model =
-  AppFrame.view
-    [ div
-        []
-        [ h1 [ class "title" ] [ text "You crashed" ]
-        , h2 [ class "subtitle" ] [ text "Press 'N'" ]
-        ]
-    ]
-    [ p
-        []
-        [ text
-            ("\"Even our misfortunes are a part of our belongings.\""
-              ++ " ~ Antoine de St. Exupéry"
-            )
-        ]
-    ]
+  let
+    message =
+      if model.won then
+        "You won"
+      else
+        "You crashed"
+  in
+    AppFrame.view
+      [ div
+          []
+          [ h1 [ class "title" ] [ text message ]
+          , h2 [ class "subtitle" ] [ text "Press 'N' to replay" ]
+          ]
+      ]
+      [ p
+          []
+          [ text
+              ("\"Even our misfortunes are a part of our belongings.\""
+                ++ " ~ Antoine de St. Exupéry"
+              )
+          ]
+      ]

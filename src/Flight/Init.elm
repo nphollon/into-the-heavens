@@ -18,14 +18,23 @@ game seed library =
     (GameMode
       { library = library
       , hasFocus = True
+      , victory = False
       , clockTime = Nothing
       , lag = 0
       , gameTime = 0
       , seed = seed
       , nextId = 0
       , score = 0
-      , log = [ ( 0, "Be careful up there." ) ]
-      , events = [ 1, 2, 3, 5, 8, 13, 21 ]
+      , log = []
+      , events =
+          [ Notify "Be careful up there."
+          , SpawnShips 1
+          , Notify "You have new visitors."
+          , SpawnShips 2
+          , Notify "Uh oh."
+          , SpawnShips 8
+          , Victory
+          ]
       , playerActions = []
       , universe =
           Dict.fromList

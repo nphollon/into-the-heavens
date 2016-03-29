@@ -1,4 +1,4 @@
-module Flight.Engine (EngineEffect(..), update, shouldCrash) where
+module Flight.Engine (update, shouldCrash) where
 
 import Dict exposing (Dict)
 import Types exposing (..)
@@ -71,15 +71,6 @@ processActions dt model =
       Util.updatePlayerCockpit newCockpit model
 
 
-type EngineEffect
-  = SpawnShips Int
-  | SpawnMissile String String
-  | Destroy String
-  | ChangeTarget
-  | DeductHealth Float String
-  | Notify String
-
-
 checkSchedule : GameState -> GameState
 checkSchedule model =
   case model.events of
@@ -88,9 +79,7 @@ checkSchedule model =
 
     n :: ns ->
       if Util.visitorCount model.universe == 0 then
-        applyEffects
-          [ SpawnShips n, Notify "You have new visitors." ]
-          { model | events = ns }
+        applyEffect n { model | events = ns }
       else
         model
 
@@ -145,6 +134,9 @@ applyEffect effect model =
       { model
         | log = ( model.gameTime, message ) :: model.log
       }
+
+    Victory ->
+      { model | victory = True }
 
 
 thrust : Float -> GameState -> GameState

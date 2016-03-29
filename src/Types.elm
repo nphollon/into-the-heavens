@@ -22,8 +22,19 @@ type Mode
   | GameOverMode GameOverState
 
 
+type EngineEffect
+  = SpawnShips Int
+  | SpawnMissile String String
+  | Destroy String
+  | ChangeTarget
+  | DeductHealth Float String
+  | Notify String
+  | Victory
+
+
 type alias GameState =
   { hasFocus : Bool
+  , victory : Bool
   , nextId : Int
   , score : Int
   , log : List ( Float, String )
@@ -32,7 +43,7 @@ type alias GameState =
   , lag : Time
   , gameTime : Float
   , playerActions : List PlayerAction
-  , events : List Int
+  , events : List EngineEffect
   , universe : Dict String Body
   , graphics : List GraphicsObject
   , library : Library
@@ -167,6 +178,7 @@ type alias MenuState =
 type alias GameOverState =
   { library : Library
   , seed : Random.Seed
+  , won : Bool
   }
 
 

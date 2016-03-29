@@ -1,4 +1,4 @@
-module Flight.Util (hasCrashed, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer) where
+module Flight.Util (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer) where
 
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
@@ -10,6 +10,11 @@ import Flight.Spawn as Spawn
 hasCrashed : GameState -> Bool
 hasCrashed model =
   not (Dict.member Spawn.playerName model.universe)
+
+
+hasWon : GameState -> Bool
+hasWon model =
+  model.victory
 
 
 faces : String -> Body -> Dict String Body -> Bool

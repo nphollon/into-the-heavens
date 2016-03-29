@@ -23,19 +23,24 @@ focusUpdate focus model =
 
 timeUpdate : Time -> GameState -> ( Mode, Effects Time )
 timeUpdate clockTime model =
-  let
-    gameOverCheck newModel =
-      if Util.hasCrashed newModel then
-        (,)
-          (GameOver.Init.gameOver newModel.seed newModel.library)
-          Effects.none
-      else
-        ( GameMode newModel, Effects.tick identity )
-  in
-    if model.hasFocus then
-      gameOverCheck (engineUpdate clockTime model)
-    else
-      ( GameMode { model | clockTime = Nothing }, Effects.none )
+  if model.hasFocus then
+    gameOverCheck (engineUpdate clockTime model)
+  else
+    ( GameMode { model | clockTime = Nothing }, Effects.none )
+
+
+gameOverCheck : GameState -> ( Mode, Effects Time )
+gameOverCheck model =
+  if Util.hasWon model then
+    (,)
+      (GameOver.Init.victory model.seed model.library)
+      Effects.none
+  else if Util.hasCrashed model then
+    (,)
+      (GameOver.Init.crash model.seed model.library)
+      Effects.none
+  else
+    ( GameMode model, Effects.tick identity )
 
 
 engineUpdate : Time -> GameState -> GameState

@@ -1,12 +1,23 @@
-module GameOver.Init (gameOver) where
+module GameOver.Init (crash, victory) where
 
 import Types exposing (..)
 import Random.PCG exposing (Seed)
 
 
-gameOver : Seed -> Library -> Mode
-gameOver seed library =
+crash : Seed -> Library -> Mode
+crash =
+  gameOver False
+
+
+victory : Seed -> Library -> Mode
+victory =
+  gameOver True
+
+
+gameOver : Bool -> Seed -> Library -> Mode
+gameOver won seed library =
   GameOverMode
     { library = library
     , seed = seed
+    , won = won
     }
