@@ -50,16 +50,16 @@ update : MainUpdate -> Mode -> ( Mode, Effects MainUpdate )
 update action mode =
   case ( action, mode ) of
     ( Tick clockTime, GameMode data ) ->
-      Flight.timeUpdate Tick clockTime data
+      mapTick (Flight.timeUpdate clockTime data)
 
     ( Focus focus, GameMode data ) ->
-      Flight.focusUpdate Tick focus data
+      mapTick (Flight.focusUpdate focus data)
 
     ( Keys keys, GameMode data ) ->
       noEffects (Flight.controlUpdate keys data)
 
     ( Keys keys, GameOverMode data ) ->
-      GameOver.keyUpdate Tick keys data
+      mapTick (GameOver.keyUpdate keys data)
 
     ( Keys keys, LoadingMode data ) ->
       noEffects (Loading.keyUpdate keys data)
@@ -68,7 +68,7 @@ update action mode =
       noEffects (Loading.meshesUpdate response data)
 
     ( MenuOption up, MenuMode data ) ->
-      Menu.update Tick up data
+      mapTick (Menu.update up data)
 
     _ ->
       noEffects mode
@@ -77,6 +77,11 @@ update action mode =
 noEffects : Mode -> ( Mode, Effects a )
 noEffects =
   flip (,) Effects.none
+
+
+mapTick : ( Mode, Effects Time ) -> ( Mode, Effects MainUpdate )
+mapTick ( m, e ) =
+  ( m, Effects.map Tick e )
 
 
 view : Signal.Address MainUpdate -> Mode -> Html

@@ -13,16 +13,16 @@ import GameOver.Init
 import Graphics.View as View
 
 
-focusUpdate : (Time -> a) -> Bool -> GameState -> ( Mode, Effects a )
-focusUpdate tick focus model =
+focusUpdate : Bool -> GameState -> ( Mode, Effects Time )
+focusUpdate focus model =
   if focus then
-    ( GameMode { model | hasFocus = True }, Effects.tick tick )
+    ( GameMode { model | hasFocus = True }, Effects.tick identity )
   else
     ( GameMode { model | hasFocus = False }, Effects.none )
 
 
-timeUpdate : (Time -> a) -> Time -> GameState -> ( Mode, Effects a )
-timeUpdate tick clockTime model =
+timeUpdate : Time -> GameState -> ( Mode, Effects Time )
+timeUpdate clockTime model =
   let
     gameOverCheck newModel =
       if Util.hasCrashed newModel then
@@ -30,7 +30,7 @@ timeUpdate tick clockTime model =
           (GameOver.Init.gameOver newModel.seed newModel.library)
           Effects.none
       else
-        ( GameMode newModel, Effects.tick tick )
+        ( GameMode newModel, Effects.tick identity )
   in
     if model.hasFocus then
       gameOverCheck (engineUpdate clockTime model)

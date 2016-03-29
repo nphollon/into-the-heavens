@@ -1,6 +1,5 @@
 module Menu (Action, update, view) where
 
-import Time exposing (Time)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -14,11 +13,11 @@ type Action
   = StartGame
 
 
-update : (Time -> a) -> Action -> MenuState -> ( Mode, Effects a )
-update tick input model =
+update : Action -> MenuState -> ( Mode, Effects Float )
+update input model =
   case input of
     StartGame ->
-      Flight.Init.game tick model.seed model.library
+      Flight.Init.game model.seed model.library
 
 
 view : Signal.Address Action -> MenuState -> Html

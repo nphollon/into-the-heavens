@@ -1,7 +1,6 @@
 module Flight.Init (game) where
 
 import Dict
-import Time exposing (Time)
 import Random.PCG as Random exposing (Seed)
 import Effects exposing (Effects)
 import Types exposing (..)
@@ -13,8 +12,8 @@ import Flight.Util as Util
 import Flight.Spawn as Spawn exposing (defaultBody)
 
 
-game : (Time -> a) -> Seed -> Library -> ( Mode, Effects a )
-game tick seed library =
+game : Seed -> Library -> ( Mode, Effects Float )
+game seed library =
   (,)
     (GameMode
       { library = library
@@ -66,4 +65,4 @@ game tick seed library =
           ]
       }
     )
-    (Effects.tick tick)
+    (Effects.tick identity)

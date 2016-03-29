@@ -1,6 +1,5 @@
 module GameOver (keyUpdate, view) where
 
-import Time exposing (Time)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Effects exposing (Effects)
@@ -11,10 +10,10 @@ import Types exposing (..)
 import Flight.Init
 
 
-keyUpdate : (Time -> a) -> Set KeyCode -> GameOverState -> ( Mode, Effects a )
-keyUpdate tick keySet model =
+keyUpdate : Set KeyCode -> GameOverState -> ( Mode, Effects Float )
+keyUpdate keySet model =
   if Set.member (Char.toCode 'N') keySet then
-    Flight.Init.game tick model.seed model.library
+    Flight.Init.game model.seed model.library
   else
     ( GameOverMode model, Effects.none )
 
