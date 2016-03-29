@@ -32,6 +32,7 @@ type alias GameState =
   , lag : Time
   , gameTime : Float
   , playerActions : List PlayerAction
+  , events : List Int
   , universe : Dict String Body
   , graphics : List GraphicsObject
   , library : Library

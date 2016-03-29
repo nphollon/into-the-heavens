@@ -14,7 +14,7 @@ update : Float -> GameState -> GameState
 update dt =
   processActions dt
     >> Ai.aiUpdate dt
-    >> check shouldSpawn
+    >> checkSchedule
     >> check shouldChangeTarget
     >> check shouldCrash
     >> check shouldFire
@@ -72,7 +72,7 @@ processActions dt model =
 
 
 type EngineEffect
-  = SpawnShips
+  = SpawnShips Int
   | SpawnMissile String String
   | Destroy String
   | ChangeTarget
@@ -80,21 +80,36 @@ type EngineEffect
   | Notify String
 
 
+checkSchedule : GameState -> GameState
+checkSchedule model =
+  case model.events of
+    [] ->
+      model
+
+    n :: ns ->
+      if Util.visitorCount model.universe == 0 then
+        applyEffects
+          [ SpawnShips n, Notify "You have new visitors." ]
+          { model | events = ns }
+      else
+        model
+
+
 check : (Dict String Body -> List EngineEffect) -> GameState -> GameState
 check up model =
-  applyEffectsTo model (up model.universe)
+  applyEffects (up model.universe) model
 
 
-applyEffectsTo : GameState -> List EngineEffect -> GameState
-applyEffectsTo model effects =
+applyEffects : List EngineEffect -> GameState -> GameState
+applyEffects effects model =
   List.foldl applyEffect model effects
 
 
 applyEffect : EngineEffect -> GameState -> GameState
 applyEffect effect model =
   case effect of
-    SpawnShips ->
-      Spawn.spawnShip 3 model
+    SpawnShips n ->
+      Spawn.spawnShip n model
 
     SpawnMissile sourceName targetName ->
       case Dict.get sourceName model.universe of
@@ -161,14 +176,6 @@ shouldCrash universe =
       )
       []
       universe
-
-
-shouldSpawn : Dict String Body -> List EngineEffect
-shouldSpawn model =
-  if Util.visitorCount model == 0 then
-    [ SpawnShips, Notify "You have new visitors." ]
-  else
-    []
 
 
 shouldFire : Dict String Body -> List EngineEffect

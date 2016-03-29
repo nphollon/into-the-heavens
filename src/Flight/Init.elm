@@ -25,6 +25,7 @@ game seed library =
       , nextId = 0
       , score = 0
       , log = [ ( 0, "Be careful up there." ) ]
+      , events = [ 1, 2, 3, 5, 8, 13, 21 ]
       , playerActions = []
       , universe =
           Dict.fromList
