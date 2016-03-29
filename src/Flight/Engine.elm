@@ -96,13 +96,10 @@ applyEffect effect model =
     SpawnShips ->
       case model.difficulty of
         Easy ->
-          Spawn.spawnShip model
+          Spawn.spawnShip 1 model
 
         Hard ->
-          model
-            |> Spawn.spawnShip
-            |> Spawn.spawnShip
-            |> Spawn.spawnShip
+          Spawn.spawnShip 3 model
 
     SpawnMissile sourceName targetName ->
       case Dict.get sourceName model.universe of

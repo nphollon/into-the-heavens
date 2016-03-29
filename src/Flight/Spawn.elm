@@ -11,26 +11,26 @@ import Math.Spherical as Spherical
 import Generate.Ship as Ship
 
 
-spawnShip : GameState -> GameState
-spawnShip model =
+spawnShip : Int -> GameState -> GameState
+spawnShip n model =
   let
-    name =
-      "visitor" ++ toString model.nextId
+    ( bodies, newSeed ) =
+      Spherical.random (always 300)
+        |> visitorBodyAt
+        |> Random.list n
+        |> flip Random.generate model.seed
 
-    ( body, newSeed ) =
-      Random.generate
-        (visitorBodyAt (Spherical.random (always 300)))
-        model.seed
-
-    graphics =
+    graphics name =
       Object
         { bodyName = name
         , meshName = "Ship"
         , shader = Matte Color.purple
         }
   in
-    { model | seed = newSeed }
-      |> spawn name body graphics
+    List.foldl
+      (spawn "visitor" graphics)
+      { model | seed = newSeed }
+      bodies
 
 
 visitorBodyAt : Random.Generator Vector -> Random.Generator Body
@@ -59,9 +59,6 @@ visitorBodyAt positionGenerator =
 spawnMissile : Body -> String -> GameState -> GameState
 spawnMissile parent targetName model =
   let
-    name =
-      "missile" ++ toString model.nextId
-
     body =
       { position = Transform.fromBodyFrame (Vector.vector 0 -0.5 0.1) parent
       , velocity =
@@ -75,22 +72,19 @@ spawnMissile parent targetName model =
       , ai = Seeking 4 targetName
       }
 
-    graphics =
+    graphics name =
       Object
         { bodyName = name
         , meshName = "Missile"
         , shader = NoLighting
         }
   in
-    spawn name body graphics model
+    spawn "missile" graphics body model
 
 
 spawnExplosion : Body -> GameState -> GameState
 spawnExplosion parent model =
   let
-    name =
-      "explosion" ++ toString model.nextId
-
     body =
       { position = parent.position
       , velocity = parent.velocity
@@ -101,22 +95,26 @@ spawnExplosion parent model =
       , ai = Waiting 3
       }
 
-    graphics =
+    graphics name =
       Explosion
         { bodyName = name
         , meshName = "Explosion"
         }
   in
-    spawn name body graphics model
+    spawn "explosion" graphics body model
 
 
-spawn : String -> Body -> GraphicsObject -> GameState -> GameState
-spawn name body graphics model =
-  { model
-    | universe = Dict.insert name body model.universe
-    , nextId = model.nextId + 1
-    , graphics = graphics :: model.graphics
-  }
+spawn : String -> (String -> GraphicsObject) -> Body -> GameState -> GameState
+spawn prefix graphics body model =
+  let
+    name =
+      prefix ++ toString model.nextId
+  in
+    { model
+      | universe = Dict.insert name body model.universe
+      , nextId = model.nextId + 1
+      , graphics = graphics name :: model.graphics
+    }
 
 
 defaultCockpit : Cockpit
