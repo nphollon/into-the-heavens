@@ -31,8 +31,6 @@ game seed library =
           , SpawnShips 1
           , Notify "You have new visitors."
           , SpawnShips 2
-          , Notify "Uh oh."
-          , SpawnShips 8
           , Victory
           ]
       , playerActions = []

@@ -67,8 +67,11 @@ update action mode =
     ( Meshes response, LoadingMode data ) ->
       noEffects (Loading.meshesUpdate response data)
 
-    ( MenuOption up, MenuMode data ) ->
-      mapTick (Menu.update up data)
+    ( MenuOption action, MenuMode data ) ->
+      mapTick (Menu.update action data)
+
+    ( GameOverOption action, GameOverMode data ) ->
+      mapTick (GameOver.actionUpdate action data)
 
     _ ->
       noEffects mode
@@ -91,7 +94,7 @@ view address mode =
       Flight.view data
 
     GameOverMode data ->
-      GameOver.view data
+      GameOver.view (forwardTo address GameOverOption) data
 
     LoadingMode data ->
       Loading.view isMobile data
@@ -102,6 +105,7 @@ view address mode =
 
 type MainUpdate
   = MenuOption Menu.Action
+  | GameOverOption GameOver.Action
   | Meshes Response
   | Keys (Set KeyCode)
   | Focus Bool
