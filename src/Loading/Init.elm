@@ -1,4 +1,4 @@
-module Loading.Init (menu) where
+module Loading.Init (menu, library) where
 
 import Types exposing (..)
 import Effects exposing (Effects)
@@ -14,8 +14,16 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 import Generate.Guides as Guides
 
 
-menu : ( Int, Int ) -> ( Mode, Effects Update )
+menu : ( Int, Int ) -> Mode
 menu seed =
+  LoadingMode
+    { response = Nothing
+    , seed = uncurry Random.initialSeed2 seed
+    }
+
+
+library : Effects Response
+library =
   let
     pathTo =
       (++) "$DOMAIN/data/"
@@ -39,16 +47,10 @@ menu seed =
         , ( "EnergyBar", Guides.bar )
         ]
   in
-    (,)
-      (LoadingMode
-        { response = Nothing
-        , seed = uncurry Random.initialSeed2 seed
-        }
-      )
-      (buildLibrary localResources remoteResources)
+    buildLibrary localResources remoteResources
 
 
-buildLibrary : Library -> Dict String String -> Effects Update
+buildLibrary : Library -> Dict String String -> Effects Response
 buildLibrary localResources remoteResources =
   let
     get ( id, url ) =
@@ -60,17 +62,16 @@ buildLibrary localResources remoteResources =
       |> Task.map (addTo localResources)
       |> flip
           Task.onError
-          (\e -> Task.succeed (Meshes (Err e)))
+          (\e -> Task.succeed (Err e))
       |> Effects.task
 
 
-addTo : Library -> List ( String, Value ) -> Update
+addTo : Library -> List ( String, Value ) -> Response
 addTo localResources responses =
   Encode.object responses
     |> Decode.decodeValue decode
     |> Result.formatError Http.UnexpectedPayload
     |> Result.map (Dict.union localResources)
-    |> Meshes
 
 
 decode : Decoder Library

@@ -1,40 +1,32 @@
-module Loading (update, view) where
+module Loading (keyUpdate, meshesUpdate, view) where
 
 import Html exposing (..)
-import Char
-import Set
-import Types exposing (Update(..), Mode(..), LoadingState)
+import Char exposing (KeyCode)
+import Set exposing (Set)
+import Types exposing (..)
 import Html.Attributes exposing (..)
 import Http
-import Effects exposing (Effects)
 import Graphics.AppFrame as AppFrame
 import Menu.Init
 
 
-update : Update -> LoadingState -> ( Mode, Effects Update )
-update input model =
-  let
-    noEffects =
-      flip (,) Effects.none
-  in
-    case input of
-      Meshes response ->
-        noEffects (LoadingMode { model | response = Just response })
+keyUpdate : Set KeyCode -> LoadingState -> Mode
+keyUpdate keySet model =
+  case ( model.response, Set.member (Char.toCode 'N') keySet ) of
+    ( Just (Ok library), True ) ->
+      Menu.Init.menu model.seed library
 
-      Keys keySet ->
-        case ( model.response, Set.member (Char.toCode 'N') keySet ) of
-          ( Just (Ok library), True ) ->
-            Menu.Init.menu model.seed library
-
-          ( _, _ ) ->
-            noEffects (LoadingMode model)
-
-      otherwise ->
-        noEffects (LoadingMode model)
+    _ ->
+      LoadingMode model
 
 
-view : Bool -> Signal.Address Update -> LoadingState -> Html
-view isMobile address state =
+meshesUpdate : Response -> LoadingState -> Mode
+meshesUpdate response model =
+  LoadingMode { model | response = Just response }
+
+
+view : Bool -> LoadingState -> Html
+view isMobile state =
   let
     top =
       case state.response of

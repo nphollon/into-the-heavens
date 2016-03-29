@@ -11,17 +11,16 @@ import Math.Spherical as Spherical
 import Generate.Ship as Ship
 
 
-spawnShip : Random.Seed -> GameState -> GameState
-spawnShip seed model =
+spawnShip : GameState -> GameState
+spawnShip model =
   let
     name =
       "visitor" ++ toString model.nextId
 
-    body =
-      Spherical.random (always 300)
-        |> visitorBodyAt
-        |> flip Random.generate seed
-        |> fst
+    ( body, newSeed ) =
+      Random.generate
+        (visitorBodyAt (Spherical.random (always 300)))
+        model.seed
 
     graphics =
       Object
@@ -30,7 +29,8 @@ spawnShip seed model =
         , shader = Matte Color.purple
         }
   in
-    spawn name body graphics model
+    { model | seed = newSeed }
+      |> spawn name body graphics
 
 
 visitorBodyAt : Random.Generator Vector -> Random.Generator Body

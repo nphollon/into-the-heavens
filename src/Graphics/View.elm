@@ -20,8 +20,8 @@ import Graphics.Format as Format
 import Graphics.Explosion as Explosion
 
 
-view : Signal.Address Update -> GameState -> Html
-view address model =
+view : GameState -> Html
+view model =
   AppFrame.view
     [ scene 900 600 model
     , log model

@@ -15,13 +15,6 @@ import Color exposing (Color)
 import WebGL exposing (Drawable)
 
 
-type Update
-  = Meshes Response
-  | Tick Time
-  | Keys (Set KeyCode)
-  | Focus Bool
-
-
 type Mode
   = GameMode GameState
   | LoadingMode LoadingState

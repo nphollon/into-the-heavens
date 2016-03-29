@@ -1,34 +1,30 @@
-module GameOver (update, view) where
+module GameOver (keyUpdate, view) where
 
+import Time exposing (Time)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Effects exposing (Effects)
-import Set
-import Char
+import Set exposing (Set)
+import Char exposing (KeyCode)
 import Graphics.AppFrame as AppFrame
 import Types exposing (..)
 import Flight.Init
 
 
-update : Update -> GameOverState -> ( Mode, Effects Update )
-update input model =
-  let
-    continue =
-      case input of
-        Keys keySet ->
-          Set.member (Char.toCode 'N') keySet
-
-        otherwise ->
-          False
-  in
-    if continue then
-      Flight.Init.game model.seed model.library model.difficulty
-    else
-      ( GameOverMode model, Effects.none )
+keyUpdate : (Time -> a) -> Set KeyCode -> GameOverState -> ( Mode, Effects a )
+keyUpdate tick keySet model =
+  if Set.member (Char.toCode 'N') keySet then
+    Flight.Init.game
+      tick
+      model.seed
+      model.library
+      model.difficulty
+  else
+    ( GameOverMode model, Effects.none )
 
 
-view : Signal.Address Update -> GameOverState -> Html
-view address model =
+view : GameOverState -> Html
+view model =
   AppFrame.view
     [ div
         []

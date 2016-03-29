@@ -1,8 +1,7 @@
-module Flight.Util (hasCrashed, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, mapRandom, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer) where
+module Flight.Util (hasCrashed, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer) where
 
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
-import Random.PCG as Random
 import Types exposing (..)
 import Math.Transform as Transform
 import Flight.Spawn as Spawn
@@ -89,15 +88,6 @@ setPlayerTarget model =
       }
   in
     updatePlayerCockpit setTarget model
-
-
-mapRandom : (Random.Seed -> GameState -> GameState) -> GameState -> GameState
-mapRandom f model =
-  let
-    ( rootSeed, subSeed ) =
-      Random.split model.seed
-  in
-    f subSeed { model | seed = rootSeed }
 
 
 isVisitor : Body -> Bool

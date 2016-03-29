@@ -1,5 +1,6 @@
 module Menu (Action, update, view) where
 
+import Time exposing (Time)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -13,11 +14,15 @@ type Action
   = StartGame Difficulty
 
 
-update : Action -> MenuState -> ( Mode, Effects Update )
-update input model =
+update : (Time -> a) -> Action -> MenuState -> ( Mode, Effects a )
+update tick input model =
   case input of
     StartGame difficulty ->
-      Flight.Init.game model.seed model.library difficulty
+      Flight.Init.game
+        tick
+        model.seed
+        model.library
+        difficulty
 
 
 view : Signal.Address Action -> MenuState -> Html

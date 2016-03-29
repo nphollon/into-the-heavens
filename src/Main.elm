@@ -1,9 +1,12 @@
 module Main (..) where
 
+import Set exposing (Set)
+import Char exposing (KeyCode)
 import Keyboard
+import Time exposing (Time)
 import Signal exposing (forwardTo)
 import Html exposing (Html)
-import StartApp
+import StartApp exposing (App)
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
 import Types exposing (..)
@@ -19,66 +22,85 @@ main =
   app.html
 
 
-app : StartApp.App Mode
+app : App Mode
 app =
   StartApp.start
-    { init = Loading.Init.menu seed |> wrap
+    { init = init
     , inputs = inputs
     , update = update
     , view = view
     }
 
 
+init : ( Mode, Effects MainUpdate )
+init =
+  (,)
+    (Loading.Init.menu seed)
+    (Effects.map Meshes Loading.Init.library)
+
+
 inputs : List (Signal MainUpdate)
 inputs =
-  [ Signal.map (Keys >> Normal) Keyboard.keysDown
-  , Signal.map (Focus >> Normal) hasFocus
+  [ Signal.map Keys Keyboard.keysDown
+  , Signal.map Focus hasFocus
   ]
-
-
-wrap : ( a, Effects Update ) -> ( a, Effects MainUpdate )
-wrap ( a, b ) =
-  ( a, Effects.map Normal b )
 
 
 update : MainUpdate -> Mode -> ( Mode, Effects MainUpdate )
 update action mode =
   case ( action, mode ) of
-    ( Normal up, GameMode data ) ->
-      Flight.update up data |> wrap
+    ( Tick clockTime, GameMode data ) ->
+      Flight.timeUpdate Tick clockTime data
 
-    ( Normal up, GameOverMode data ) ->
-      GameOver.update up data |> wrap
+    ( Focus focus, GameMode data ) ->
+      Flight.focusUpdate Tick focus data
 
-    ( Normal up, LoadingMode data ) ->
-      Loading.update up data |> wrap
+    ( Keys keys, GameMode data ) ->
+      noEffects (Flight.controlUpdate keys data)
+
+    ( Keys keys, GameOverMode data ) ->
+      GameOver.keyUpdate Tick keys data
+
+    ( Keys keys, LoadingMode data ) ->
+      noEffects (Loading.keyUpdate keys data)
+
+    ( Meshes response, LoadingMode data ) ->
+      noEffects (Loading.meshesUpdate response data)
 
     ( MenuOption up, MenuMode data ) ->
-      Menu.update up data |> wrap
+      Menu.update Tick up data
 
     _ ->
-      ( mode, Effects.none )
+      noEffects mode
+
+
+noEffects : Mode -> ( Mode, Effects a )
+noEffects =
+  flip (,) Effects.none
 
 
 view : Signal.Address MainUpdate -> Mode -> Html
 view address mode =
   case mode of
     GameMode data ->
-      Flight.view (forwardTo address Normal) data
+      Flight.view data
 
     GameOverMode data ->
-      GameOver.view (forwardTo address Normal) data
+      GameOver.view data
 
     LoadingMode data ->
-      Loading.view isMobile (forwardTo address Normal) data
+      Loading.view isMobile data
 
     MenuMode data ->
       Menu.view (forwardTo address MenuOption) data
 
 
 type MainUpdate
-  = Normal Update
-  | MenuOption Menu.Action
+  = MenuOption Menu.Action
+  | Meshes Response
+  | Keys (Set KeyCode)
+  | Focus Bool
+  | Tick Time
 
 
 port hasFocus : Signal Bool
