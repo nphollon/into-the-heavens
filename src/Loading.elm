@@ -1,28 +1,30 @@
 module Loading (keyUpdate, meshesUpdate, view) where
 
-import Html exposing (..)
 import Char exposing (KeyCode)
 import Set exposing (Set)
-import Types exposing (..)
+import Html exposing (..)
 import Html.Attributes exposing (..)
+import Effects exposing (Effects)
 import Http
+import Types exposing (..)
 import Graphics.AppFrame as AppFrame
 import Menu.Init
 
 
-keyUpdate : Set KeyCode -> LoadingState -> Mode
+keyUpdate : Set KeyCode -> LoadingState -> ( Mode, Effects Update )
 keyUpdate keySet model =
   case ( model.response, Set.member (Char.toCode 'N') keySet ) of
     ( Just (Ok library), True ) ->
       Menu.Init.menu model.seed library
 
     _ ->
-      LoadingMode model
+      noEffects (LoadingMode model)
 
 
-meshesUpdate : Response -> LoadingState -> Mode
+meshesUpdate : Response -> LoadingState -> ( Mode, Effects Update )
 meshesUpdate response model =
-  LoadingMode { model | response = Just response }
+  noEffects
+    (LoadingMode { model | response = Just response })
 
 
 view : Bool -> LoadingState -> Html

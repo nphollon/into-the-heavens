@@ -1,10 +1,10 @@
 module Loading.Init (menu, library) where
 
 import Types exposing (..)
-import Effects exposing (Effects)
+import Effects exposing (Effects, Never)
 import Dict exposing (Dict)
 import Http
-import Task
+import Task exposing (Task)
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, Value, (:=))
 import Random.PCG as Random
@@ -22,20 +22,16 @@ menu seed =
     }
 
 
-library : Effects Response
+library : Effects Update
 library =
   let
-    pathTo =
-      (++) "$DOMAIN/data/"
-
     remoteResources =
-      Dict.fromList
-        [ ( "Sphere", pathTo "sphere.json" )
-        , ( "Background", pathTo "background.json" )
-        , ( "Ship", pathTo "ship.json" )
-        , ( "Missile", pathTo "missile.json" )
-        , ( "Explosion", pathTo "explosion.json" )
-        ]
+      [ ( "Sphere", "sphere.json" )
+      , ( "Background", "background.json" )
+      , ( "Ship", "ship.json" )
+      , ( "Missile", "missile.json" )
+      , ( "Explosion", "explosion.json" )
+      ]
 
     localResources =
       Dict.fromList
@@ -46,24 +42,18 @@ library =
         , ( "Shield", Guides.shield )
         , ( "EnergyBar", Guides.bar )
         ]
-  in
-    buildLibrary localResources remoteResources
 
-
-buildLibrary : Library -> Dict String String -> Effects Response
-buildLibrary localResources remoteResources =
-  let
-    get ( id, url ) =
-      Task.map ((,) id) (Http.get Decode.value url)
+    get ( id, file ) =
+      ("$DOMAIN/data/" ++ file)
+        |> Http.get Decode.value
+        |> Task.map ((,) id)
   in
-    Dict.toList remoteResources
-      |> List.map get
+    List.map get remoteResources
       |> Task.sequence
       |> Task.map (addTo localResources)
-      |> flip
-          Task.onError
-          (\e -> Task.succeed (Err e))
+      |> flip Task.onError (Err >> Task.succeed)
       |> Effects.task
+      |> Effects.map LoadingUpdate
 
 
 addTo : Library -> List ( String, Value ) -> Response

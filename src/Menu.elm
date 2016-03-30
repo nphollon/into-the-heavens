@@ -1,4 +1,4 @@
-module Menu (Action, update, view) where
+module Menu (update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
@@ -9,18 +9,17 @@ import Graphics.AppFrame as AppFrame
 import Flight.Init
 
 
-type Action
-  = StartGame
-
-
-update : Action -> MenuState -> ( Mode, Effects Float )
+update : MenuAction -> MenuState -> ( Mode, Effects Update )
 update input model =
   case input of
     StartGame ->
       Flight.Init.game model.seed model.library
 
+    ToMainMenu ->
+      noEffects (MenuMode model)
 
-view : Signal.Address Action -> MenuState -> Html
+
+view : Signal.Address MenuAction -> MenuState -> Html
 view address state =
   AppFrame.view
     [ div

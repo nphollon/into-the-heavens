@@ -1,4 +1,4 @@
-module GameOver (Action, keyUpdate, actionUpdate, view) where
+module GameOver (keyUpdate, actionUpdate, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -12,30 +12,25 @@ import Flight.Init
 import Menu.Init
 
 
-type Action
-  = StartGame
-  | GoToMenu
-
-
-keyUpdate : Set KeyCode -> GameOverState -> ( Mode, Effects Float )
+keyUpdate : Set KeyCode -> GameOverState -> ( Mode, Effects Update )
 keyUpdate keySet model =
   if Set.member (Char.toCode 'N') keySet then
     actionUpdate StartGame model
   else
-    ( GameOverMode model, Effects.none )
+    noEffects (GameOverMode model)
 
 
-actionUpdate : Action -> GameOverState -> ( Mode, Effects Float )
+actionUpdate : MenuAction -> GameOverState -> ( Mode, Effects Update )
 actionUpdate action model =
   case action of
     StartGame ->
       Flight.Init.game model.seed model.library
 
-    GoToMenu ->
-      ( Menu.Init.menu model.seed model.library, Effects.none )
+    ToMainMenu ->
+      Menu.Init.menu model.seed model.library
 
 
-view : Signal.Address Action -> GameOverState -> Html
+view : Signal.Address MenuAction -> GameOverState -> Html
 view address model =
   let
     message =
@@ -50,7 +45,7 @@ view address model =
           [ h1 [ class "title" ] [ text message ]
           , h2 [ class "subtitle" ] [ text "Press 'N' to replay" ]
           , levelButton
-              (onClick address GoToMenu)
+              (onClick address ToMainMenu)
               "Main Menu"
           ]
       ]

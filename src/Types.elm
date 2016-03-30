@@ -4,15 +4,16 @@ import Set exposing (Set)
 import Time exposing (Time)
 import Char exposing (KeyCode)
 import Dict exposing (Dict)
+import Color exposing (Color)
 import Random.PCG as Random
+import Http
+import Effects exposing (Effects)
+import WebGL exposing (Drawable)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 exposing (Mat4)
 import Math.Matrix exposing (Matrix)
 import Math.Vector exposing (Vector)
-import Http
-import Color exposing (Color)
-import WebGL exposing (Drawable)
 
 
 type Mode
@@ -20,6 +21,24 @@ type Mode
   | LoadingMode LoadingState
   | MenuMode MenuState
   | GameOverMode GameOverState
+
+
+type Update
+  = MenuUpdate MenuAction
+  | GameUpdate GameAction
+  | LoadingUpdate Response
+  | Keys (Set KeyCode)
+
+
+type MenuAction
+  = StartGame
+  | ToMainMenu
+
+
+type GameAction
+  = Tick Time
+  | Focus
+  | Blur
 
 
 type EngineEffect
@@ -195,3 +214,13 @@ type alias Vertex =
   , vertColor : Vec4
   , normal : Vec3
   }
+
+
+tick : GameState -> ( Mode, Effects Update )
+tick gameState =
+  ( GameMode gameState, Effects.tick (Tick >> GameUpdate) )
+
+
+noEffects : Mode -> ( Mode, Effects Update )
+noEffects mode =
+  ( mode, Effects.none )
