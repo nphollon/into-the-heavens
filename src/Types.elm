@@ -35,6 +35,24 @@ type MenuAction
   | ToMainMenu
 
 
+type alias GameState =
+  { victory : Bool
+  , nextId : Int
+  , score : Int
+  , log : List ( Float, String )
+  , seed : Random.Seed
+  , clockTime : Maybe Time
+  , lag : Time
+  , gameTime : Float
+  , lastEventTime : Float
+  , events : List ( EventCondition, EngineEffect )
+  , playerActions : List PlayerAction
+  , universe : Dict String Body
+  , graphics : List GraphicsObject
+  , library : Library
+  }
+
+
 type EngineEffect
   = SpawnShips Int
   | SpawnMissile String String
@@ -45,21 +63,10 @@ type EngineEffect
   | Victory
 
 
-type alias GameState =
-  { victory : Bool
-  , nextId : Int
-  , score : Int
-  , log : List ( Float, String )
-  , seed : Random.Seed
-  , clockTime : Maybe Time
-  , lag : Time
-  , gameTime : Float
-  , playerActions : List PlayerAction
-  , events : List EngineEffect
-  , universe : Dict String Body
-  , graphics : List GraphicsObject
-  , library : Library
-  }
+type EventCondition
+  = Immediately
+  | NoMoreVisitors
+  | SecondsLater Float
 
 
 type PlayerAction

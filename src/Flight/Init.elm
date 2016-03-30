@@ -23,12 +23,14 @@ game seed library =
   , nextId = 0
   , score = 0
   , log = []
+  , lastEventTime = 0
   , events =
-      [ Notify "Be careful up there."
-      , SpawnShips 1
-      , Notify "You have new visitors."
-      , SpawnShips 2
-      , Victory
+      [ ( SecondsLater 1, Notify "Somebody is at the door. Could you get it?" )
+      , ( Immediately, SpawnShips 1 )
+      , ( NoMoreVisitors, Notify "We have some more visitors." )
+      , ( Immediately, SpawnShips 5 )
+      , ( NoMoreVisitors, Notify "Now people will stop coming over." )
+      , ( SecondsLater 3, Victory )
       ]
   , playerActions = []
   , universe =

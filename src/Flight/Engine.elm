@@ -77,11 +77,28 @@ checkSchedule model =
     [] ->
       model
 
-    n :: ns ->
-      if Util.visitorCount model.universe == 0 then
-        applyEffect n { model | events = ns }
+    ( condition, event ) :: events ->
+      if isSatisfied condition model then
+        { model
+          | events = events
+          , lastEventTime = model.gameTime
+        }
+          |> applyEffect event
       else
         model
+
+
+isSatisfied : EventCondition -> GameState -> Bool
+isSatisfied condition model =
+  case condition of
+    Immediately ->
+      True
+
+    NoMoreVisitors ->
+      Util.visitorCount model.universe == 0
+
+    SecondsLater wait ->
+      model.lastEventTime + wait < model.gameTime
 
 
 check : (Dict String Body -> List EngineEffect) -> GameState -> GameState
