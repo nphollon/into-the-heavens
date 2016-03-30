@@ -4,8 +4,7 @@ window.onload = function () {
     var app = Elm.embed(
         Elm.Main,
         document.getElementById("app"),
-        { hasFocus : true
-        , seed:
+        { seed:
           [ Math.floor(Math.random()*0xFFFFFFFF)
           , Math.floor(Math.random()*0xFFFFFFFF)
           ]

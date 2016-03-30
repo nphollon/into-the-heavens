@@ -36,29 +36,14 @@ init =
 
 inputs : List (Signal Update)
 inputs =
-  [ Signal.map Keys Keyboard.keysDown
-  , Signal.map
-      (\f ->
-        if f then
-          GameUpdate Focus
-        else
-          GameUpdate Blur
-      )
-      hasFocus
-  ]
+  [ Signal.map Keys Keyboard.keysDown ]
 
 
 update : Update -> Mode -> ( Mode, Effects Update )
 update action mode =
   case ( action, mode ) of
-    ( GameUpdate (Tick clockTime), GameMode data ) ->
+    ( Tick clockTime, GameMode data ) ->
       Flight.timeUpdate clockTime data
-
-    ( GameUpdate Focus, GameMode data ) ->
-      Flight.focusUpdate True data
-
-    ( GameUpdate Blur, GameMode data ) ->
-      Flight.focusUpdate False data
 
     ( Keys keys, GameMode data ) ->
       Flight.controlUpdate keys data
@@ -86,7 +71,7 @@ view : Signal.Address Update -> Mode -> Html
 view address mode =
   case mode of
     GameMode data ->
-      Flight.view (forwardTo address GameUpdate) data
+      Flight.view data
 
     GameOverMode data ->
       GameOver.view (forwardTo address MenuUpdate) data
@@ -98,7 +83,6 @@ view address mode =
       Menu.view (forwardTo address MenuUpdate) data
 
 
-port hasFocus : Signal Bool
 port isMobile : Bool
 port seed : ( Int, Int )
 port tasks : Signal (Task Never ())

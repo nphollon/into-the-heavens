@@ -1,4 +1,4 @@
-module Flight (timeUpdate, controlUpdate, focusUpdate, view) where
+module Flight (timeUpdate, controlUpdate, view) where
 
 import Dict exposing (Dict)
 import Set exposing (Set)
@@ -13,32 +13,20 @@ import GameOver.Init
 import Graphics.View as View
 
 
-focusUpdate : Bool -> GameState -> ( Mode, Effects Update )
-focusUpdate focus model =
-  if focus then
-    tick { model | hasFocus = True }
-  else
-    noEffects (GameMode { model | hasFocus = False })
-
-
 timeUpdate : Time -> GameState -> ( Mode, Effects Update )
 timeUpdate clockTime model =
-  if model.hasFocus then
-    gameOverCheck (engineUpdate clockTime model)
-  else
-    noEffects (GameMode { model | clockTime = Nothing })
-
-
-gameOverCheck : GameState -> ( Mode, Effects Update )
-gameOverCheck model =
-  if Util.hasWon model then
-    noEffects
-      (GameOver.Init.victory model.seed model.library)
-  else if Util.hasCrashed model then
-    noEffects
-      (GameOver.Init.crash model.seed model.library)
-  else
-    tick model
+  let
+    newModel =
+      engineUpdate clockTime model
+  in
+    if Util.hasWon newModel then
+      noEffects
+        (GameOver.Init.victory newModel.seed newModel.library)
+    else if Util.hasCrashed newModel then
+      noEffects
+        (GameOver.Init.crash newModel.seed newModel.library)
+    else
+      tick (GameMode newModel)
 
 
 engineUpdate : Time -> GameState -> GameState
@@ -90,15 +78,16 @@ controlUpdate keysDown model =
         , ( 'L', TargetFacing )
         ]
   in
-    tick
-      { model
-        | playerActions =
-            List.filterMap
-              (Char.fromCode >> flip Dict.get keyMap)
-              (Set.toList keysDown)
-      }
+    { model
+      | playerActions =
+          List.filterMap
+            (Char.fromCode >> flip Dict.get keyMap)
+            (Set.toList keysDown)
+    }
+      |> GameMode
+      |> noEffects
 
 
-view : Signal.Address a -> GameState -> Html
-view address =
+view : GameState -> Html
+view =
   View.view

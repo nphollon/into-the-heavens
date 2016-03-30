@@ -25,20 +25,14 @@ type Mode
 
 type Update
   = MenuUpdate MenuAction
-  | GameUpdate GameAction
   | LoadingUpdate Response
   | Keys (Set KeyCode)
+  | Tick Time
 
 
 type MenuAction
   = StartGame
   | ToMainMenu
-
-
-type GameAction
-  = Tick Time
-  | Focus
-  | Blur
 
 
 type EngineEffect
@@ -52,8 +46,7 @@ type EngineEffect
 
 
 type alias GameState =
-  { hasFocus : Bool
-  , victory : Bool
+  { victory : Bool
   , nextId : Int
   , score : Int
   , log : List ( Float, String )
@@ -216,9 +209,9 @@ type alias Vertex =
   }
 
 
-tick : GameState -> ( Mode, Effects Update )
-tick gameState =
-  ( GameMode gameState, Effects.tick (Tick >> GameUpdate) )
+tick : Mode -> ( Mode, Effects Update )
+tick mode =
+  ( mode, Effects.tick Tick )
 
 
 noEffects : Mode -> ( Mode, Effects Update )
