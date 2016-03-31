@@ -1,9 +1,10 @@
-module Flight.Util (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer) where
+module Flight.Util (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo) where
 
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
 import Types exposing (..)
 import Math.Transform as Transform
+import Math.Vector as Vector
 import Flight.Spawn as Spawn
 
 
@@ -140,3 +141,18 @@ isSeekingPlayer body =
 
     _ ->
       False
+
+
+distanceTo : String -> Dict String Body -> Maybe Float
+distanceTo name universe =
+  let
+    player =
+      Dict.get Spawn.playerName universe
+
+    object =
+      Dict.get name universe
+
+    bodyDistance a b =
+      Vector.distance a.position b.position
+  in
+    MaybeX.map2 bodyDistance player object

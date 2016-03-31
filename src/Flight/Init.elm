@@ -29,8 +29,8 @@ game seed library =
       , ( Immediately, SpawnShips 1 )
       , ( NoMoreVisitors, Notify "We have some more visitors." )
       , ( Immediately, SpawnShips 5 )
-      , ( NoMoreVisitors, Notify "Now people will stop coming over." )
-      , ( SecondsLater 3, Victory )
+      , ( NoMoreVisitors, Notify "Come back inside before dinner gets cold." )
+      , ( PlayerIsNear "planet" 20, Victory )
       ]
   , playerActions = []
   , universe =

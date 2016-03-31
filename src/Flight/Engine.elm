@@ -100,6 +100,11 @@ isSatisfied condition model =
     SecondsLater wait ->
       model.lastEventTime + wait < model.gameTime
 
+    PlayerIsNear bodyName distance ->
+      Util.distanceTo bodyName model.universe
+        |> Maybe.map (\r -> r < distance)
+        |> Maybe.withDefault False
+
 
 check : (Dict String Body -> List EngineEffect) -> GameState -> GameState
 check up model =

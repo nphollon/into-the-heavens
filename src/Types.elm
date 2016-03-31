@@ -67,6 +67,7 @@ type EventCondition
   = Immediately
   | NoMoreVisitors
   | SecondsLater Float
+  | PlayerIsNear String Float
 
 
 type PlayerAction
