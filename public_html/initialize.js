@@ -11,15 +11,6 @@ window.onload = function () {
         , isMobile : mobileCheck()
         }
     );
-
-    /* Disable the FPS signal when the window is out of focus */
-    window.onfocus = function () {
-        app.ports.hasFocus.send(true);
-    };
-
-    window.onblur = function () {
-        app.ports.hasFocus.send(false);
-    };
 }
 
 var mobileCheck = function() {
