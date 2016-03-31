@@ -96,7 +96,7 @@ smartAccel : Body -> Body -> Acceleration
 smartAccel object target =
   let
     relativePosition =
-      Vector.sub (target.position |> Debug.log "pos") object.position
+      Vector.sub target.position object.position
 
     relativeVelocity =
       Vector.sub target.velocity object.velocity

@@ -63,6 +63,7 @@ type EngineEffect
   | SpawnMissile Id Id
   | SpawnCheckpoint String Body
   | Destroy Id
+  | DestroyByName String
   | ChangeTarget
   | DeductHealth Float Id
   | Notify String
@@ -95,7 +96,7 @@ type alias Body =
   , velocity : Vector
   , orientation : Vector
   , angVelocity : Vector
-  , hull : Hull
+  , hull : Maybe Hull
   , health : Float
   , ai : Ai
   }

@@ -25,7 +25,23 @@ game seed library =
   , log = []
   , lastEventTime = 0
   , events =
-      [ ( NoMoreVisitors
+      [ ( SecondsLater 1
+        , [ Notify "Somebody is at the door. Could you get it?"
+          , SpawnCheckpoint "start" startBody
+          ]
+        )
+      , ( ReachedCheckpoint "start"
+        , [ DestroyByName "start"
+          , Notify "Here they come."
+          , SpawnShips 2
+          ]
+        )
+      , ( NoMoreVisitors
+        , [ Notify "We have some more visitors."
+          , SpawnShips 5
+          ]
+        )
+      , ( NoMoreVisitors
         , [ Notify "Come back inside before dinner gets cold."
           , SpawnCheckpoint "home" homeBody
           ]
@@ -38,7 +54,7 @@ game seed library =
       Dict.fromList
         [ ( Spawn.playerId
           , { defaultBody
-              | hull = Collision.hull .position Ship.triangles
+              | hull = Just (Collision.hull .position Ship.triangles)
               , health = 1
               , ai = PlayerControlled Spawn.defaultCockpit
             }
@@ -47,7 +63,7 @@ game seed library =
           , { defaultBody
               | position = Vector.vector 0 -20 0
               , angVelocity = Vector.vector 0 3.0e-2 0
-              , hull = Collision.hull .position Sphere.triangles
+              , hull = Just (Collision.hull .position Sphere.triangles)
               , health = 1.0e10
             }
           )
@@ -79,6 +95,14 @@ game seed library =
 homeBody : Body
 homeBody =
   { defaultBody
-    | position = Vector.vector 0 0 -5
+    | position = Vector.vector 0 -1 0
     , angVelocity = Vector.vector 0 1 0
+  }
+
+
+startBody : Body
+startBody =
+  { defaultBody
+    | position = Vector.vector 0 6 -10
+    , angVelocity = Vector.vector 1 0 0
   }

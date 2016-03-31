@@ -113,17 +113,18 @@ assertBoundary name position normal body =
       ]
 
 
-hull : Hull
+hull : Maybe Hull
 hull =
-  Collision.hull
-    identity
-    [ ( Vec.vector 0 0 0, Vec.vector 1 0 0, Vec.vector 1 0 3 )
-    , ( Vec.vector 0 0 0, Vec.vector 0 2 0, Vec.vector 1 2 0 )
-    , ( Vec.vector 0 0 0, Vec.vector 0 0 3, Vec.vector 0 2 3 )
-    , ( Vec.vector 1 2 3, Vec.vector 1 2 0, Vec.vector 0 2 0 )
-    , ( Vec.vector 1 2 3, Vec.vector 0 2 3, Vec.vector 0 0 3 )
-    , ( Vec.vector 1 2 3, Vec.vector 1 0 3, Vec.vector 1 0 0 )
-    ]
+  Just
+    <| Collision.hull
+        identity
+        [ ( Vec.vector 0 0 0, Vec.vector 1 0 0, Vec.vector 1 0 3 )
+        , ( Vec.vector 0 0 0, Vec.vector 0 2 0, Vec.vector 1 2 0 )
+        , ( Vec.vector 0 0 0, Vec.vector 0 0 3, Vec.vector 0 2 3 )
+        , ( Vec.vector 1 2 3, Vec.vector 1 2 0, Vec.vector 0 2 0 )
+        , ( Vec.vector 1 2 3, Vec.vector 0 2 3, Vec.vector 0 0 3 )
+        , ( Vec.vector 1 2 3, Vec.vector 1 0 3, Vec.vector 1 0 0 )
+        ]
 
 
 delta : Float

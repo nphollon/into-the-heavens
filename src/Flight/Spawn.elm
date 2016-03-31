@@ -44,7 +44,7 @@ visitorBodyAt positionGenerator =
       , velocity = Vector.scale -0.1 position
       , orientation = orientationFor position
       , angVelocity = Vector.vector 0 0 0
-      , hull = Collision.hull .position Ship.triangles
+      , hull = Just (Collision.hull .position Ship.triangles)
       , health = 1
       , ai =
           Hostile
@@ -67,7 +67,7 @@ spawnMissile parent targetId model =
             |> Vector.add parent.velocity
       , orientation = parent.orientation
       , angVelocity = Vector.vector 0 0 0
-      , hull = []
+      , hull = Just []
       , health = 1
       , ai = Seeking 4 targetId
       }
@@ -90,7 +90,7 @@ spawnExplosion parent model =
       , velocity = parent.velocity
       , orientation = Vector.vector 0 0 0
       , angVelocity = Vector.vector 0 0 0
-      , hull = []
+      , hull = Nothing
       , health = 1
       , ai = Waiting 3
       }
@@ -114,7 +114,7 @@ spawnCheckpoint name body model =
         , shader = NoLighting
         }
   in
-    spawn graphics body model
+    spawnWithName name graphics body model
 
 
 spawn : (Id -> GraphicsObject) -> Body -> GameState -> GameState
@@ -151,7 +151,7 @@ defaultBody =
   , velocity = Vector.vector 0 0 0
   , orientation = Vector.vector 0 0 0
   , angVelocity = Vector.vector 0 0 0
-  , hull = []
+  , hull = Nothing
   , health = 0
   , ai = Dumb
   }

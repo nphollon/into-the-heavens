@@ -1,4 +1,4 @@
-module Flight.Util (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName) where
+module Flight.Util (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isEthereal, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, blowUp) where
 
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
@@ -108,7 +108,12 @@ isVisitor body =
 
 isMissile : Body -> Bool
 isMissile body =
-  List.isEmpty body.hull
+  MaybeX.mapDefault False List.isEmpty body.hull
+
+
+isEthereal : Body -> Bool
+isEthereal body =
+  Nothing == body.hull
 
 
 isHealthy : Body -> Bool
@@ -170,3 +175,26 @@ fromName name model =
       Dict.get name model.names
   in
     Maybe.andThen id (flip fromId model)
+
+
+getId : String -> GameState -> Maybe Id
+getId name model =
+  Dict.get name model.names
+
+
+blowUp : Id -> GameState -> GameState
+blowUp id model =
+  case Dict.get id model.universe of
+    Just object ->
+      if isVisitor object then
+        Spawn.spawnExplosion
+          object
+          { model
+            | universe = Dict.remove id model.universe
+            , score = model.score + 1
+          }
+      else
+        { model | universe = Dict.remove id model.universe }
+
+    Nothing ->
+      model

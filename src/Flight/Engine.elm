@@ -102,7 +102,7 @@ isSatisfied condition model =
 
     ReachedCheckpoint bodyName ->
       Util.distanceTo bodyName model
-        |> Maybe.map (\r -> r < 3)
+        |> Maybe.map (\r -> r < 1)
         |> Maybe.withDefault False
 
 
@@ -137,20 +137,12 @@ applyEffect effect model =
       Util.setPlayerTarget model
 
     Destroy id ->
-      case Dict.get id model.universe of
-        Just visitor ->
-          if Util.isVisitor visitor then
-            Spawn.spawnExplosion
-              visitor
-              { model
-                | universe = Dict.remove id model.universe
-                , score = model.score + 1
-              }
-          else
-            { model | universe = Dict.remove id model.universe }
+      Util.blowUp id model
 
-        Nothing ->
-          model
+    DestroyByName name ->
+      Util.getId name model
+        |> Maybe.map (flip Util.blowUp model)
+        |> Maybe.withDefault model
 
     DeductHealth n id ->
       hit n id model
@@ -172,8 +164,13 @@ thrust delta model =
 shouldCrash : Dict Id Body -> List EngineEffect
 shouldCrash universe =
   let
+    isExempt pointLabel point hullLabel hull =
+      Collision.isOutside point.position hull
+        || (pointLabel == hullLabel)
+        || (Util.isEthereal point)
+
     collidedWith pointLabel point hullLabel hull effects =
-      if Collision.isOutside point.position hull || pointLabel == hullLabel then
+      if isExempt pointLabel point hullLabel hull then
         effects
       else if not (Util.isMissile point) then
         DeductHealth hull.health pointLabel

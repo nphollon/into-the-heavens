@@ -23,11 +23,12 @@ testSuite =
       , shielded = 8
       , first = 9
       , second = 10
+      , checkpoint = 11
       }
   in
     suite
       "Crash rules"
-      [ test "No collision, no effects"
+      [ test "no collision, no effects"
           <| assertEqual
               []
           <| shouldCrash
@@ -35,7 +36,7 @@ testSuite =
               [ ( ids.missile, missile 1 )
               , ( ids.visitor, object 1 farHull )
               ]
-      , test "Missiles ignore each other"
+      , test "missiles ignore each other"
           <| assertEqual
               []
           <| shouldCrash
@@ -101,7 +102,7 @@ testSuite =
               [ ( ids.first, shielded 3 outHull )
               , ( ids.second, object 3 hitHull )
               ]
-      , test "Accumulate effects from multiple collisions"
+      , test "accumulate effects from multiple collisions"
           <| assertEqual
               [ Destroy ids.missileB
               , Destroy ids.missileA
@@ -112,19 +113,30 @@ testSuite =
               , ( ids.missileB, missile 1 )
               , ( ids.visitor, shielded 1 hitHull )
               ]
+      , test "ethereal objects do not collide"
+          <| assertEqual
+              []
+          <| shouldCrash
+          <| Dict.fromList
+              [ ( ids.checkpoint, checkpoint )
+              , ( ids.visitor, object 1 hitHull )
+              ]
       ]
 
 
 missile : Float -> Body
 missile x =
-  { defaultBody | health = x }
+  { defaultBody
+    | health = x
+    , hull = Just []
+  }
 
 
 object : Float -> Hull -> Body
 object x hull =
   { defaultBody
     | health = x
-    , hull = hull
+    , hull = Just hull
   }
 
 
@@ -132,7 +144,7 @@ shielded : Float -> Hull -> Body
 shielded x hull =
   { defaultBody
     | health = x
-    , hull = hull
+    , hull = Just hull
     , ai =
         PlayerControlled
           { defaultCockpit
@@ -144,6 +156,11 @@ shielded x hull =
                 }
           }
   }
+
+
+checkpoint : Body
+checkpoint =
+  { defaultBody | hull = Nothing }
 
 
 hitHull : Hull

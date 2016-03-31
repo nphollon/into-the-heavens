@@ -43,8 +43,11 @@ isInside point body =
 
     isBehind face =
       Vector.dot face.normal (Vector.sub bodyPoint face.keyPoint) < 1.0e-6
+
+    hull =
+      Maybe.withDefault [] body.hull
   in
-    not (List.isEmpty body.hull) && List.all isBehind body.hull
+    not (List.isEmpty hull) && List.all isBehind hull
 
 
 isOutside : Vector -> Body -> Bool
