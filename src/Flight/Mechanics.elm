@@ -1,7 +1,7 @@
 module Flight.Mechanics (evolve) where
 
 import Dict exposing (Dict)
-import Types exposing (Body, Action, Ai(..))
+import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
 import Math.Transform as Transform
 import Flight.Ai as Ai
@@ -10,12 +10,12 @@ import Flight.Ai as Ai
 -- Evolving states
 
 
-evolve : Float -> Dict String Body -> Dict String Body
+evolve : Float -> Dict Id Body -> Dict Id Body
 evolve dt universe =
   Dict.map (\k v -> evolveObject dt universe v) universe
 
 
-evolveObject : Float -> Dict String Body -> Body -> Body
+evolveObject : Float -> Dict Id Body -> Body -> Body
 evolveObject dt universe object =
   let
     stateDerivative state =

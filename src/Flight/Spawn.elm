@@ -1,4 +1,4 @@
-module Flight.Spawn (spawnShip, visitorBodyAt, spawnMissile, spawnExplosion, defaultCockpit, defaultBody, playerName, inaction) where
+module Flight.Spawn (spawnShip, visitorBodyAt, spawnMissile, spawnExplosion, spawnCheckpoint, defaultCockpit, defaultBody, playerId, emptyId, inaction) where
 
 import Color
 import Dict exposing (Dict)
@@ -20,15 +20,15 @@ spawnShip n model =
         |> Random.list n
         |> flip Random.generate model.seed
 
-    graphics name =
+    graphics id =
       Object
-        { bodyName = name
+        { bodyId = id
         , meshName = "Ship"
         , shader = Matte Color.purple
         }
   in
     List.foldl
-      (spawn "visitor" graphics)
+      (spawn graphics)
       { model | seed = newSeed }
       bodies
 
@@ -48,7 +48,7 @@ visitorBodyAt positionGenerator =
       , health = 1
       , ai =
           Hostile
-            { target = playerName
+            { target = playerId
             , trigger = { value = 0, decay = 4 }
             }
       }
@@ -56,8 +56,8 @@ visitorBodyAt positionGenerator =
     Random.map place positionGenerator
 
 
-spawnMissile : Body -> String -> GameState -> GameState
-spawnMissile parent targetName model =
+spawnMissile : Body -> Id -> GameState -> GameState
+spawnMissile parent targetId model =
   let
     body =
       { position = Transform.fromBodyFrame (Vector.vector 0 -0.5 0.1) parent
@@ -69,17 +69,17 @@ spawnMissile parent targetName model =
       , angVelocity = Vector.vector 0 0 0
       , hull = []
       , health = 1
-      , ai = Seeking 4 targetName
+      , ai = Seeking 4 targetId
       }
 
-    graphics name =
+    graphics id =
       Object
-        { bodyName = name
+        { bodyId = id
         , meshName = "Missile"
         , shader = NoLighting
         }
   in
-    spawn "missile" graphics body model
+    spawn graphics body model
 
 
 spawnExplosion : Body -> GameState -> GameState
@@ -95,32 +95,51 @@ spawnExplosion parent model =
       , ai = Waiting 3
       }
 
-    graphics name =
+    graphics id =
       Explosion
-        { bodyName = name
+        { bodyId = id
         , meshName = "Explosion"
         }
   in
-    spawn "explosion" graphics body model
+    spawn graphics body model
 
 
-spawn : String -> (String -> GraphicsObject) -> Body -> GameState -> GameState
-spawn prefix graphics body model =
+spawnCheckpoint : String -> Body -> GameState -> GameState
+spawnCheckpoint name body model =
   let
-    name =
-      prefix ++ toString model.nextId
+    graphics id =
+      Object
+        { bodyId = id
+        , meshName = "Explosion"
+        , shader = NoLighting
+        }
+  in
+    spawn graphics body model
+
+
+spawn : (Id -> GraphicsObject) -> Body -> GameState -> GameState
+spawn graphics body model =
+  let
+    id =
+      model.nextId
   in
     { model
-      | universe = Dict.insert name body model.universe
-      , nextId = model.nextId + 1
-      , graphics = graphics name :: model.graphics
+      | universe = Dict.insert id body model.universe
+      , graphics = graphics id :: model.graphics
+      , nextId = id + 1
     }
+
+
+spawnWithName : String -> (Id -> GraphicsObject) -> Body -> GameState -> GameState
+spawnWithName name graphics body model =
+  { model | names = Dict.insert name model.nextId model.names }
+    |> spawn graphics body
 
 
 defaultCockpit : Cockpit
 defaultCockpit =
   { action = inaction
-  , target = ""
+  , target = emptyId
   , trigger = { value = 0, decay = 0.3 }
   , shields = { value = 1, decay = 5, recover = 10, on = False }
   }
@@ -147,6 +166,11 @@ inaction =
   }
 
 
-playerName : String
-playerName =
-  "player"
+playerId : Id
+playerId =
+  0
+
+
+emptyId : Id
+emptyId =
+  -1

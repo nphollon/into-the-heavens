@@ -43,22 +43,22 @@ scene width height model =
     camera =
       Camera.at aspect player.body
 
-    body name =
-      Dict.get name model.universe
+    body =
+      flip Util.fromId model
 
-    mesh name =
-      Dict.get name model.library
+    mesh =
+      flip Dict.get model.library
 
     draw object =
       case object of
         Background meshName ->
           drawBackground camera (mesh meshName)
 
-        Object { bodyName, meshName, shader } ->
-          drawObject shader camera (body bodyName) (mesh meshName)
+        Object { bodyId, meshName, shader } ->
+          drawObject shader camera (body bodyId) (mesh meshName)
 
-        Explosion { bodyName, meshName } ->
-          drawExplosion camera (body bodyName) (mesh meshName)
+        Explosion { bodyId, meshName } ->
+          drawExplosion camera (body bodyId) (mesh meshName)
 
         Reticule meshName ->
           Maybe.map

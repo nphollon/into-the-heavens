@@ -27,7 +27,7 @@ noAi =
       { defaultBody | ai = Dumb }
 
     universe =
-      Dict.singleton "dummy" body
+      Dict.singleton 1 body
   in
     test "Steering object without AI returns nothing"
       <| assertEqual
@@ -198,10 +198,10 @@ assertTriggerChange shouldFire position orientation targetPosition =
 
     universe =
       Dict.fromList
-        [ ( "ai", body )
-        , ( "target", target )
+        [ ( 1, body )
+        , ( 2, target )
         ]
   in
     assertEqual
       shouldFire
-      (Util.faces "target" body universe)
+      (Util.faces 2 body universe)

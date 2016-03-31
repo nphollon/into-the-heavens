@@ -37,7 +37,7 @@ type MenuAction
 
 type alias GameState =
   { victory : Bool
-  , nextId : Int
+  , nextId : Id
   , score : Int
   , log : List ( Float, String )
   , seed : Random.Seed
@@ -45,20 +45,26 @@ type alias GameState =
   , lag : Time
   , gameTime : Float
   , lastEventTime : Float
-  , events : List ( EventCondition, EngineEffect )
+  , events : List ( EventCondition, List EngineEffect )
   , playerActions : List PlayerAction
-  , universe : Dict String Body
+  , universe : Dict Id Body
+  , names : Dict String Id
   , graphics : List GraphicsObject
   , library : Library
   }
 
 
+type alias Id =
+  Int
+
+
 type EngineEffect
   = SpawnShips Int
-  | SpawnMissile String String
-  | Destroy String
+  | SpawnMissile Id Id
+  | SpawnCheckpoint String Body
+  | Destroy Id
   | ChangeTarget
-  | DeductHealth Float String
+  | DeductHealth Float Id
   | Notify String
   | Victory
 
@@ -67,7 +73,7 @@ type EventCondition
   = Immediately
   | NoMoreVisitors
   | SecondsLater Float
-  | PlayerIsNear String Float
+  | ReachedCheckpoint String
 
 
 type PlayerAction
@@ -111,9 +117,9 @@ type alias Acceleration =
 type Ai
   = Dumb
   | PlayerControlled Cockpit
-  | Seeking Float String
+  | Seeking Float Id
   | Hostile
-      { target : String
+      { target : Id
       , trigger : RepeatSwitch
       }
   | SelfDestruct
@@ -122,7 +128,7 @@ type Ai
 
 type alias Cockpit =
   { action : Action
-  , target : String
+  , target : Id
   , trigger : RepeatSwitch
   , shields : DrainSwitch
   }
@@ -155,12 +161,12 @@ type GraphicsObject
   | Reticule String
   | Shield String String
   | Object
-      { bodyName : String
+      { bodyId : Id
       , meshName : String
       , shader : ShaderType
       }
   | Explosion
-      { bodyName : String
+      { bodyId : Id
       , meshName : String
       }
   | Target String

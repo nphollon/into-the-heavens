@@ -83,7 +83,7 @@ checkSchedule model =
           | events = events
           , lastEventTime = model.gameTime
         }
-          |> applyEffect event
+          |> applyEffects event
       else
         model
 
@@ -100,13 +100,13 @@ isSatisfied condition model =
     SecondsLater wait ->
       model.lastEventTime + wait < model.gameTime
 
-    PlayerIsNear bodyName distance ->
-      Util.distanceTo bodyName model.universe
-        |> Maybe.map (\r -> r < distance)
+    ReachedCheckpoint bodyName ->
+      Util.distanceTo bodyName model
+        |> Maybe.map (\r -> r < 3)
         |> Maybe.withDefault False
 
 
-check : (Dict String Body -> List EngineEffect) -> GameState -> GameState
+check : (Dict Id Body -> List EngineEffect) -> GameState -> GameState
 check up model =
   applyEffects (up model.universe) model
 
@@ -122,35 +122,38 @@ applyEffect effect model =
     SpawnShips n ->
       Spawn.spawnShip n model
 
-    SpawnMissile sourceName targetName ->
-      case Dict.get sourceName model.universe of
+    SpawnMissile sourceId targetId ->
+      case Dict.get sourceId model.universe of
         Just source ->
-          Spawn.spawnMissile source targetName model
+          Spawn.spawnMissile source targetId model
 
         Nothing ->
           model
 
+    SpawnCheckpoint id body ->
+      Spawn.spawnCheckpoint id body model
+
     ChangeTarget ->
       Util.setPlayerTarget model
 
-    Destroy name ->
-      case Dict.get name model.universe of
+    Destroy id ->
+      case Dict.get id model.universe of
         Just visitor ->
           if Util.isVisitor visitor then
             Spawn.spawnExplosion
               visitor
               { model
-                | universe = Dict.remove name model.universe
+                | universe = Dict.remove id model.universe
                 , score = model.score + 1
               }
           else
-            { model | universe = Dict.remove name model.universe }
+            { model | universe = Dict.remove id model.universe }
 
         Nothing ->
           model
 
-    DeductHealth n name ->
-      hit n name model
+    DeductHealth n id ->
+      hit n id model
 
     Notify message ->
       { model
@@ -166,7 +169,7 @@ thrust delta model =
   { model | universe = Mech.evolve delta model.universe }
 
 
-shouldCrash : Dict String Body -> List EngineEffect
+shouldCrash : Dict Id Body -> List EngineEffect
 shouldCrash universe =
   let
     collidedWith pointLabel point hullLabel hull effects =
@@ -185,29 +188,29 @@ shouldCrash universe =
           :: effects
   in
     Dict.foldl
-      (\label body effects ->
-        Dict.foldl (collidedWith label body) effects universe
+      (\id body effects ->
+        Dict.foldl (collidedWith id body) effects universe
       )
       []
       universe
 
 
-shouldFire : Dict String Body -> List EngineEffect
+shouldFire : Dict Id Body -> List EngineEffect
 shouldFire universe =
   let
-    checkTrigger name cockpit effects =
+    checkTrigger id cockpit effects =
       if cockpit.trigger.value == 1 then
-        SpawnMissile name cockpit.target :: effects
+        SpawnMissile id cockpit.target :: effects
       else
         effects
 
-    checkCockpit name body effects =
+    checkCockpit id body effects =
       case body.ai of
         PlayerControlled cockpit ->
-          checkTrigger name cockpit effects
+          checkTrigger id cockpit effects
 
         Hostile cockpit ->
-          checkTrigger name cockpit effects
+          checkTrigger id cockpit effects
 
         _ ->
           effects
@@ -215,7 +218,7 @@ shouldFire universe =
     Dict.foldl checkCockpit [] universe
 
 
-shouldChangeTarget : Dict String Body -> List EngineEffect
+shouldChangeTarget : Dict Id Body -> List EngineEffect
 shouldChangeTarget universe =
   let
     currentTarget =
@@ -229,20 +232,20 @@ shouldChangeTarget universe =
         []
 
 
-hit : Float -> String -> GameState -> GameState
-hit damage label model =
+hit : Float -> Id -> GameState -> GameState
+hit damage id model =
   let
     object =
-      Dict.get label model.universe
+      Dict.get id model.universe
         |> Maybe.withDefault Spawn.defaultBody
   in
     if object.health > damage then
       { model
         | universe =
             Dict.insert
-              label
+              id
               { object | health = object.health - damage }
               model.universe
       }
     else
-      applyEffect (Destroy label) model
+      applyEffect (Destroy id) model

@@ -1,4 +1,4 @@
-module Flight.Util (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo) where
+module Flight.Util (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName) where
 
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
@@ -10,7 +10,7 @@ import Flight.Spawn as Spawn
 
 hasCrashed : GameState -> Bool
 hasCrashed model =
-  not (Dict.member Spawn.playerName model.universe)
+  not (Dict.member Spawn.playerId model.universe)
 
 
 hasWon : GameState -> Bool
@@ -18,21 +18,21 @@ hasWon model =
   model.victory
 
 
-faces : String -> Body -> Dict String Body -> Bool
-faces targetName viewer universe =
+faces : Id -> Body -> Dict Id Body -> Bool
+faces targetId viewer universe =
   let
     inRange t =
       Transform.degreesFromForward t.position viewer < degrees 15
   in
-    Dict.get targetName universe
+    Dict.get targetId universe
       |> MaybeX.mapDefault False inRange
 
 
-getPlayer : Dict String Body -> { body : Body, cockpit : Cockpit }
+getPlayer : Dict Id Body -> { body : Body, cockpit : Cockpit }
 getPlayer universe =
   let
     body =
-      Dict.get Spawn.playerName universe
+      Dict.get Spawn.playerId universe
         |> Maybe.withDefault Spawn.defaultBody
 
     cockpit =
@@ -54,7 +54,7 @@ updatePlayerCockpit aiUpdate model =
   in
     { model
       | universe =
-          Dict.update Spawn.playerName (flip Maybe.andThen bodyUpdate) model.universe
+          Dict.update Spawn.playerId (flip Maybe.andThen bodyUpdate) model.universe
     }
 
 
@@ -74,26 +74,26 @@ setPlayerTarget model =
     player =
       .body (getPlayer model.universe)
 
-    closestVisitor name body ( winningName, winningDistance ) =
+    closestVisitor id body ( winningId, winningDistance ) =
       if isVisitor body then
         let
           distance =
             Transform.degreesFromForward body.position player
         in
           if distance < winningDistance then
-            ( name, distance )
+            ( id, distance )
           else
-            ( winningName, winningDistance )
+            ( winningId, winningDistance )
       else
-        ( winningName, winningDistance )
+        ( winningId, winningDistance )
 
-    setTarget cockpit =
-      { cockpit
-        | target =
-            fst <| Dict.foldl closestVisitor ( "", 1 / 0 ) model.universe
-      }
+    newTarget =
+      Dict.foldl closestVisitor ( Spawn.emptyId, 1 / 0 ) model.universe
+        |> fst
   in
-    updatePlayerCockpit setTarget model
+    updatePlayerCockpit
+      (\c -> { c | target = newTarget })
+      model
 
 
 isVisitor : Body -> Bool
@@ -126,7 +126,7 @@ isShielded body =
       False
 
 
-visitorCount : Dict String Body -> Int
+visitorCount : Dict Id Body -> Int
 visitorCount universe =
   Dict.values universe
     |> List.filter isVisitor
@@ -137,22 +137,36 @@ isSeekingPlayer : Body -> Bool
 isSeekingPlayer body =
   case body.ai of
     Seeking _ x ->
-      x == Spawn.playerName
+      x == Spawn.playerId
 
     _ ->
       False
 
 
-distanceTo : String -> Dict String Body -> Maybe Float
-distanceTo name universe =
+distanceTo : String -> GameState -> Maybe Float
+distanceTo name model =
   let
     player =
-      Dict.get Spawn.playerName universe
+      fromId Spawn.playerId model
 
     object =
-      Dict.get name universe
+      fromName name model
 
     bodyDistance a b =
       Vector.distance a.position b.position
   in
     MaybeX.map2 bodyDistance player object
+
+
+fromId : Id -> GameState -> Maybe Body
+fromId id model =
+  Dict.get id model.universe
+
+
+fromName : String -> GameState -> Maybe Body
+fromName name model =
+  let
+    id =
+      Dict.get name model.names
+  in
+    Maybe.andThen id (flip fromId model)

@@ -222,6 +222,8 @@ decorVertex =
     gl_Position =
       perspective * (cameraOrientation * cameraFrame - projectionOffset);
 
+    gl_PointSize = 4.0;
+
     fragColor = vertColor;
   }
   |]

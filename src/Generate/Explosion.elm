@@ -19,7 +19,7 @@ toVertex : Vector -> Vertex
 toVertex position =
   { position = position
   , normal = Vector.normalize position
-  , color = Vec4.vec4 1 0 0 1
+  , color = Vec4.vec4 1 1 0 1
   }
 
 

@@ -25,7 +25,7 @@ aiUpdate delta model =
   }
 
 
-steerAi : Float -> Body -> Dict String Body -> Ai
+steerAi : Float -> Body -> Dict Id Body -> Ai
 steerAi delta object universe =
   case object.ai of
     Dumb ->
@@ -60,7 +60,7 @@ steerAi delta object universe =
         SelfDestruct
 
 
-acceleration : Dict String Body -> Body -> Acceleration
+acceleration : Dict Id Body -> Body -> Acceleration
 acceleration universe object =
   case object.ai of
     Dumb ->

@@ -20,29 +20,30 @@ game seed library =
   , lag = 0
   , gameTime = 0
   , seed = seed
-  , nextId = 0
+  , nextId = 100
   , score = 0
   , log = []
   , lastEventTime = 0
   , events =
-      [ ( SecondsLater 1, Notify "Somebody is at the door. Could you get it?" )
-      , ( Immediately, SpawnShips 1 )
-      , ( NoMoreVisitors, Notify "We have some more visitors." )
-      , ( Immediately, SpawnShips 5 )
-      , ( NoMoreVisitors, Notify "Come back inside before dinner gets cold." )
-      , ( PlayerIsNear "planet" 20, Victory )
+      [ ( NoMoreVisitors
+        , [ Notify "Come back inside before dinner gets cold."
+          , SpawnCheckpoint "home" homeBody
+          ]
+        )
+      , ( ReachedCheckpoint "home", [ Victory ] )
       ]
   , playerActions = []
+  , names = Dict.empty
   , universe =
       Dict.fromList
-        [ ( Spawn.playerName
+        [ ( Spawn.playerId
           , { defaultBody
               | hull = Collision.hull .position Ship.triangles
               , health = 1
               , ai = PlayerControlled Spawn.defaultCockpit
             }
           )
-        , ( "planet"
+        , ( 1
           , { defaultBody
               | position = Vector.vector 0 -20 0
               , angVelocity = Vector.vector 0 3.0e-2 0
@@ -54,7 +55,7 @@ game seed library =
   , graphics =
       [ Background "Background"
       , Object
-          { bodyName = "planet"
+          { bodyId = 1
           , meshName = "Sphere"
           , shader = Planet
           }
@@ -73,3 +74,11 @@ game seed library =
   }
     |> GameMode
     |> tick
+
+
+homeBody : Body
+homeBody =
+  { defaultBody
+    | position = Vector.vector 0 0 -5
+    , angVelocity = Vector.vector 0 1 0
+  }
