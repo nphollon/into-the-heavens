@@ -26,5 +26,4 @@ menu room seed library =
   , library = library
   , room = room
   }
-    |> MenuMode
-    |> noEffects
+    |> noEffects MenuMode

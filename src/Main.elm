@@ -60,7 +60,7 @@ update action mode =
       Menu.actionUpdate action data
 
     _ ->
-      noEffects mode
+      noEffects identity mode
 
 
 view : Signal.Address Update -> Mode -> Html

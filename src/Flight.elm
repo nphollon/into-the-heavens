@@ -24,7 +24,7 @@ timeUpdate clockTime model =
     else if Util.hasCrashed newModel then
       Menu.Init.crash newModel.seed newModel.library
     else
-      tick (GameMode newModel)
+      tick GameMode newModel
 
 
 engineUpdate : Time -> GameState -> GameState
@@ -82,8 +82,7 @@ controlUpdate keysDown model =
             (Char.fromCode >> flip Dict.get keyMap)
             (Set.toList keysDown)
     }
-      |> GameMode
-      |> noEffects
+      |> noEffects GameMode
 
 
 view : GameState -> Html

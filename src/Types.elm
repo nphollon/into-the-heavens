@@ -223,11 +223,11 @@ type alias Vertex =
   }
 
 
-tick : Mode -> ( Mode, Effects Update )
-tick mode =
-  ( mode, Effects.tick Tick )
+tick : (a -> Mode) -> a -> ( Mode, Effects Update )
+tick constructor state =
+  ( constructor state, Effects.tick Tick )
 
 
-noEffects : Mode -> ( Mode, Effects Update )
-noEffects mode =
-  ( mode, Effects.none )
+noEffects : (a -> Mode) -> a -> ( Mode, Effects Update )
+noEffects constructor state =
+  ( constructor state, Effects.none )

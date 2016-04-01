@@ -88,8 +88,7 @@ game seed library =
       , Reticule "Reticule"
       ]
   }
-    |> GameMode
-    |> tick
+    |> tick GameMode
 
 
 homeBody : Body

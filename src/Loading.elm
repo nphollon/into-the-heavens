@@ -18,13 +18,12 @@ keyUpdate keySet model =
       Menu.Init.mainMenu model.seed library
 
     _ ->
-      noEffects (LoadingMode model)
+      noEffects LoadingMode model
 
 
 meshesUpdate : Response -> LoadingState -> ( Mode, Effects Update )
 meshesUpdate response model =
-  noEffects
-    (LoadingMode { model | response = Just response })
+  noEffects LoadingMode { model | response = Just response }
 
 
 view : Bool -> LoadingState -> Html

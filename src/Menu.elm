@@ -16,7 +16,7 @@ keyUpdate keySet model =
   if Set.member (Char.toCode 'N') keySet then
     actionUpdate StartGame model
   else
-    noEffects (MenuMode model)
+    noEffects MenuMode model
 
 
 actionUpdate : MenuAction -> MenuState -> ( Mode, Effects Update )
@@ -26,9 +26,7 @@ actionUpdate input model =
       Flight.Init.game model.seed model.library
 
     ToMainMenu ->
-      { model | room = LevelSelect }
-        |> MenuMode
-        |> noEffects
+      noEffects MenuMode { model | room = LevelSelect }
 
 
 view : Signal.Address MenuAction -> MenuState -> Html
