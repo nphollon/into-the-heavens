@@ -9,7 +9,7 @@ import Effects exposing (Effects)
 import Types exposing (..)
 import Flight.Engine as Engine
 import Flight.Util as Util
-import GameOver.Init
+import Menu.Init
 import Graphics.View as View
 
 
@@ -20,11 +20,9 @@ timeUpdate clockTime model =
       engineUpdate clockTime model
   in
     if Util.hasWon newModel then
-      noEffects
-        (GameOver.Init.victory newModel.seed newModel.library)
+      Menu.Init.victory newModel.seed newModel.library
     else if Util.hasCrashed newModel then
-      noEffects
-        (GameOver.Init.crash newModel.seed newModel.library)
+      Menu.Init.crash newModel.seed newModel.library
     else
       tick (GameMode newModel)
 

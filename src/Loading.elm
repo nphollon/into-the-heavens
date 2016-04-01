@@ -15,7 +15,7 @@ keyUpdate : Set KeyCode -> LoadingState -> ( Mode, Effects Update )
 keyUpdate keySet model =
   case ( model.response, Set.member (Char.toCode 'N') keySet ) of
     ( Just (Ok library), True ) ->
-      Menu.Init.menu model.seed library
+      Menu.Init.mainMenu model.seed library
 
     _ ->
       noEffects (LoadingMode model)

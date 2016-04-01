@@ -11,7 +11,6 @@ import Loading
 import Loading.Init
 import Menu
 import Flight
-import GameOver
 
 
 main : Signal Html
@@ -48,8 +47,8 @@ update action mode =
     ( Keys keys, GameMode data ) ->
       Flight.controlUpdate keys data
 
-    ( Keys keys, GameOverMode data ) ->
-      GameOver.keyUpdate keys data
+    ( Keys keys, MenuMode data ) ->
+      Menu.keyUpdate keys data
 
     ( Keys keys, LoadingMode data ) ->
       Loading.keyUpdate keys data
@@ -58,10 +57,7 @@ update action mode =
       Loading.meshesUpdate response data
 
     ( MenuUpdate action, MenuMode data ) ->
-      Menu.update action data
-
-    ( MenuUpdate action, GameOverMode data ) ->
-      GameOver.actionUpdate action data
+      Menu.actionUpdate action data
 
     _ ->
       noEffects mode
@@ -72,9 +68,6 @@ view address mode =
   case mode of
     GameMode data ->
       Flight.view data
-
-    GameOverMode data ->
-      GameOver.view (forwardTo address MenuUpdate) data
 
     LoadingMode data ->
       Loading.view isMobile data

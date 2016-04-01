@@ -20,7 +20,6 @@ type Mode
   = GameMode GameState
   | LoadingMode LoadingState
   | MenuMode MenuState
-  | GameOverMode GameOverState
 
 
 type Update
@@ -199,14 +198,14 @@ type alias LoadingState =
 type alias MenuState =
   { library : Library
   , seed : Random.Seed
+  , room : Room
   }
 
 
-type alias GameOverState =
-  { library : Library
-  , seed : Random.Seed
-  , won : Bool
-  }
+type Room
+  = LevelSelect
+  | LevelWon
+  | LevelLost
 
 
 type alias Library =

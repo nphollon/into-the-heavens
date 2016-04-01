@@ -25,7 +25,7 @@ game seed library =
   , log = []
   , lastEventTime = 0
   , events =
-      [ ( SecondsLater 1
+      [ ( Immediately
         , [ Notify "Somebody is at the door. Could you get it?"
           , SpawnCheckpoint "start" startBody
           ]
