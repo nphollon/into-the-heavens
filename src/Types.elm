@@ -30,12 +30,13 @@ type Update
 
 
 type MenuAction
-  = StartGame
+  = StartGame Level
   | ToMainMenu
 
 
 type alias GameState =
   { victory : Bool
+  , level : Level
   , nextId : Id
   , score : Int
   , log : List ( Float, String )
@@ -50,6 +51,15 @@ type alias GameState =
   , names : Dict String Id
   , graphics : List GraphicsObject
   , library : Library
+  }
+
+
+type alias LevelData =
+  { level : Level
+  , events : List ( EventCondition, List EngineEffect )
+  , universe : Dict Id Body
+  , graphics : List GraphicsObject
+  , names : Dict String Id
   }
 
 
@@ -204,8 +214,13 @@ type alias MenuState =
 
 type Room
   = LevelSelect
-  | LevelWon
-  | LevelLost
+  | Won Level
+  | Lost Level
+
+
+type Level
+  = Tutorial
+  | Outnumbered
 
 
 type alias Library =

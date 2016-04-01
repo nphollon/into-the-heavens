@@ -20,9 +20,15 @@ timeUpdate clockTime model =
       engineUpdate clockTime model
   in
     if Util.hasWon newModel then
-      Menu.Init.victory newModel.seed newModel.library
+      Menu.Init.victory
+        newModel.level
+        newModel.seed
+        newModel.library
     else if Util.hasCrashed newModel then
-      Menu.Init.crash newModel.seed newModel.library
+      Menu.Init.crash
+        newModel.level
+        newModel.seed
+        newModel.library
     else
       tick GameMode newModel
 

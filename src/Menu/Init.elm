@@ -10,14 +10,14 @@ mainMenu =
   menu LevelSelect
 
 
-crash : Seed -> Library -> ( Mode, Effects Update )
+crash : Level -> Seed -> Library -> ( Mode, Effects Update )
 crash =
-  menu LevelLost
+  Lost >> menu
 
 
-victory : Seed -> Library -> ( Mode, Effects Update )
+victory : Level -> Seed -> Library -> ( Mode, Effects Update )
 victory =
-  menu LevelWon
+  Won >> menu
 
 
 menu : Room -> Seed -> Library -> ( Mode, Effects Update )

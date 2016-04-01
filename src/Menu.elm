@@ -9,21 +9,40 @@ import Effects exposing (Effects)
 import Types exposing (..)
 import Graphics.AppFrame as AppFrame
 import Flight.Init
+import Level.Outnumbered
+import Level.Tutorial
 
 
 keyUpdate : Set KeyCode -> MenuState -> ( Mode, Effects Update )
 keyUpdate keySet model =
-  if Set.member (Char.toCode 'N') keySet then
-    actionUpdate StartGame model
-  else
-    noEffects MenuMode model
+  let
+    reset =
+      Set.member (Char.toCode 'N') keySet
+
+    maybeLevel =
+      case model.room of
+        LevelSelect ->
+          Nothing
+
+        Won level ->
+          Just level
+
+        Lost level ->
+          Just level
+  in
+    case ( reset, maybeLevel ) of
+      ( True, Just level ) ->
+        actionUpdate (StartGame level) model
+
+      _ ->
+        noEffects MenuMode model
 
 
 actionUpdate : MenuAction -> MenuState -> ( Mode, Effects Update )
 actionUpdate input model =
   case input of
-    StartGame ->
-      Flight.Init.game model.seed model.library
+    StartGame level ->
+      Flight.Init.game (dataFor level) model.seed model.library
 
     ToMainMenu ->
       noEffects MenuMode { model | room = LevelSelect }
@@ -35,13 +54,13 @@ view address state =
     LevelSelect ->
       mainMenuView address
 
-    LevelWon ->
+    Won level ->
       gameOverView
         "You won"
         "\"The machine does not isolate us from the great problems of nature but plunges us more deeply into them.\" ~ Antoine de St. Exupéry"
         address
 
-    LevelLost ->
+    Lost level ->
       gameOverView
         "You crashed"
         "\"Even our misfortunes are a part of our belongings.\" ~ Antoine de St. Exupéry"
@@ -55,7 +74,10 @@ mainMenuView address =
         [ class "menu" ]
         [ h2 [] [ text "Select a level" ]
         , levelButton
-            (onClick address StartGame)
+            (onClick address (StartGame Tutorial))
+            "Tutorial"
+        , levelButton
+            (onClick address (StartGame Outnumbered))
             "Outnumbered"
         ]
     ]
@@ -82,3 +104,13 @@ levelButton action label =
   div
     [ class "menu-item" ]
     [ button [ action ] [ text label ] ]
+
+
+dataFor : Level -> LevelData
+dataFor level =
+  case level of
+    Tutorial ->
+      Level.Tutorial.data
+
+    Outnumbered ->
+      Level.Outnumbered.data

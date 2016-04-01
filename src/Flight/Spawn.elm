@@ -1,4 +1,4 @@
-module Flight.Spawn (spawnShip, visitorBodyAt, spawnMissile, spawnExplosion, spawnCheckpoint, defaultCockpit, defaultBody, playerId, emptyId, inaction) where
+module Flight.Spawn (spawnPlayer, spawnShip, visitorBodyAt, spawnMissile, spawnExplosion, spawnCheckpoint, defaultCockpit, defaultBody, playerId, emptyId, inaction) where
 
 import Color
 import Dict exposing (Dict)
@@ -9,6 +9,19 @@ import Math.Transform as Transform
 import Math.Vector as Vector exposing (Vector)
 import Math.Spherical as Spherical
 import Generate.Ship as Ship
+
+
+spawnPlayer : Dict Id Body -> Dict Id Body
+spawnPlayer =
+  let
+    playerBody =
+      { defaultBody
+        | hull = Just (Collision.hull .position Ship.triangles)
+        , health = 1
+        , ai = PlayerControlled defaultCockpit
+      }
+  in
+    Dict.insert playerId playerBody
 
 
 spawnShip : Int -> GameState -> GameState
