@@ -117,9 +117,15 @@ spawnExplosion parent model =
     spawn graphics body model
 
 
-spawnCheckpoint : String -> Body -> GameState -> GameState
-spawnCheckpoint name body model =
+spawnCheckpoint : String -> Vector -> GameState -> GameState
+spawnCheckpoint name position model =
   let
+    body =
+      { defaultBody
+        | position = position
+        , angVelocity = Vector.vector 0 1 0
+      }
+
     graphics id =
       Object
         { bodyId = id

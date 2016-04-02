@@ -130,8 +130,8 @@ applyEffect effect model =
         Nothing ->
           model
 
-    SpawnCheckpoint id body ->
-      Spawn.spawnCheckpoint id body model
+    SpawnCheckpoint id position ->
+      Spawn.spawnCheckpoint id position model
 
     ChangeTarget ->
       Util.setPlayerTarget model

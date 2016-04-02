@@ -70,7 +70,7 @@ type alias Id =
 type EngineEffect
   = SpawnShips Int
   | SpawnMissile Id Id
-  | SpawnCheckpoint String Body
+  | SpawnCheckpoint String Vector
   | Destroy Id
   | DestroyByName String
   | ChangeTarget

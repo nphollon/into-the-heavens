@@ -185,7 +185,7 @@ log model =
       p [] [ text message ]
 
     cutoffTime =
-      model.gameTime - 3
+      model.gameTime - 6
   in
     model.log
       |> ListX.takeWhile (\( t, _ ) -> t > cutoffTime)

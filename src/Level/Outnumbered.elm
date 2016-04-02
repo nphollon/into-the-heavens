@@ -4,7 +4,6 @@ import Dict exposing (Dict)
 import Types exposing (..)
 import Math.Vector as Vector
 import Math.Collision as Collision
-import Generate.Ship as Ship
 import Generate.Sphere as Sphere
 import Flight.Spawn as Spawn exposing (defaultBody)
 
@@ -15,7 +14,7 @@ data =
   , events =
       [ ( Immediately
         , [ Notify "Somebody is at the door. Could you get it?"
-          , SpawnCheckpoint "start" startBody
+          , SpawnCheckpoint "start" (Vector.vector 0 6 -10)
           ]
         )
       , ( ReachedCheckpoint "start"
@@ -31,21 +30,14 @@ data =
         )
       , ( NoMoreVisitors
         , [ Notify "Come back inside before dinner gets cold."
-          , SpawnCheckpoint "home" homeBody
+          , SpawnCheckpoint "home" (Vector.vector 0 -1 0)
           ]
         )
       , ( ReachedCheckpoint "home", [ Victory ] )
       ]
   , universe =
       Dict.fromList
-        [ ( Spawn.playerId
-          , { defaultBody
-              | hull = Just (Collision.hull .position Ship.triangles)
-              , health = 1
-              , ai = PlayerControlled Spawn.defaultCockpit
-            }
-          )
-        , ( 1
+        [ ( 1
           , { defaultBody
               | position = Vector.vector 0 -20 0
               , angVelocity = Vector.vector 0 3.0e-2 0
@@ -63,20 +55,4 @@ data =
           }
       ]
   , names = Dict.empty
-  }
-
-
-homeBody : Body
-homeBody =
-  { defaultBody
-    | position = Vector.vector 0 -1 0
-    , angVelocity = Vector.vector 0 1 0
-  }
-
-
-startBody : Body
-startBody =
-  { defaultBody
-    | position = Vector.vector 0 6 -10
-    , angVelocity = Vector.vector 1 0 0
   }
