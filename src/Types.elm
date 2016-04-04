@@ -184,6 +184,9 @@ type GraphicsObject
       { filter : Body -> Bool
       , meshName : String
       }
+  | Atmosphere
+      { bodyId : Id
+      }
 
 
 type ShaderType
@@ -221,6 +224,7 @@ type Room
 type Level
   = Tutorial
   | Outnumbered
+  | AtmosphereTest
 
 
 type alias Library =

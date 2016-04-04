@@ -11,6 +11,7 @@ import Graphics.AppFrame as AppFrame
 import Flight.Init
 import Level.Outnumbered
 import Level.Tutorial
+import Level.AtmosphereTest
 
 
 keyUpdate : Set KeyCode -> MenuState -> ( Mode, Effects Update )
@@ -79,6 +80,9 @@ mainMenuView address =
         , levelButton
             (onClick address (StartGame Outnumbered))
             "Outnumbered"
+        , levelButton
+            (onClick address (StartGame AtmosphereTest))
+            "Atmosphere Test"
         ]
     ]
     []
@@ -114,3 +118,6 @@ dataFor level =
 
     Outnumbered ->
       Level.Outnumbered.data
+
+    AtmosphereTest ->
+      Level.AtmosphereTest.data
