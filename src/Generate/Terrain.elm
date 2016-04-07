@@ -1,4 +1,4 @@
-module Generate.Terrain (..) where
+module Generate.Terrain (TerrainSphere, Grid, Point, Face(..), Pole(..), init, gridPoint, polePoint, above, below, leftOf, rightOf, poleFor, setGridPoint) where
 
 import Array exposing (Array)
 
@@ -89,13 +89,28 @@ gridPoint r i j face sphere =
     else if (j == -1) then
       gridPoint r max (limit - i) (below face) sphere
     else
-      faceGrid face sphere
+      getFaceGrid face sphere
         |> Array.get (i * delta)
         |> flip Maybe.andThen (Array.get (j * delta))
 
 
-faceGrid : Face -> TerrainSphere -> Grid Point
-faceGrid face =
+setGridPoint : Int -> Int -> Int -> Face -> Point -> TerrainSphere -> TerrainSphere
+setGridPoint r i j face point sphere =
+  let
+    delta =
+      2 ^ (sphere.resolution - r)
+
+    update grid =
+      Array.get (i * delta) grid
+        |> Maybe.map (Array.set (j * delta) point)
+        |> Maybe.map (\row -> Array.set (i * delta) row grid)
+        |> Maybe.withDefault grid
+  in
+    updateFaceGrid face update sphere
+
+
+getFaceGrid : Face -> TerrainSphere -> Grid Point
+getFaceGrid face =
   case face of
     Yellow ->
       .yellow
@@ -114,6 +129,28 @@ faceGrid face =
 
     White ->
       .white
+
+
+updateFaceGrid : Face -> (Grid Point -> Grid Point) -> TerrainSphere -> TerrainSphere
+updateFaceGrid face gridFunc sphere =
+  case face of
+    Yellow ->
+      { sphere | yellow = gridFunc sphere.yellow }
+
+    Red ->
+      { sphere | red = gridFunc sphere.red }
+
+    Blue ->
+      { sphere | blue = gridFunc sphere.blue }
+
+    Green ->
+      { sphere | green = gridFunc sphere.green }
+
+    Orange ->
+      { sphere | orange = gridFunc sphere.orange }
+
+    White ->
+      { sphere | white = gridFunc sphere.white }
 
 
 polePoint : Pole -> TerrainSphere -> Point

@@ -43,6 +43,17 @@ faceAdjacency =
     ]
 
 
+faces : List Face
+faces =
+  [ Yellow
+  , Red
+  , Blue
+  , Green
+  , Orange
+  , White
+  ]
+
+
 initialization : Test
 initialization =
   let
@@ -62,11 +73,21 @@ initialization =
       ]
 
 
-setting : Test
-setting =
-  suite
-    "setting a value in the grid"
-    []
+testGridSize : String -> Int -> Grid a -> Test
+testGridSize name expectedLength grid =
+  let
+    actualArea =
+      Array.toList grid
+        |> List.map Array.length
+        |> List.sum
+  in
+    suite
+      name
+      [ test "length"
+          <| assertEqual expectedLength (Array.length grid)
+      , test "area"
+          <| assertEqual (expectedLength ^ 2) actualArea
+      ]
 
 
 getting : Test
@@ -170,32 +191,76 @@ getting =
     ]
 
 
-testGridSize : String -> Int -> Grid a -> Test
-testGridSize name expectedLength grid =
+setting : Test
+setting =
+  suite
+    "setting a value in the grid"
+    [ suite
+        "granularity = resolution"
+        [ test "origin point gets set"
+            <| assertPointSet 2 0 0 Yellow
+        , test "normal point gets set"
+            <| assertPointSet 2 3 2 Yellow
+        , test "out-of-bounds y not set"
+            <| assertPointNotSet 2 3 4 Yellow
+        , test "out-of-bounds x not set"
+            <| assertPointNotSet 2 4 3 Yellow
+        , test "negative y not set"
+            <| assertPointNotSet 2 3 -1 Yellow
+        , test "negative x not set"
+            <| assertPointNotSet 2 -1 3 Yellow
+        ]
+    , suite
+        "granularity = 1"
+        [ test "origin point gets set"
+            <| assertPointSet 1 0 0 Yellow
+        , test "normal point gets set"
+            <| assertPointSet 1 1 1 Yellow
+        , test "out-of-bounds y not set"
+            <| assertPointNotSet 1 1 2 Yellow
+        , test "out-of-bounds x not set"
+            <| assertPointNotSet 1 2 1 Yellow
+        , test "negative y not set"
+            <| assertPointNotSet 1 1 -1 Yellow
+        , test "negative x not set"
+            <| assertPointNotSet 1 -1 1 Yellow
+        ]
+    ]
+
+
+assertPointSet : Int -> Int -> Int -> Face -> Assertion
+assertPointSet r i j face =
   let
-    actualArea =
-      Array.toList grid
-        |> List.map Array.length
-        |> List.sum
+    testPoint =
+      { lat = 1, lon = 1, value = 0 }
+
+    modifiedSphere =
+      setGridPoint r i j face testPoint testSphere
   in
-    suite
-      name
-      [ test "length"
-          <| assertEqual expectedLength (Array.length grid)
-      , test "area"
-          <| assertEqual (expectedLength ^ 2) actualArea
-      ]
+    assertEqual
+      (Just testPoint)
+      (gridPoint r i j face modifiedSphere)
 
 
-faces : List Face
-faces =
-  [ Yellow
-  , Red
-  , Blue
-  , Green
-  , Orange
-  , White
-  ]
+assertPointNotSet : Int -> Int -> Int -> Face -> Assertion
+assertPointNotSet r i j face =
+  let
+    testPoint =
+      { lat = 1, lon = 1, value = 0 }
+
+    modifiedSphere =
+      setGridPoint r i j face testPoint testSphere
+
+    modifiedPoint =
+      gridPoint r i j face modifiedSphere
+
+    originalPoint =
+      gridPoint r i j face testSphere
+  in
+    if modifiedPoint /= originalPoint then
+      assertEqual modifiedPoint originalPoint
+    else
+      assertEqual testSphere modifiedSphere
 
 
 pt : Float -> Point
