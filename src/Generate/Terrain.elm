@@ -1,6 +1,7 @@
-module Generate.Terrain (TerrainSphere, Grid, Point, Face(..), Pole(..), init, gridPoint, polePoint, above, below, leftOf, rightOf, poleFor, setGridPoint) where
+module Generate.Terrain (TerrainSphere, Grid, Point, Face(..), Pole(..), init, gridPoint, polePoint, above, below, leftOf, rightOf, poleFor, setGridPoint, offset) where
 
 import Array exposing (Array)
+import Random.PCG as Random
 
 
 type alias TerrainSphere =
@@ -107,6 +108,15 @@ setGridPoint r i j face point sphere =
         |> Maybe.withDefault grid
   in
     updateFaceGrid face update sphere
+
+
+offset : Int -> Random.Generator Float
+offset r =
+  let
+    limit =
+      2 ^ -r
+  in
+    Random.float -limit limit
 
 
 getFaceGrid : Face -> TerrainSphere -> Grid Point

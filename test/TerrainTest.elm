@@ -2,6 +2,7 @@ module TerrainTest (testSuite) where
 
 import Array
 import ElmTest exposing (..)
+import Random.PCG as Random
 import Generate.Terrain exposing (..)
 
 
@@ -13,6 +14,7 @@ testSuite =
     , initialization
     , setting
     , getting
+    , offsets
     ]
 
 
@@ -316,3 +318,29 @@ testSphere =
   , northPole = pt -1
   , southPole = pt -2
   }
+
+
+offsets : Test
+offsets =
+  let
+    randomNumber =
+      generate (Random.float 0 1)
+  in
+    suite
+      "Randomly generated offset"
+      [ test "resolution 1 generates offset between -0.5 and 0.5"
+          <| assertEqual
+              (randomNumber - 0.5)
+              (generate (offset 1))
+      , test "resolution 3 generates offset between -0.125 and 0.125"
+          <| assertEqual
+              (0.25 * randomNumber - 0.125)
+              (generate (offset 3))
+      ]
+
+
+generate : Random.Generator a -> a
+generate generator =
+  Random.initialSeed 0
+    |> Random.generate generator
+    |> fst
