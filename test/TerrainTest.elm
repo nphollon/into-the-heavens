@@ -2,6 +2,7 @@ module TerrainTest (testSuite) where
 
 import Array
 import ElmTest exposing (..)
+import Assertion exposing (..)
 import Random.PCG as Random
 import Generate.Terrain exposing (..)
 
@@ -15,6 +16,7 @@ testSuite =
     , setting
     , getting
     , offsets
+    , pointLists
     ]
 
 
@@ -337,6 +339,47 @@ offsets =
               (0.25 * randomNumber - 0.125)
               (generate (offset 3))
       ]
+
+
+pointLists : Test
+pointLists =
+  suite
+    "Lists of points"
+    [ suite
+        "face-centered points"
+        [ test "resolution = 1 just includes (1,1)"
+            <| assertListContents
+                [ ( 1, 1 ) ]
+                (faceCenteredPoints 1)
+        , test "resolution = 3 includes all pairs of odd numbers 1 to 7"
+            <| assertListContents
+                ([ ( 1, 1 ), ( 1, 3 ), ( 1, 5 ), ( 1, 7 ) ]
+                  ++ [ ( 3, 1 ), ( 3, 3 ), ( 3, 5 ), ( 3, 7 ) ]
+                  ++ [ ( 5, 1 ), ( 5, 3 ), ( 5, 5 ), ( 5, 7 ) ]
+                  ++ [ ( 7, 1 ), ( 7, 3 ), ( 7, 5 ), ( 7, 7 ) ]
+                )
+                (faceCenteredPoints 3)
+        ]
+    , suite
+        "edge-centered points"
+        [ test "resolution = 1 includes (0,1) and (1,0)"
+            <| assertListContents
+                [ ( 0, 1 ), ( 1, 0 ) ]
+                (edgeCenteredPoints 1)
+        , test "resolution = 3 includes all pairs of odds & evens below 8"
+            <| assertListContents
+                ([ ( 0, 1 ), ( 0, 3 ), ( 0, 5 ), ( 0, 7 ) ]
+                  ++ [ ( 2, 1 ), ( 2, 3 ), ( 2, 5 ), ( 2, 7 ) ]
+                  ++ [ ( 4, 1 ), ( 4, 3 ), ( 4, 5 ), ( 4, 7 ) ]
+                  ++ [ ( 6, 1 ), ( 6, 3 ), ( 6, 5 ), ( 6, 7 ) ]
+                  ++ [ ( 1, 0 ), ( 1, 2 ), ( 1, 4 ), ( 1, 6 ) ]
+                  ++ [ ( 3, 0 ), ( 3, 2 ), ( 3, 4 ), ( 3, 6 ) ]
+                  ++ [ ( 5, 0 ), ( 5, 2 ), ( 5, 4 ), ( 5, 6 ) ]
+                  ++ [ ( 7, 0 ), ( 7, 2 ), ( 7, 4 ), ( 7, 6 ) ]
+                )
+                (edgeCenteredPoints 3)
+        ]
+    ]
 
 
 generate : Random.Generator a -> a

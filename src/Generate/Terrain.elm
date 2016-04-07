@@ -1,6 +1,7 @@
-module Generate.Terrain (TerrainSphere, Grid, Point, Face(..), Pole(..), init, gridPoint, polePoint, above, below, leftOf, rightOf, poleFor, setGridPoint, offset) where
+module Generate.Terrain (TerrainSphere, Grid, Point, Face(..), Pole(..), init, gridPoint, polePoint, above, below, leftOf, rightOf, poleFor, setGridPoint, offset, faceCenteredPoints, edgeCenteredPoints) where
 
 import Array exposing (Array)
+import List.Extra as ListX
 import Random.PCG as Random
 
 
@@ -108,15 +109,6 @@ setGridPoint r i j face point sphere =
         |> Maybe.withDefault grid
   in
     updateFaceGrid face update sphere
-
-
-offset : Int -> Random.Generator Float
-offset r =
-  let
-    limit =
-      2 ^ -r
-  in
-    Random.float -limit limit
 
 
 getFaceGrid : Face -> TerrainSphere -> Grid Point
@@ -281,3 +273,41 @@ poleFor face =
 
     White ->
       South
+
+
+offset : Int -> Random.Generator Float
+offset r =
+  let
+    limit =
+      2 ^ -r
+  in
+    Random.float -limit limit
+
+
+faceCenteredPoints : Int -> List ( Int, Int )
+faceCenteredPoints r =
+  let
+    odds =
+      List.filter isOdd (validIndexes r)
+  in
+    ListX.lift2 (,) odds odds
+
+
+edgeCenteredPoints : Int -> List ( Int, Int )
+edgeCenteredPoints r =
+  let
+    ( odds, evens ) =
+      List.partition isOdd (validIndexes r)
+  in
+    ListX.lift2 (,) evens odds
+      ++ ListX.lift2 (,) odds evens
+
+
+validIndexes : Int -> List Int
+validIndexes resolution =
+  [0..(2 ^ resolution - 1)]
+
+
+isOdd : Int -> Bool
+isOdd i =
+  i % 2 == 1
