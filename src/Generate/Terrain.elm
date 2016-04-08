@@ -46,18 +46,23 @@ type Pole
 init : Int -> TerrainSphere
 init r =
   let
-    pt =
-      { lat = 0, lon = 0, value = 0 }
+    blankGrid lat lon =
+      pt lat lon
+        |> Array.repeat (2 ^ r)
+        |> Array.repeat (2 ^ r)
+
+    pt lat lon =
+      { lat = lat, lon = lon, value = 0 }
   in
     { resolution = r
-    , yellow = blankGrid (2 ^ r) pt
-    , red = blankGrid (2 ^ r) pt
-    , blue = blankGrid (2 ^ r) pt
-    , green = blankGrid (2 ^ r) pt
-    , orange = blankGrid (2 ^ r) pt
-    , white = blankGrid (2 ^ r) pt
-    , northPole = pt
-    , southPole = pt
+    , yellow = blankGrid (degrees 30) 0
+    , red = blankGrid (degrees 30) (degrees -120)
+    , blue = blankGrid (degrees 30) (degrees 120)
+    , green = blankGrid (degrees -30) (degrees -60)
+    , orange = blankGrid (degrees -30) (degrees 60)
+    , white = blankGrid (degrees -30) (degrees 180)
+    , northPole = pt (degrees 90) 0
+    , southPole = pt (degrees -90) 0
     }
 
 

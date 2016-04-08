@@ -17,6 +17,7 @@ testSuite =
     , getting
     , offsets
     , pointLists
+    , squareDiamond
     ]
 
 
@@ -61,19 +62,51 @@ faces =
 initialization : Test
 initialization =
   let
-    terrainSphere =
+    initSphere =
       init 4
   in
     suite
       "intializing terrain sphere"
       [ test "resolution is 4"
-          <| assertEqual 4 terrainSphere.resolution
-      , testGridSize "yellow is 16 x 16" 16 terrainSphere.yellow
-      , testGridSize "red is 16 x 16" 16 terrainSphere.red
-      , testGridSize "blue is 16 x 16" 16 terrainSphere.blue
-      , testGridSize "white is 16 x 16" 16 terrainSphere.white
-      , testGridSize "orange is 16 x 16" 16 terrainSphere.orange
-      , testGridSize "green is 16 x 16" 16 terrainSphere.green
+          <| assertEqual 4 initSphere.resolution
+      , testGridSize "yellow is 16 x 16" 16 initSphere.yellow
+      , testGridSize "red is 16 x 16" 16 initSphere.red
+      , testGridSize "blue is 16 x 16" 16 initSphere.blue
+      , testGridSize "white is 16 x 16" 16 initSphere.white
+      , testGridSize "orange is 16 x 16" 16 initSphere.orange
+      , testGridSize "green is 16 x 16" 16 initSphere.green
+      , test "north pole"
+          <| assertCoordinates
+              ( degrees 90, degrees 0 )
+              (Just initSphere.northPole)
+      , test "south pole"
+          <| assertCoordinates
+              ( degrees -90, degrees 0 )
+              (Just initSphere.southPole)
+      , test "yellow origin"
+          <| assertCoordinates
+              ( degrees 30, degrees 0 )
+              (gridPoint 1 0 0 Yellow initSphere)
+      , test "red origin"
+          <| assertCoordinates
+              ( degrees 30, degrees -120 )
+              (gridPoint 1 0 0 Red initSphere)
+      , test "blue origin"
+          <| assertCoordinates
+              ( degrees 30, degrees 120 )
+              (gridPoint 1 0 0 Blue initSphere)
+      , test "green origin"
+          <| assertCoordinates
+              ( degrees -30, degrees -60 )
+              (gridPoint 1 0 0 Green initSphere)
+      , test "orange origin"
+          <| assertCoordinates
+              ( degrees -30, degrees 60 )
+              (gridPoint 1 0 0 Orange initSphere)
+      , test "white origin"
+          <| assertCoordinates
+              ( degrees -30, degrees 180 )
+              (gridPoint 1 0 0 White initSphere)
       ]
 
 
@@ -94,6 +127,17 @@ testGridSize name expectedLength grid =
       ]
 
 
+assertCoordinates : ( Float, Float ) -> Maybe Point -> Assertion
+assertCoordinates expected maybeActual =
+  let
+    actual =
+      maybeActual
+        |> Maybe.map (\{ lat, lon } -> ( lat, lon ))
+        |> Maybe.withDefault ( 0 / 0, 0 / 0 )
+  in
+    assertEqual expected actual
+
+
 getting : Test
 getting =
   suite
@@ -103,94 +147,94 @@ getting =
         [ test "origin point"
             <| assertEqual
                 (Just (pt 1))
-                (gridPoint 2 0 0 Yellow testSphere)
+                (gridPoint 2 0 0 Yellow getSetSphere)
         , test "normal point"
             <| assertEqual
                 (Just (pt 7))
-                (gridPoint 2 1 2 Yellow testSphere)
+                (gridPoint 2 1 2 Yellow getSetSphere)
         , test "pole"
             <| assertEqual
                 (Just (pt -1))
-                (gridPoint 2 4 0 Yellow testSphere)
+                (gridPoint 2 4 0 Yellow getSetSphere)
         , test "right boundary"
             <| assertEqual
                 (Just (pt 37))
-                (gridPoint 2 4 3 Yellow testSphere)
+                (gridPoint 2 4 3 Yellow getSetSphere)
         , test "upper right corner"
             <| assertEqual
                 (Just (pt 33))
-                (gridPoint 2 4 4 Yellow testSphere)
+                (gridPoint 2 4 4 Yellow getSetSphere)
         , test "upper boundary"
             <| assertEqual
                 (Just (pt 68))
-                (gridPoint 2 3 4 Yellow testSphere)
+                (gridPoint 2 3 4 Yellow getSetSphere)
         , test "upper boundary on x axis"
             <| assertEqual
                 (Just (pt 65))
-                (gridPoint 2 0 4 Yellow testSphere)
+                (gridPoint 2 0 4 Yellow getSetSphere)
         , test "left boundary"
             <| assertEqual
                 (Just (pt 64))
-                (gridPoint 2 -1 3 Yellow testSphere)
+                (gridPoint 2 -1 3 Yellow getSetSphere)
         , test "left boundary on y axis"
             <| assertEqual
                 (Just (pt 52))
-                (gridPoint 2 -1 0 Yellow testSphere)
+                (gridPoint 2 -1 0 Yellow getSetSphere)
         , test "lower boundary on x axis"
             <| assertEqual
                 (Just (pt 52))
-                (gridPoint 2 0 -1 Yellow testSphere)
+                (gridPoint 2 0 -1 Yellow getSetSphere)
         , test "lower boundary"
             <| assertEqual
                 (Just (pt 30))
-                (gridPoint 2 3 -1 Yellow testSphere)
+                (gridPoint 2 3 -1 Yellow getSetSphere)
         ]
     , suite
         "granularity = 1"
         [ test "origin point"
             <| assertEqual
                 (Just (pt 1))
-                (gridPoint 1 0 0 Yellow testSphere)
+                (gridPoint 1 0 0 Yellow getSetSphere)
         , test "normal point"
             <| assertEqual
                 (Just (pt 11))
-                (gridPoint 1 1 1 Yellow testSphere)
+                (gridPoint 1 1 1 Yellow getSetSphere)
         , test "pole"
             <| assertEqual
                 (Just (pt -1))
-                (gridPoint 1 2 0 Yellow testSphere)
+                (gridPoint 1 2 0 Yellow getSetSphere)
         , test "right boundary"
             <| assertEqual
                 (Just (pt 41))
-                (gridPoint 1 2 1 Yellow testSphere)
+                (gridPoint 1 2 1 Yellow getSetSphere)
         , test "upper right corner"
             <| assertEqual
                 (Just (pt 33))
-                (gridPoint 1 2 2 Yellow testSphere)
+                (gridPoint 1 2 2 Yellow getSetSphere)
         , test "upper boundary"
             <| assertEqual
                 (Just (pt 67))
-                (gridPoint 1 1 2 Yellow testSphere)
+                (gridPoint 1 1 2 Yellow getSetSphere)
         , test "upper boundary on x axis"
             <| assertEqual
                 (Just (pt 65))
-                (gridPoint 1 0 2 Yellow testSphere)
+                (gridPoint 1 0 2 Yellow getSetSphere)
         , test "left boundary"
             <| assertEqual
                 (Just (pt 59))
-                (gridPoint 1 -1 1 Yellow testSphere)
+                (gridPoint 1 -1 1 Yellow getSetSphere)
         , test "left boundary on y axis"
             <| assertEqual
                 (Just (pt 51))
-                (gridPoint 1 -1 0 Yellow testSphere)
+                (gridPoint 1 -1 0 Yellow getSetSphere)
         , test "lower boundary on x axis"
             <| assertEqual
                 (Just (pt 51))
-                (gridPoint 1 0 -1 Yellow testSphere)
+                (gridPoint 1 0 -1 Yellow getSetSphere)
         , test "lower boundary"
             <| assertEqual
                 (Just (pt 27))
-                (gridPoint 1 1 -1 Yellow testSphere)
+                (gridPoint 1 1 -1 Yellow getSetSphere)
         ]
     ]
 
@@ -239,7 +283,7 @@ assertPointSet r i j face =
       { lat = 1, lon = 1, value = 0 }
 
     modifiedSphere =
-      setGridPoint r i j face testPoint testSphere
+      setGridPoint r i j face testPoint getSetSphere
   in
     assertEqual
       (Just testPoint)
@@ -253,18 +297,18 @@ assertPointNotSet r i j face =
       { lat = 1, lon = 1, value = 0 }
 
     modifiedSphere =
-      setGridPoint r i j face testPoint testSphere
+      setGridPoint r i j face testPoint getSetSphere
 
     modifiedPoint =
       gridPoint r i j face modifiedSphere
 
     originalPoint =
-      gridPoint r i j face testSphere
+      gridPoint r i j face getSetSphere
   in
     if modifiedPoint /= originalPoint then
       assertEqual modifiedPoint originalPoint
     else
-      assertEqual testSphere modifiedSphere
+      assertEqual getSetSphere modifiedSphere
 
 
 pt : Float -> Point
@@ -272,8 +316,8 @@ pt v =
   { lat = 0, lon = 0, value = v }
 
 
-testSphere : TerrainSphere
-testSphere =
+getSetSphere : TerrainSphere
+getSetSphere =
   { resolution = 2
   , yellow =
       Array.fromList
@@ -341,6 +385,13 @@ offsets =
       ]
 
 
+generate : Random.Generator a -> a
+generate generator =
+  Random.initialSeed 0
+    |> Random.generate generator
+    |> fst
+
+
 pointLists : Test
 pointLists =
   suite
@@ -382,8 +433,8 @@ pointLists =
     ]
 
 
-generate : Random.Generator a -> a
-generate generator =
-  Random.initialSeed 0
-    |> Random.generate generator
-    |> fst
+squareDiamond : Test
+squareDiamond =
+  suite
+    ""
+    []
