@@ -14,7 +14,7 @@ assertEqualVector a b =
 
 assertEqualFloat : Float -> Float -> Assertion
 assertEqualFloat a b =
-  if isAboutZero ((a - b) ^ 2) then
+  if areAboutEqual a b then
     pass
   else
     assertEqual a b
@@ -22,10 +22,7 @@ assertEqualFloat a b =
 
 assertEqualPair : ( Float, Float ) -> ( Float, Float ) -> Assertion
 assertEqualPair a b =
-  if
-    isAboutZero ((fst a - fst b) ^ 2)
-      && isAboutZero ((snd a - snd b) ^ 2)
-  then
+  if areAboutEqual (fst a) (fst b) && areAboutEqual (snd a) (snd b) then
     pass
   else
     assertEqual a b
@@ -48,6 +45,11 @@ assertListContents expected actual =
         ++ toString missing
         ++ " and should not have contained "
         ++ toString extra
+
+
+areAboutEqual : Float -> Float -> Bool
+areAboutEqual a b =
+  isAboutZero ((a - b) ^ 2)
 
 
 isAboutZero : Float -> Bool

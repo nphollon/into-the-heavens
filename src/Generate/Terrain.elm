@@ -1,32 +1,27 @@
-module Generate.Terrain (TerrainSphere, Grid, Point, Face(..), Pole(..), init, gridPoint, polePoint, above, below, leftOf, rightOf, poleFor, setGridPoint, offset, faceCenteredPoints, edgeCenteredPoints) where
+module Generate.Terrain (TerrainSphere, Grid, Face(..), Pole(..), init, gridPoint, polePoint, above, below, leftOf, rightOf, poleFor, setGridPoint, offset, faceCenteredPoints, edgeCenteredPoints, squareAverage, diamondAverage) where
 
 import Array exposing (Array)
 import List.Extra as ListX
+import Maybe.Extra as MaybeX
 import Random.PCG as Random
+import Math.Spherical as Spherical
 
 
 type alias TerrainSphere =
   { resolution : Int
-  , yellow : Grid Point
-  , red : Grid Point
-  , blue : Grid Point
-  , green : Grid Point
-  , orange : Grid Point
-  , white : Grid Point
-  , northPole : Point
-  , southPole : Point
+  , yellow : Grid Float
+  , red : Grid Float
+  , blue : Grid Float
+  , green : Grid Float
+  , orange : Grid Float
+  , white : Grid Float
+  , northPole : Float
+  , southPole : Float
   }
 
 
 type alias Grid a =
   Array (Array a)
-
-
-type alias Point =
-  { lat : Float
-  , lon : Float
-  , value : Float
-  }
 
 
 type Face
@@ -43,35 +38,50 @@ type Pole
   | South
 
 
-init : Int -> TerrainSphere
-init r =
+init : Int -> Float -> TerrainSphere
+init r v =
   let
-    blankGrid lat lon =
-      pt lat lon
-        |> Array.repeat (2 ^ r)
-        |> Array.repeat (2 ^ r)
-
-    pt lat lon =
-      { lat = lat, lon = lon, value = 0 }
+    blankGrid =
+      Array.repeat (2 ^ r) (Array.repeat (2 ^ r) v)
   in
     { resolution = r
-    , yellow = blankGrid (degrees 30) 0
-    , red = blankGrid (degrees 30) (degrees -120)
-    , blue = blankGrid (degrees 30) (degrees 120)
-    , green = blankGrid (degrees -30) (degrees -60)
-    , orange = blankGrid (degrees -30) (degrees 60)
-    , white = blankGrid (degrees -30) (degrees 180)
-    , northPole = pt (degrees 90) 0
-    , southPole = pt (degrees -90) 0
+    , yellow = blankGrid
+    , red = blankGrid
+    , blue = blankGrid
+    , green = blankGrid
+    , orange = blankGrid
+    , white = blankGrid
+    , northPole = 0
+    , southPole = 0
     }
 
 
-blankGrid : Int -> a -> Grid a
-blankGrid r =
-  Array.repeat r >> Array.repeat r
+squareAverage : Int -> Int -> Int -> Face -> TerrainSphere -> Maybe Float
+squareAverage r i j face sphere =
+  MaybeX.map4
+    quadAverage
+    (gridPoint r (i + 1) (j - 1) face sphere)
+    (gridPoint r (i + 1) (j + 1) face sphere)
+    (gridPoint r (i - 1) (j + 1) face sphere)
+    (gridPoint r (i - 1) (j - 1) face sphere)
 
 
-gridPoint : Int -> Int -> Int -> Face -> TerrainSphere -> Maybe Point
+diamondAverage : Int -> Int -> Int -> Face -> TerrainSphere -> Maybe Float
+diamondAverage r i j face sphere =
+  MaybeX.map4
+    quadAverage
+    (gridPoint r i (j - 1) face sphere)
+    (gridPoint r i (j + 1) face sphere)
+    (gridPoint r (i - 1) j face sphere)
+    (gridPoint r (i + 1) j face sphere)
+
+
+quadAverage : Float -> Float -> Float -> Float -> Float
+quadAverage ne nw sw se =
+  0.25 * (ne + nw + sw + se)
+
+
+gridPoint : Int -> Int -> Int -> Face -> TerrainSphere -> Maybe Float
 gridPoint r i j face sphere =
   let
     limit =
@@ -101,7 +111,7 @@ gridPoint r i j face sphere =
         |> flip Maybe.andThen (Array.get (j * delta))
 
 
-setGridPoint : Int -> Int -> Int -> Face -> Point -> TerrainSphere -> TerrainSphere
+setGridPoint : Int -> Int -> Int -> Face -> Float -> TerrainSphere -> TerrainSphere
 setGridPoint r i j face point sphere =
   let
     delta =
@@ -116,7 +126,7 @@ setGridPoint r i j face point sphere =
     updateFaceGrid face update sphere
 
 
-getFaceGrid : Face -> TerrainSphere -> Grid Point
+getFaceGrid : Face -> TerrainSphere -> Grid Float
 getFaceGrid face =
   case face of
     Yellow ->
@@ -138,7 +148,7 @@ getFaceGrid face =
       .white
 
 
-updateFaceGrid : Face -> (Grid Point -> Grid Point) -> TerrainSphere -> TerrainSphere
+updateFaceGrid : Face -> (Grid Float -> Grid Float) -> TerrainSphere -> TerrainSphere
 updateFaceGrid face gridFunc sphere =
   case face of
     Yellow ->
@@ -160,7 +170,7 @@ updateFaceGrid face gridFunc sphere =
       { sphere | white = gridFunc sphere.white }
 
 
-polePoint : Pole -> TerrainSphere -> Point
+polePoint : Pole -> TerrainSphere -> Float
 polePoint pole sphere =
   case pole of
     North ->

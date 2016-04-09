@@ -63,7 +63,7 @@ initialization : Test
 initialization =
   let
     initSphere =
-      init 4
+      init 4 0
   in
     suite
       "intializing terrain sphere"
@@ -75,38 +75,6 @@ initialization =
       , testGridSize "white is 16 x 16" 16 initSphere.white
       , testGridSize "orange is 16 x 16" 16 initSphere.orange
       , testGridSize "green is 16 x 16" 16 initSphere.green
-      , test "north pole"
-          <| assertCoordinates
-              ( degrees 90, degrees 0 )
-              (Just initSphere.northPole)
-      , test "south pole"
-          <| assertCoordinates
-              ( degrees -90, degrees 0 )
-              (Just initSphere.southPole)
-      , test "yellow origin"
-          <| assertCoordinates
-              ( degrees 30, degrees 0 )
-              (gridPoint 1 0 0 Yellow initSphere)
-      , test "red origin"
-          <| assertCoordinates
-              ( degrees 30, degrees -120 )
-              (gridPoint 1 0 0 Red initSphere)
-      , test "blue origin"
-          <| assertCoordinates
-              ( degrees 30, degrees 120 )
-              (gridPoint 1 0 0 Blue initSphere)
-      , test "green origin"
-          <| assertCoordinates
-              ( degrees -30, degrees -60 )
-              (gridPoint 1 0 0 Green initSphere)
-      , test "orange origin"
-          <| assertCoordinates
-              ( degrees -30, degrees 60 )
-              (gridPoint 1 0 0 Orange initSphere)
-      , test "white origin"
-          <| assertCoordinates
-              ( degrees -30, degrees 180 )
-              (gridPoint 1 0 0 White initSphere)
       ]
 
 
@@ -127,17 +95,6 @@ testGridSize name expectedLength grid =
       ]
 
 
-assertCoordinates : ( Float, Float ) -> Maybe Point -> Assertion
-assertCoordinates expected maybeActual =
-  let
-    actual =
-      maybeActual
-        |> Maybe.map (\{ lat, lon } -> ( lat, lon ))
-        |> Maybe.withDefault ( 0 / 0, 0 / 0 )
-  in
-    assertEqual expected actual
-
-
 getting : Test
 getting =
   suite
@@ -146,94 +103,94 @@ getting =
         "granularity = resolution"
         [ test "origin point"
             <| assertEqual
-                (Just (pt 1))
+                (Just 1)
                 (gridPoint 2 0 0 Yellow getSetSphere)
         , test "normal point"
             <| assertEqual
-                (Just (pt 7))
+                (Just 7)
                 (gridPoint 2 1 2 Yellow getSetSphere)
         , test "pole"
             <| assertEqual
-                (Just (pt -1))
+                (Just -1)
                 (gridPoint 2 4 0 Yellow getSetSphere)
         , test "right boundary"
             <| assertEqual
-                (Just (pt 37))
+                (Just 37)
                 (gridPoint 2 4 3 Yellow getSetSphere)
         , test "upper right corner"
             <| assertEqual
-                (Just (pt 33))
+                (Just 33)
                 (gridPoint 2 4 4 Yellow getSetSphere)
         , test "upper boundary"
             <| assertEqual
-                (Just (pt 68))
+                (Just 68)
                 (gridPoint 2 3 4 Yellow getSetSphere)
         , test "upper boundary on x axis"
             <| assertEqual
-                (Just (pt 65))
+                (Just 65)
                 (gridPoint 2 0 4 Yellow getSetSphere)
         , test "left boundary"
             <| assertEqual
-                (Just (pt 64))
+                (Just 64)
                 (gridPoint 2 -1 3 Yellow getSetSphere)
         , test "left boundary on y axis"
             <| assertEqual
-                (Just (pt 52))
+                (Just 52)
                 (gridPoint 2 -1 0 Yellow getSetSphere)
         , test "lower boundary on x axis"
             <| assertEqual
-                (Just (pt 52))
+                (Just 52)
                 (gridPoint 2 0 -1 Yellow getSetSphere)
         , test "lower boundary"
             <| assertEqual
-                (Just (pt 30))
+                (Just 30)
                 (gridPoint 2 3 -1 Yellow getSetSphere)
         ]
     , suite
         "granularity = 1"
         [ test "origin point"
             <| assertEqual
-                (Just (pt 1))
+                (Just 1)
                 (gridPoint 1 0 0 Yellow getSetSphere)
         , test "normal point"
             <| assertEqual
-                (Just (pt 11))
+                (Just 11)
                 (gridPoint 1 1 1 Yellow getSetSphere)
         , test "pole"
             <| assertEqual
-                (Just (pt -1))
+                (Just -1)
                 (gridPoint 1 2 0 Yellow getSetSphere)
         , test "right boundary"
             <| assertEqual
-                (Just (pt 41))
+                (Just 41)
                 (gridPoint 1 2 1 Yellow getSetSphere)
         , test "upper right corner"
             <| assertEqual
-                (Just (pt 33))
+                (Just 33)
                 (gridPoint 1 2 2 Yellow getSetSphere)
         , test "upper boundary"
             <| assertEqual
-                (Just (pt 67))
+                (Just 67)
                 (gridPoint 1 1 2 Yellow getSetSphere)
         , test "upper boundary on x axis"
             <| assertEqual
-                (Just (pt 65))
+                (Just 65)
                 (gridPoint 1 0 2 Yellow getSetSphere)
         , test "left boundary"
             <| assertEqual
-                (Just (pt 59))
+                (Just 59)
                 (gridPoint 1 -1 1 Yellow getSetSphere)
         , test "left boundary on y axis"
             <| assertEqual
-                (Just (pt 51))
+                (Just 51)
                 (gridPoint 1 -1 0 Yellow getSetSphere)
         , test "lower boundary on x axis"
             <| assertEqual
-                (Just (pt 51))
+                (Just 51)
                 (gridPoint 1 0 -1 Yellow getSetSphere)
         , test "lower boundary"
             <| assertEqual
-                (Just (pt 27))
+                (Just 27)
                 (gridPoint 1 1 -1 Yellow getSetSphere)
         ]
     ]
@@ -279,25 +236,19 @@ setting =
 assertPointSet : Int -> Int -> Int -> Face -> Assertion
 assertPointSet r i j face =
   let
-    testPoint =
-      { lat = 1, lon = 1, value = 0 }
-
     modifiedSphere =
-      setGridPoint r i j face testPoint getSetSphere
+      setGridPoint r i j face 123 getSetSphere
   in
     assertEqual
-      (Just testPoint)
+      (Just 123)
       (gridPoint r i j face modifiedSphere)
 
 
 assertPointNotSet : Int -> Int -> Int -> Face -> Assertion
 assertPointNotSet r i j face =
   let
-    testPoint =
-      { lat = 1, lon = 1, value = 0 }
-
     modifiedSphere =
-      setGridPoint r i j face testPoint getSetSphere
+      setGridPoint r i j face 123 getSetSphere
 
     modifiedPoint =
       gridPoint r i j face modifiedSphere
@@ -311,58 +262,53 @@ assertPointNotSet r i j face =
       assertEqual getSetSphere modifiedSphere
 
 
-pt : Float -> Point
-pt v =
-  { lat = 0, lon = 0, value = v }
-
-
 getSetSphere : TerrainSphere
 getSetSphere =
   { resolution = 2
   , yellow =
       Array.fromList
-        [ Array.fromList [ pt 1, pt 2, pt 3, pt 4 ]
-        , Array.fromList [ pt 5, pt 6, pt 7, pt 8 ]
-        , Array.fromList [ pt 9, pt 10, pt 11, pt 12 ]
-        , Array.fromList [ pt 13, pt 14, pt 15, pt 16 ]
+        [ Array.fromList [ 1, 2, 3, 4 ]
+        , Array.fromList [ 5, 6, 7, 8 ]
+        , Array.fromList [ 9, 10, 11, 12 ]
+        , Array.fromList [ 13, 14, 15, 16 ]
         ]
   , red =
       Array.fromList
-        [ Array.fromList [ pt 17, pt 18, pt 19, pt 20 ]
-        , Array.fromList [ pt 21, pt 22, pt 23, pt 24 ]
-        , Array.fromList [ pt 25, pt 26, pt 27, pt 28 ]
-        , Array.fromList [ pt 29, pt 30, pt 31, pt 32 ]
+        [ Array.fromList [ 17, 18, 19, 20 ]
+        , Array.fromList [ 21, 22, 23, 24 ]
+        , Array.fromList [ 25, 26, 27, 28 ]
+        , Array.fromList [ 29, 30, 31, 32 ]
         ]
   , blue =
       Array.fromList
-        [ Array.fromList [ pt 33, pt 34, pt 35, pt 36 ]
-        , Array.fromList [ pt 37, pt 38, pt 39, pt 40 ]
-        , Array.fromList [ pt 41, pt 42, pt 43, pt 44 ]
-        , Array.fromList [ pt 45, pt 46, pt 47, pt 48 ]
+        [ Array.fromList [ 33, 34, 35, 36 ]
+        , Array.fromList [ 37, 38, 39, 40 ]
+        , Array.fromList [ 41, 42, 43, 44 ]
+        , Array.fromList [ 45, 46, 47, 48 ]
         ]
   , green =
       Array.fromList
-        [ Array.fromList [ pt 49, pt 50, pt 51, pt 52 ]
-        , Array.fromList [ pt 53, pt 54, pt 55, pt 56 ]
-        , Array.fromList [ pt 57, pt 58, pt 59, pt 60 ]
-        , Array.fromList [ pt 61, pt 62, pt 63, pt 64 ]
+        [ Array.fromList [ 49, 50, 51, 52 ]
+        , Array.fromList [ 53, 54, 55, 56 ]
+        , Array.fromList [ 57, 58, 59, 60 ]
+        , Array.fromList [ 61, 62, 63, 64 ]
         ]
   , orange =
       Array.fromList
-        [ Array.fromList [ pt 65, pt 66, pt 67, pt 68 ]
-        , Array.fromList [ pt 69, pt 70, pt 71, pt 72 ]
-        , Array.fromList [ pt 73, pt 74, pt 75, pt 76 ]
-        , Array.fromList [ pt 77, pt 78, pt 79, pt 80 ]
+        [ Array.fromList [ 65, 66, 67, 68 ]
+        , Array.fromList [ 69, 70, 71, 72 ]
+        , Array.fromList [ 73, 74, 75, 76 ]
+        , Array.fromList [ 77, 78, 79, 80 ]
         ]
   , white =
       Array.fromList
-        [ Array.fromList [ pt 81, pt 82, pt 83, pt 84 ]
-        , Array.fromList [ pt 85, pt 86, pt 87, pt 88 ]
-        , Array.fromList [ pt 89, pt 90, pt 91, pt 92 ]
-        , Array.fromList [ pt 93, pt 94, pt 95, pt 96 ]
+        [ Array.fromList [ 81, 82, 83, 84 ]
+        , Array.fromList [ 85, 86, 87, 88 ]
+        , Array.fromList [ 89, 90, 91, 92 ]
+        , Array.fromList [ 93, 94, 95, 96 ]
         ]
-  , northPole = pt -1
-  , southPole = pt -2
+  , northPole = -1
+  , southPole = -2
   }
 
 
@@ -435,6 +381,67 @@ pointLists =
 
 squareDiamond : Test
 squareDiamond =
-  suite
-    ""
-    []
+  let
+    sphere =
+      init 2 0
+  in
+    suite
+      "square-diamond interpolation"
+      [ test "face-centered point, lowest resolution"
+          <| assertEqual
+              (Just 2)
+              (sphere
+                |> setGridPoint 2 0 0 Yellow 1
+                |> setGridPoint 2 0 0 Orange 3
+                |> setGridPoint 2 0 0 Blue 4
+                |> squareAverage 1 1 1 Yellow
+              )
+      , test "edge-centered point, lowest resolution"
+          <| assertEqual
+              (Just 3.5)
+              (sphere
+                |> setGridPoint 2 0 0 Blue 2
+                |> setGridPoint 2 0 0 White 3
+                |> setGridPoint 2 2 2 Orange 4
+                |> setGridPoint 2 2 2 Blue 5
+                |> diamondAverage 1 0 1 Blue
+              )
+      , test "face-centered point, highest resolution, no wrapping"
+          <| assertEqual
+              (Just 0)
+              (sphere
+                |> setGridPoint 2 0 0 Red 1
+                |> setGridPoint 2 2 2 Red 1
+                |> setGridPoint 2 0 2 Red 1
+                |> setGridPoint 2 2 0 Red -3
+                |> squareAverage 2 1 1 Red
+              )
+      , test "face-centered point, highest resolution, wrapping"
+          <| assertEqual
+              (Just 2)
+              (sphere
+                |> setGridPoint 2 2 2 Blue 5
+                |> setGridPoint 2 2 0 Red 0
+                |> setGridPoint 2 2 0 Blue 3
+                |> squareAverage 2 3 1 Blue
+              )
+      , test "edge-centered point, highest resolution, no wrapping"
+          <| assertEqual
+              (Just 1)
+              (sphere
+                |> setGridPoint 2 2 2 Green 0
+                |> setGridPoint 2 2 0 Green 0
+                |> setGridPoint 2 1 1 Green 0
+                |> setGridPoint 2 3 1 Green 4
+                |> diamondAverage 2 2 1 Green
+              )
+      , test "edge-centered point, highest resolution, wrapping"
+          <| assertEqual
+              (Just 4.5)
+              (sphere
+                |> setGridPoint 2 3 1 Green 5
+                |> setGridPoint 2 2 0 Orange 6
+                |> setGridPoint 2 3 1 Orange 7
+                |> diamondAverage 2 3 0 Orange
+              )
+      ]
