@@ -11,7 +11,6 @@ import Math.Vector as Vector
 import Math.Matrix as Matrix exposing (Matrix)
 import Math.Transform as Transform
 import Flight.Util as Util
-import Graphics.Atmosphere as Atmosphere
 import Graphics.AppFrame as AppFrame
 import Graphics.Background as Background
 import Graphics.Foreground as Foreground
@@ -95,7 +94,7 @@ scene width height model =
             (mesh energyBarMesh)
 
         Atmosphere _ ->
-          Atmosphere.entity
+          []
 
     webgl =
       WebGL.webglWithConfig
