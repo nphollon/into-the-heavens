@@ -1,4 +1,4 @@
-module Generate.Terrain (TerrainSphere, Grid, Face(..), Pole(..), init, gridPoint, polePoint, above, below, leftOf, rightOf, poleFor, setGridPoint, offset, faceCenteredPoints, edgeCenteredPoints, squareAverage, diamondAverage) where
+module Generate.Terrain (TerrainSphere, Grid, Face(..), Pole(..), init, gridPoint, polePoint, above, below, leftOf, rightOf, poleFor, setGridPoint, offset, faceCenteredPoints, edgeCenteredPoints, squareAverage, diamondAverage, step, generate) where
 
 import Array exposing (Array)
 import List.Extra as ListX
@@ -20,6 +20,10 @@ type alias TerrainSphere =
   }
 
 
+type alias GenerateData =
+  ( TerrainSphere, Random.Seed )
+
+
 type alias Grid a =
   Array (Array a)
 
@@ -39,21 +43,62 @@ type Pole
 
 
 init : Int -> Float -> TerrainSphere
-init r v =
+init resolution value =
   let
     blankGrid =
-      Array.repeat (2 ^ r) (Array.repeat (2 ^ r) v)
+      value
+        |> Array.repeat (2 ^ resolution)
+        |> Array.repeat (2 ^ resolution)
   in
-    { resolution = r
+    { resolution = resolution
     , yellow = blankGrid
     , red = blankGrid
     , blue = blankGrid
     , green = blankGrid
     , orange = blankGrid
     , white = blankGrid
-    , northPole = 0
-    , southPole = 0
+    , northPole = value
+    , southPole = value
     }
+
+
+generate : (Int -> Random.Generator Float) -> GenerateData -> GenerateData
+generate generatorGenerator ( firstSphere, firstSeed ) =
+  List.foldl
+    (\r -> step (generatorGenerator r) r)
+    ( firstSphere, firstSeed )
+    [1..firstSphere.resolution]
+
+
+step : Random.Generator Float -> Int -> GenerateData -> GenerateData
+step offsetGenerator r ( firstSphere, firstSeed ) =
+  let
+    forFace func ( ( i, j ), face ) ( sphere, seed ) =
+      case (func r i j face sphere) of
+        Nothing ->
+          ( sphere, seed )
+
+        Just v ->
+          let
+            ( offset, newSeed ) =
+              Random.generate offsetGenerator seed
+          in
+            (,)
+              (setGridPoint r i j face (v + offset) sphere)
+              newSeed
+
+    faces =
+      [ Yellow, Red, Blue, Green, Orange, White ]
+
+    faceCenteredParams =
+      ListX.lift2 (,) (faceCenteredPoints r) faces
+
+    edgeCenteredParams =
+      ListX.lift2 (,) (edgeCenteredPoints r) faces
+  in
+    ( firstSphere, firstSeed )
+      |> flip (List.foldl (forFace squareAverage)) faceCenteredParams
+      |> flip (List.foldl (forFace diamondAverage)) edgeCenteredParams
 
 
 squareAverage : Int -> Int -> Int -> Face -> TerrainSphere -> Maybe Float

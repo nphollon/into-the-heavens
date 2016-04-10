@@ -17,7 +17,8 @@ testSuite =
     , getting
     , offsets
     , pointLists
-    , squareDiamond
+    , squareDiamondStep
+    , resolutionStep
     ]
 
 
@@ -315,6 +316,11 @@ getSetSphere =
 offsets : Test
 offsets =
   let
+    generate generator =
+      Random.initialSeed 0
+        |> Random.generate generator
+        |> fst
+
     randomNumber =
       generate (Random.float 0 1)
   in
@@ -329,13 +335,6 @@ offsets =
               (0.25 * randomNumber - 0.125)
               (generate (offset 3))
       ]
-
-
-generate : Random.Generator a -> a
-generate generator =
-  Random.initialSeed 0
-    |> Random.generate generator
-    |> fst
 
 
 pointLists : Test
@@ -379,14 +378,14 @@ pointLists =
     ]
 
 
-squareDiamond : Test
-squareDiamond =
+squareDiamondStep : Test
+squareDiamondStep =
   let
     sphere =
       init 2 0
   in
     suite
-      "square-diamond interpolation"
+      "square-diamond interpolation for a single point"
       [ test "face-centered point, lowest resolution"
           <| assertEqual
               (Just 2)
@@ -445,3 +444,179 @@ squareDiamond =
                 |> diamondAverage 2 3 0 Orange
               )
       ]
+
+
+resolutionStep : Test
+resolutionStep =
+  let
+    offset =
+      Random.constant -48
+
+    seed =
+      Random.initialSeed 0
+  in
+    suite
+      "square-diamond interpolation for the entire sphere"
+      [ test "low resolution"
+          <| assertEqual
+              middleStepSphere
+              (fst (step offset 1 ( firstStepSphere, seed )))
+      , test "high resolution"
+          <| assertEqual
+              lastStepSphere
+              (fst (step offset 2 ( middleStepSphere, seed )))
+      , test "full process"
+          <| assertEqual
+              lastStepSphere
+              (fst (generate (\_ -> offset) ( firstStepSphere, seed )))
+      ]
+
+
+firstStepSphere : TerrainSphere
+firstStepSphere =
+  { resolution = 2
+  , yellow =
+      Array.fromList
+        [ Array.fromList [ 16, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , red =
+      Array.fromList
+        [ Array.fromList [ 32, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , blue =
+      Array.fromList
+        [ Array.fromList [ 48, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , green =
+      Array.fromList
+        [ Array.fromList [ 64, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , orange =
+      Array.fromList
+        [ Array.fromList [ 80, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , white =
+      Array.fromList
+        [ Array.fromList [ 96, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , northPole = -16
+  , southPole = -32
+  }
+
+
+middleStepSphere : TerrainSphere
+middleStepSphere =
+  { resolution = 2
+  , yellow =
+      Array.fromList
+        [ Array.fromList [ 16, 0, -32, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ -58, 0, -16, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , red =
+      Array.fromList
+        [ Array.fromList [ 32, 0, -32, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ -52, 0, -24, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , blue =
+      Array.fromList
+        [ Array.fromList [ 48, 0, -14, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ -46, 0, -8, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , green =
+      Array.fromList
+        [ Array.fromList [ 64, 0, -38, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ -46, 0, -16, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , orange =
+      Array.fromList
+        [ Array.fromList [ 80, 0, -20, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ -40, 0, 0, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , white =
+      Array.fromList
+        [ Array.fromList [ 96, 0, -20, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        , Array.fromList [ -34, 0, -8, 0 ]
+        , Array.fromList [ 0, 0, 0, 0 ]
+        ]
+  , northPole = -16
+  , southPole = -32
+  }
+
+
+lastStepSphere : TerrainSphere
+lastStepSphere =
+  { resolution = 2
+  , yellow =
+      Array.fromList
+        [ Array.fromList [ 16, -86, -32, -59.75 ]
+        , Array.fromList [ -94.625, -70.5, -88.875, -45 ]
+        , Array.fromList [ -58, -104.625, -16, -82.375 ]
+        , Array.fromList [ -108.375, -82, -98.125, -56.5 ]
+        ]
+  , red =
+      Array.fromList
+        [ Array.fromList [ 32, -78.5, -32, -67.25 ]
+        , Array.fromList [ -84.75, -67, -92.625, -55.5 ]
+        , Array.fromList [ -52, -105.125, -24, -95.875 ]
+        , Array.fromList [ -106, -85.5, -108.375, -74 ]
+        ]
+  , blue =
+      Array.fromList
+        [ Array.fromList [ 48, -63.875, -14, -45.125 ]
+        , Array.fromList [ -74.875, -53, -75.375, -34.5 ]
+        , Array.fromList [ -46, -94.375, -8, -78.625 ]
+        , Array.fromList [ -103.625, -78.5, -97.625, -60 ]
+        ]
+  , green =
+      Array.fromList
+        [ Array.fromList [ 64, -69.625, -38, -88.375 ]
+        , Array.fromList [ -71.125, -57, -92.125, -65.5 ]
+        , Array.fromList [ -46, -98.125, -16, -88.875 ]
+        , Array.fromList [ -107.375, -81.5, -94.875, -50 ]
+        ]
+  , orange =
+      Array.fromList
+        [ Array.fromList [ 80, -55, -20, -66.25 ]
+        , Array.fromList [ -61.25, -43, -74.875, -44.5 ]
+        , Array.fromList [ -40, -87.375, 0, -71.625 ]
+        , Array.fromList [ -105, -74.5, -84.125, -36 ]
+        ]
+  , white =
+      Array.fromList
+        [ Array.fromList [ 96, -47.5, -20, -73.75 ]
+        , Array.fromList [ -51.375, -39.5, -78.625, -55 ]
+        , Array.fromList [ -34, -87.875, -8, -85.125 ]
+        , Array.fromList [ -102.625, -78, -94.375, -53.5 ]
+        ]
+  , northPole = -16
+  , southPole = -32
+  }
