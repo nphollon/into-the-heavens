@@ -19,6 +19,7 @@ testSuite =
     , pointLists
     , squareDiamondStep
     , resolutionStep
+    , triangulation
     ]
 
 
@@ -620,3 +621,196 @@ lastStepSphere =
   , northPole = -16
   , southPole = -32
   }
+
+
+triangulation : Test
+triangulation =
+  let
+    y00 =
+      ( degrees 35.2643896828, degrees 135 )
+
+    y10 =
+      ( degrees 45, degrees 180 )
+
+    y01 =
+      ( degrees 45, degrees 90 )
+
+    y11 =
+      ( degrees 90, degrees 0 )
+
+    r00 =
+      ( degrees -35.2643896828, degrees -135 )
+
+    r10 =
+      ( degrees 0, degrees -135 )
+
+    r01 =
+      ( degrees -45, degrees 180 )
+
+    r11 =
+      ( degrees 0, degrees 180 )
+
+    b00 =
+      ( degrees 35.2643896828, degrees -45 )
+
+    b10 =
+      ( degrees 45, degrees -90 )
+
+    b01 =
+      ( degrees 0, degrees -45 )
+
+    b11 =
+      ( degrees 0, degrees -90 )
+
+    g00 =
+      ( degrees -35.2643896828, degrees 135 )
+
+    g10 =
+      ( degrees -45, degrees 90 )
+
+    g01 =
+      ( degrees 0, degrees 135 )
+
+    g11 =
+      ( degrees 0, degrees 90 )
+
+    o00 =
+      ( degrees 35.2643896828, degrees 45 )
+
+    o10 =
+      ( degrees 0, degrees 45 )
+
+    o01 =
+      ( degrees 45, degrees 0 )
+
+    o11 =
+      ( degrees 0, degrees 0 )
+
+    w00 =
+      ( degrees -35.2643896828, degrees -45 )
+
+    w10 =
+      ( degrees -45, degrees 0 )
+
+    w01 =
+      ( degrees -45, degrees -90 )
+
+    w11 =
+      ( degrees -90, degrees 0 )
+
+    n =
+      ( degrees 35.2643896828, degrees -135 )
+
+    s =
+      ( degrees -35.2643896828, degrees 45 )
+
+    sphere =
+      { resolution = 1
+      , yellow =
+          Array.fromList
+            [ Array.fromList [ 0, 1 ]
+            , Array.fromList [ 4, 2 ]
+            ]
+      , red =
+          Array.fromList
+            [ Array.fromList [ 1, 2 ]
+            , Array.fromList [ 2, 0 ]
+            ]
+      , blue =
+          Array.fromList
+            [ Array.fromList [ 3, 3 ]
+            , Array.fromList [ 3, 3 ]
+            ]
+      , green =
+          Array.fromList
+            [ Array.fromList [ 2, 4 ]
+            , Array.fromList [ 3, 0 ]
+            ]
+      , orange =
+          Array.fromList
+            [ Array.fromList [ 1, 4 ]
+            , Array.fromList [ 5, 3 ]
+            ]
+      , white =
+          Array.fromList
+            [ Array.fromList [ 3, 2 ]
+            , Array.fromList [ 2, 3 ]
+            ]
+      , northPole = 0
+      , southPole = 5
+      }
+
+    triangles =
+      [ ( y00, y01, y11 )
+      , ( y11, y10, y00 )
+      , ( y10, y11, b10 )
+      , ( b10, n, y10 )
+      , ( y11, y01, o00 )
+      , ( o00, o01, y11 )
+      , ( y11, o01, b00 )
+      , ( b00, b10, y11 )
+      , ( r10, r00, r01 )
+      , ( r01, r11, r10 )
+      , ( n, r10, r11 )
+      , ( r11, y10, n )
+      , ( r01, g00, g01 )
+      , ( g01, r11, r01 )
+      , ( r11, g01, y00 )
+      , ( y00, y10, r11 )
+      , ( b00, b01, b11 )
+      , ( b11, b10, b00 )
+      , ( b10, b11, r10 )
+      , ( r10, n, b10 )
+      , ( b11, b01, w00 )
+      , ( w00, w01, b11 )
+      , ( r10, b11, w01 )
+      , ( w01, r00, r10 )
+      , ( g01, g00, g10 )
+      , ( g10, g11, g01 )
+      , ( y00, g01, g11 )
+      , ( g11, y01, y00 )
+      , ( g10, s, o10 )
+      , ( o10, g11, g10 )
+      , ( g11, o10, o00 )
+      , ( o00, y01, g11 )
+      , ( o01, o00, o10 )
+      , ( o10, o11, o01 )
+      , ( o11, o10, s )
+      , ( s, w10, o11 )
+      , ( b00, o01, o11 )
+      , ( o11, b01, b00 )
+      , ( o11, w10, w00 )
+      , ( w00, b01, o11 )
+      , ( w00, w10, w11 )
+      , ( w11, w01, w00 )
+      , ( w10, s, g10 )
+      , ( g10, w11, w10 )
+      , ( w01, w11, r01 )
+      , ( r01, r00, w01 )
+      , ( w11, g10, g00 )
+      , ( g00, r01, w11 )
+      ]
+  in
+    suite
+      "positioning a terrain sphere in space"
+      [ test "latitude and longitude for Yellow 1 0, resolution 1"
+          <| assertEqualPair
+              ( degrees 45, degrees 180 )
+              (coordinatesFor 1 1 0 Yellow)
+      , test "latitude and longitude for Yellow 0 1, resolution 1"
+          <| assertEqualPair
+              ( degrees 45, degrees 90 )
+              (coordinatesFor 1 0 1 Yellow)
+      , test "latitude and longitude for Yellow 0 0, resolution 1"
+          <| assertEqualPair
+              ( degrees 35.2643896828, degrees 135 )
+              (coordinatesFor 1 0 0 Yellow)
+      , test "latitude and longitude for White 0 0, resolution 1"
+          <| assertEqualPair
+              ( degrees -35.26439, degrees -45 )
+              (coordinatesFor 1 0 0 White)
+      , test "triangulating a terrain sphere"
+          <| assertMesh
+              triangles
+              (triangulate (\lat lon value -> ( lat, lon )) sphere)
+      ]

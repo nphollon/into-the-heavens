@@ -1,4 +1,4 @@
-module Generate.Terrain (TerrainSphere, Grid, Face(..), Pole(..), init, gridPoint, polePoint, above, below, leftOf, rightOf, poleFor, setGridPoint, offset, faceCenteredPoints, edgeCenteredPoints, squareAverage, diamondAverage, step, generate) where
+module Generate.Terrain (TerrainSphere, Grid, Face(..), Pole(..), init, gridPoint, polePoint, above, below, leftOf, rightOf, poleFor, setGridPoint, offset, faceCenteredPoints, edgeCenteredPoints, squareAverage, diamondAverage, step, generate, triangulate, coordinatesFor) where
 
 import Array exposing (Array)
 import List.Extra as ListX
@@ -35,6 +35,11 @@ type Face
   | Green
   | Orange
   | White
+
+
+faces : List Face
+faces =
+  [ Yellow, Red, Blue, Green, Orange, White ]
 
 
 type Pole
@@ -86,9 +91,6 @@ step offsetGenerator r ( firstSphere, firstSeed ) =
             (,)
               (setGridPoint r i j face (v + offset) sphere)
               newSeed
-
-    faces =
-      [ Yellow, Red, Blue, Green, Orange, White ]
 
     faceCenteredParams =
       ListX.lift2 (,) (faceCenteredPoints r) faces
@@ -371,3 +373,112 @@ validIndexes resolution =
 isOdd : Int -> Bool
 isOdd i =
   i % 2 == 1
+
+
+triangulate : (Float -> Float -> Float -> a) -> TerrainSphere -> List ( a, a, a )
+triangulate toVertex sphere =
+  let
+    params =
+      ListX.lift3
+        (,,)
+        (validIndexes sphere.resolution)
+        (validIndexes sphere.resolution)
+        faces
+
+    vertex i j face =
+      let
+        height =
+          gridPoint sphere.resolution i j face sphere
+            |> Maybe.withDefault 0
+
+        coordinates =
+          coordinatesFor sphere.resolution i j face
+      in
+        { height = height
+        , vertex = uncurry toVertex coordinates height
+        }
+
+    isClockwise face =
+      North == poleFor face
+
+    quad a b c d pointList =
+      ( a.vertex, b.vertex, c.vertex )
+        :: ( c.vertex, d.vertex, a.vertex )
+        :: pointList
+
+    distance a b =
+      abs (a.height - b.height)
+
+    trianglesForPoint ( i, j, face ) pointList =
+      let
+        a =
+          vertex i j face
+
+        b =
+          vertex i (j + 1) face
+
+        c =
+          vertex (i + 1) (j + 1) face
+
+        d =
+          vertex (i + 1) j face
+      in
+        case ( isClockwise face, distance b d < distance a c ) of
+          ( True, True ) ->
+            quad d a b c pointList
+
+          ( True, False ) ->
+            quad a b c d pointList
+
+          ( False, True ) ->
+            quad d c b a pointList
+
+          ( False, False ) ->
+            quad a d c b pointList
+  in
+    List.foldl trianglesForPoint [] params
+
+
+coordinatesFor : Int -> Int -> Int -> Face -> ( Float, Float )
+coordinatesFor r i j face =
+  let
+    radius =
+      2 ^ (r - 1)
+
+    latLon ix iy iz =
+      let
+        x =
+          toFloat ix
+
+        y =
+          toFloat iy
+
+        z =
+          toFloat iz
+
+        lat =
+          asin (y / sqrt (x ^ 2 + y ^ 2 + z ^ 2))
+
+        lon =
+          atan2 z x
+      in
+        ( lat, lon )
+  in
+    case face of
+      Yellow ->
+        latLon (j - radius) radius (radius - i)
+
+      Red ->
+        latLon -radius (i - radius) (j - radius)
+
+      Blue ->
+        latLon (radius - i) (radius - j) -radius
+
+      Green ->
+        latLon (i - radius) (j - radius) radius
+
+      Orange ->
+        latLon radius (radius - i) (radius - j)
+
+      White ->
+        latLon (radius - j) -radius (i - radius)
