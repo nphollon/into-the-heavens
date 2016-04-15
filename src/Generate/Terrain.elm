@@ -337,11 +337,11 @@ poleFor face =
       South
 
 
-offset : Int -> Random.Generator Float
-offset r =
+offset : Float -> Int -> Random.Generator Float
+offset roughness resolution =
   let
     limit =
-      2 ^ -r
+      roughness * (2 ^ -(toFloat resolution))
   in
     Random.float -limit limit
 
@@ -399,7 +399,7 @@ triangulate toVertex sphere =
         }
 
     isClockwise face =
-      North == poleFor face
+      South == poleFor face
 
     quad a b c d pointList =
       ( a.vertex, b.vertex, c.vertex )

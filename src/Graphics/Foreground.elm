@@ -124,20 +124,28 @@ planetFragment =
   varying float cosAngleIncidence;
 
   void main () {
-    vec4 blue = vec4(0.2265625,0.28515625,0.84375,1);
-    vec4 green = vec4(0.2734375,0.57421875,0.37109375,1);
+    float latitude = fragColor.y;
+    float height = fragColor.z;
 
-    bool border = length(fragColor.xy) < 1e-1
-      || length(fragColor.xz) < 1e-1
-      || length(fragColor.xw) < 1e-1
-      || length(fragColor.yz) < 1e-1
-      || length(fragColor.yw) < 1e-1
-      || length(fragColor.zw) < 1e-1;
+    float arcticCircle = 3.14159 / 3.0;
+    float pole = 3.14159 / 4.0;
+    float temperateSnowline = 0.4;
 
-    if (border) {
-      gl_FragColor = blue;
+    float snowline;
+
+    if (abs(latitude) > arcticCircle) {
+      snowline =
+        temperateSnowline * (abs(latitude) - pole) / (arcticCircle - pole);
     } else {
-      gl_FragColor = green;
+      snowline = temperateSnowline;
+    }
+
+    if (height > snowline) {
+      gl_FragColor = vec4(0.8, 0.9, 1.0, 1.0);
+    } else if (height > 0.0) {
+      gl_FragColor = vec4(0.13, 0.54, 0.13, 1.0);
+    } else {
+      gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
     }
 
     gl_FragColor *= cosAngleIncidence;
