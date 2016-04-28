@@ -1,10 +1,9 @@
 module Level.AtmosphereTest (data) where
 
 import Dict
+import Color
 import Types exposing (..)
 import Math.Vector as Vector
-import Math.Collision as Collision
-import Generate.Sphere as Sphere
 import Flight.Spawn exposing (defaultBody)
 
 
@@ -17,8 +16,8 @@ data =
         [ ( 1
           , { defaultBody
               | position = Vector.vector -35 5 -10
-              , angVelocity = Vector.vector 0 3.0e-2 0
-              , hull = Just (Collision.hull .position Sphere.triangles)
+              , angVelocity = Vector.vector 0 0 0
+              , hull = Nothing
               , health = 1.0e10
             }
           )
@@ -27,10 +26,9 @@ data =
       [ Background "Background"
       , Object
           { bodyId = 1
-          , meshName = "Sphere"
-          , shader = Planet
+          , meshName = "Column"
+          , shader = Matte Color.white
           }
-      , Atmosphere { bodyId = 1 }
       ]
   , names = Dict.empty
   }

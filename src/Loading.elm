@@ -81,8 +81,12 @@ resourceFailure e =
         Http.NetworkError ->
           "I can't find what I am looking for."
 
-        Http.UnexpectedPayload _ ->
-          "I am hearing things I just don't understand."
+        Http.UnexpectedPayload a ->
+          let
+            _ =
+              Debug.log "error" a
+          in
+            "I am hearing things I just don't understand."
 
         Http.BadResponse code _ ->
           "HTTP Error Code: " ++ toString code

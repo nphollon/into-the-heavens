@@ -1,4 +1,4 @@
-module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, toVec3, fromVec3) where
+module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, toVec3, fromVec3, equal) where
 
 import Math.Vector3 as Vec3 exposing (Vec3)
 
@@ -74,7 +74,10 @@ cross u v =
 
 normalize : Vector -> Vector
 normalize v =
-  scale (1 / length v) v
+  if length v == 0 then
+    v
+  else
+    scale (1 / length v) v
 
 
 direction : Vector -> Vector -> Vector
@@ -110,3 +113,14 @@ toVec3 =
 fromVec3 : Vec3 -> Vector
 fromVec3 =
   Vec3.toRecord
+
+
+equal : Vector -> Vector -> Bool
+equal u v =
+  let
+    equalFloat p q =
+      (p - q) ^ 2 < 1.0e-5
+  in
+    (equalFloat u.x v.x)
+      && (equalFloat u.y v.y)
+      && (equalFloat u.z v.z)

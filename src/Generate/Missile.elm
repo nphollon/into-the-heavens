@@ -1,11 +1,11 @@
 module Generate.Missile (mesh, triangles) where
 
 import Generate.Json exposing (Vertex)
+import Generate.FlatFace as FlatFace
 import WebGL exposing (Drawable(..))
 import Array
 import Math.Vector as Vector exposing (Vector)
 import Math.Vector4 as Vec4 exposing (Vec4)
-import Maybe.Extra as MaybeX
 
 
 mesh : Drawable Vertex
@@ -42,32 +42,7 @@ triangles =
       , [ 1, 2, 3, 4 ]
       ]
 
-    toPositions indexes =
-      MaybeX.traverse (\i -> Array.get i cornerPositions) indexes
+    color =
+      Vec4.vec4 0.8 1 0 1
   in
-    List.filterMap toPositions cornerIndexes
-      |> List.concatMap toTriangles
-
-
-toTriangles : List Vector -> List ( Vertex, Vertex, Vertex )
-toTriangles positions =
-  case positions of
-    i :: (j :: (k :: list)) ->
-      let
-        normal =
-          Vector.cross (Vector.sub j i) (Vector.sub k i)
-            |> Vector.normalize
-
-        toVertex p =
-          { position = p
-          , normal = normal
-          , color = Vec4.vec4 0.8 1 0 1
-          }
-      in
-        List.map2
-          (\a b -> ( toVertex i, toVertex a, toVertex b ))
-          (j :: k :: list)
-          (k :: list)
-
-    otherwise ->
-      []
+    FlatFace.triangles color cornerPositions cornerIndexes
