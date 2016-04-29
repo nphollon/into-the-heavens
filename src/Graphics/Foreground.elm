@@ -99,12 +99,20 @@ planetVertex =
 
   void main() {
     vec4 worldFrame = placement * vec4(vertPosition, 1);
-    vec4 cameraFrame = worldFrame - vec4(cameraPosition, 0);
+    vec4 cameraFrame =
+      cameraOrientation * (worldFrame - vec4(cameraPosition, 0));
 
-    vec4 projectionOffset = vec4(0, 0, length(cameraFrame.xyz), 0);
+    float projOffset;
 
-    gl_Position =
-      perspective * (cameraOrientation * cameraFrame - projectionOffset);
+    if (cameraFrame.z < 0.0 || cameraFrame.z < length(cameraFrame.xy)) {
+      projOffset = length(cameraFrame.xyz);
+    } else {
+      projOffset = 0.0;
+    }
+
+    vec4 projection = cameraFrame - vec4(0, 0, projOffset, 0);
+
+    gl_Position = perspective * projection;
 
     vec3 dirToLight = vec3(0, sqrt(0.5), sqrt(0.5));
     vec3 placedNormal = vec3(vec4(normal, 0) * inversePlacement);
@@ -174,12 +182,20 @@ matteVertex =
 
   void main() {
     vec4 worldFrame = placement * vec4(vertPosition, 1);
-    vec4 cameraFrame = worldFrame - vec4(cameraPosition, 0);
+    vec4 cameraFrame =
+      cameraOrientation * (worldFrame - vec4(cameraPosition, 0));
 
-    vec4 projectionOffset = vec4(0, 0, length(cameraFrame.xyz), 0);
+    float projOffset;
 
-    gl_Position =
-      perspective * (cameraOrientation * cameraFrame - projectionOffset);
+    if (cameraFrame.z < 0.0 || cameraFrame.z < length(cameraFrame.xy)) {
+      projOffset = length(cameraFrame.xyz);
+    } else {
+      projOffset = 0.0;
+    }
+
+    vec4 projection = cameraFrame - vec4(0, 0, projOffset, 0);
+
+    gl_Position = perspective * projection;
 
     vec3 dirToLight = vec3(0, sqrt(0.5), sqrt(0.5));
     vec3 placedNormal = vec3(vec4(normal, 0) * inversePlacement);
@@ -223,12 +239,20 @@ decorVertex =
 
   void main() {
     vec4 worldFrame = placement * vec4(vertPosition, 1);
-    vec4 cameraFrame = worldFrame - vec4(cameraPosition, 0);
+    vec4 cameraFrame =
+      cameraOrientation * (worldFrame - vec4(cameraPosition, 0));
 
-    vec4 projectionOffset = vec4(0, 0, length(cameraFrame.xyz), 0);
+    float projOffset;
 
-    gl_Position =
-      perspective * (cameraOrientation * cameraFrame - projectionOffset);
+    if (cameraFrame.z < 0.0 || cameraFrame.z < length(cameraFrame.xy)) {
+      projOffset = length(cameraFrame.xyz);
+    } else {
+      projOffset = 0.0;
+    }
+
+    vec4 projection = cameraFrame - vec4(0, 0, projOffset, 0);
+
+    gl_Position = perspective * projection;
 
     gl_PointSize = 4.0;
 
