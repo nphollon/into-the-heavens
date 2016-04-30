@@ -12,6 +12,7 @@ import SphericalTest
 import SpawnTest
 import EngineTest
 import TerrainTest
+import TreeTest
 
 
 testSuite : Test
@@ -27,6 +28,7 @@ testSuite =
     , SpawnTest.testSuite
     , EngineTest.testSuite
     , TerrainTest.testSuite
+    , TreeTest.testSuite
     ]
 
 
