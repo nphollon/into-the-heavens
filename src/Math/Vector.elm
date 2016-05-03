@@ -1,4 +1,4 @@
-module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, toVec3, fromVec3, equal) where
+module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, toVec3, fromVec3, equal, toRecord) where
 
 import Math.Vector3 as Vec3 exposing (Vec3)
 
@@ -124,3 +124,8 @@ equal u v =
     (equalFloat u.x v.x)
       && (equalFloat u.y v.y)
       && (equalFloat u.z v.z)
+
+
+toRecord : Vector -> { x : Float, y : Float, z : Float }
+toRecord v =
+  v
