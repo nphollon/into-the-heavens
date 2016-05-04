@@ -72,6 +72,15 @@ testSuite =
                     { boxA | position = Vector.vector 0 4 2.2 }
                   )
           ]
+      , suite
+          "degenerate cases"
+          [ test "collision when boxes are aligned"
+              <| (assertEqual True)
+                  (BoundingBox.collide
+                    { boxA | position = Vector.vector 0 1 0 }
+                    { boxA | position = Vector.vector 0 -1 0 }
+                  )
+          ]
       ]
 
 
