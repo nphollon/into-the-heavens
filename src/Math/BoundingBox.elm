@@ -17,16 +17,24 @@ collide : BoundingBox -> BoundingBox -> Bool
 collide boxA boxB =
   let
     t =
-      Vector.toRecord boxB.position
+      Matrix.transform
+        (Matrix.transpose boxA.rotation)
+        (Vector.sub boxB.position boxA.position)
+        |> Vector.toRecord
+
+    rotation =
+      Matrix.mul
+        (Matrix.transpose boxA.rotation)
+        boxB.rotation
 
     r1 =
-      Matrix.transform boxB.rotation (Vector.vector 1 0 0)
+      Matrix.transform rotation (Vector.vector 1 0 0)
 
     r2 =
-      Matrix.transform boxB.rotation (Vector.vector 0 1 0)
+      Matrix.transform rotation (Vector.vector 0 1 0)
 
     r3 =
-      Matrix.transform boxB.rotation (Vector.vector 0 0 1)
+      Matrix.transform rotation (Vector.vector 0 0 1)
 
     r =
       { a11 = abs (Vector.getX r1)

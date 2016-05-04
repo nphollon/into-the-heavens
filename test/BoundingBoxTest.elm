@@ -10,14 +10,12 @@ testSuite : Test
 testSuite =
   let
     assertCollide v =
-      assertEqual
-        True
-        (BoundingBox.collide boxA (boxB v))
+      (assertEqual True)
+        (BoundingBox.collide boxA { boxB | position = v })
 
     assertMiss v =
-      assertEqual
-        False
-        (BoundingBox.collide boxA (boxB v))
+      (assertEqual False)
+        (BoundingBox.collide boxA { boxB | position = v })
   in
     suite
       "Oriented bounding box collision"
@@ -59,11 +57,25 @@ testSuite =
           , test "A minor x B minor"
               <| assertMiss (Vector.vector 5.1 5 -1)
           ]
+      , suite
+          "Moving box A"
+          [ test "collision with box A translated"
+              <| (assertEqual True)
+                  (BoundingBox.collide
+                    { boxA | position = Vector.vector 0.2 0.2 0.2 }
+                    { boxB | position = Vector.vector 5 4 2.2 }
+                  )
+          , test "collision with box A rotated"
+              <| (assertEqual True)
+                  (BoundingBox.collide
+                    boxB
+                    { boxA | position = Vector.vector 0 4 2.2 }
+                  )
+          ]
       ]
 
 
 
--- move/rotate boxA
 -- degenerate cross product
 
 
@@ -77,8 +89,8 @@ boxA =
   }
 
 
-boxB : Vector -> BoundingBox
-boxB position =
+boxB : BoundingBox
+boxB =
   let
     comp =
       pi / 6 / sqrt 3
@@ -86,7 +98,7 @@ boxB position =
     { a = 3
     , b = 2
     , c = 1
-    , position = position
+    , position = Vector.vector 0 0 0
     , rotation =
         Matrix.makeRotate
           (Vector.vector comp comp comp)
