@@ -58,6 +58,7 @@ visitorBodyAt positionGenerator =
       , orientation = orientationFor position
       , angVelocity = Vector.vector 0 0 0
       , hull = Just (Collision.hull .position Ship.triangles)
+      , bounds = Nothing
       , health = 1
       , ai =
           Hostile
@@ -81,6 +82,7 @@ spawnMissile parent targetId model =
       , orientation = parent.orientation
       , angVelocity = Vector.vector 0 0 0
       , hull = Just []
+      , bounds = Nothing
       , health = 1
       , ai = Seeking 4 targetId
       }
@@ -104,6 +106,7 @@ spawnExplosion parent model =
       , orientation = Vector.vector 0 0 0
       , angVelocity = Vector.vector 0 0 0
       , hull = Nothing
+      , bounds = Nothing
       , health = 1
       , ai = Waiting 3
       }
@@ -171,6 +174,7 @@ defaultBody =
   , orientation = Vector.vector 0 0 0
   , angVelocity = Vector.vector 0 0 0
   , hull = Nothing
+  , bounds = Nothing
   , health = 0
   , ai = Dumb
   }

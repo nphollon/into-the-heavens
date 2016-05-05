@@ -14,6 +14,8 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 exposing (Mat4)
 import Math.Matrix exposing (Matrix)
 import Math.Vector exposing (Vector)
+import Math.Tree exposing (Tree)
+import Math.BoundingBox exposing (BoundingBox)
 
 
 type Mode
@@ -106,6 +108,7 @@ type alias Body =
   , orientation : Vector
   , angVelocity : Vector
   , hull : Maybe Hull
+  , bounds : Maybe (Tree BoundingBox)
   , health : Float
   , ai : Ai
   }

@@ -8,10 +8,10 @@ testSuite : Test
 testSuite =
   let
     assertCollide a b =
-      assertEqual True (collide (==) a b)
+      assertEqual True (satisfies (==) a b)
 
     assertMiss a b =
-      assertEqual False (collide (==) a b)
+      assertEqual False (satisfies (==) a b)
   in
     suite
       "recursive collision detection"

@@ -1,8 +1,14 @@
 module Math.Transform (rotate, rotationFor, placement, toBodyFrame, fromBodyFrame, degreesFromForward, mulOrient) where
 
-import Types exposing (Body)
 import Math.Matrix as Matrix exposing (Matrix)
 import Math.Vector as Vector exposing (Vector)
+
+
+type alias Body a =
+  { a
+    | position : Vector
+    , orientation : Vector
+  }
 
 
 rotate : Vector -> Vector -> Vector
@@ -38,19 +44,19 @@ placement scale position orientation =
     |> Matrix.scale scale
 
 
-toBodyFrame : Vector -> Body -> Vector
+toBodyFrame : Vector -> Body a -> Vector
 toBodyFrame point body =
   rotate
     (Vector.negate body.orientation)
     (Vector.sub point body.position)
 
 
-fromBodyFrame : Vector -> Body -> Vector
+fromBodyFrame : Vector -> Body a -> Vector
 fromBodyFrame point body =
   Vector.add body.position (rotate body.orientation point)
 
 
-degreesFromForward : Vector -> Body -> Float
+degreesFromForward : Vector -> Body a -> Float
 degreesFromForward point body =
   toBodyFrame point body
     |> Vector.normalize

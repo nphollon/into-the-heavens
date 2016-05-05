@@ -1,7 +1,9 @@
-module Math.BoundingBox (BoundingBox, collide) where
+module Math.BoundingBox (BoundingBox, boxCollide, collide) where
 
 import Math.Vector as Vector exposing (Vector)
 import Math.Matrix as Matrix exposing (Matrix)
+import Math.Tree as Tree exposing (Tree)
+import Math.Transform as Transform
 
 
 type alias BoundingBox =
@@ -9,23 +11,47 @@ type alias BoundingBox =
   , b : Float
   , c : Float
   , position : Vector
-  , rotation : Matrix
+  , orientation : Vector
   }
 
 
-collide : BoundingBox -> BoundingBox -> Bool
-collide boxA boxB =
+type alias Body a =
+  { a
+    | position : Vector
+    , orientation : Vector
+    , bounds : Maybe (Tree BoundingBox)
+  }
+
+
+collide : Body a -> Body a -> Bool
+collide a b =
+  let
+    condition boxA boxB =
+      boxCollide (add a boxA) (add b boxB)
+  in
+    Maybe.map2 (Tree.satisfies condition) a.bounds b.bounds
+      |> Maybe.withDefault False
+
+
+add : Body b -> BoundingBox -> BoundingBox
+add { position, orientation } addend =
+  { addend
+    | position = Vector.add position addend.position
+    , orientation = Transform.mulOrient orientation addend.orientation
+  }
+
+
+boxCollide : BoundingBox -> BoundingBox -> Bool
+boxCollide boxA boxB =
   let
     t =
-      Matrix.transform
-        (Matrix.transpose boxA.rotation)
-        (Vector.sub boxB.position boxA.position)
+      Transform.toBodyFrame boxB.position boxA
         |> Vector.toRecord
 
     rotation =
-      Matrix.mul
-        (Matrix.transpose boxA.rotation)
-        boxB.rotation
+      Vector.negate boxA.orientation
+        |> Transform.mulOrient boxB.orientation
+        |> Matrix.makeRotate
 
     r1 =
       Matrix.transform rotation (Vector.vector 1 0 0)
