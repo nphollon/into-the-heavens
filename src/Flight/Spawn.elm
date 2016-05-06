@@ -20,7 +20,7 @@ spawnPlayer =
               (Leaf
                 { a = 0.5
                 , b = 0.5
-                , c = 0.5
+                , c = 0.3
                 , position = Vector.vector 0 0 0
                 , orientation = Vector.vector 0 0 0
                 }
@@ -70,7 +70,7 @@ visitorBodyAt positionGenerator =
             (Leaf
               { a = 0.5
               , b = 0.5
-              , c = 0.5
+              , c = 0.3
               , position = Vector.vector 0 0 0
               , orientation = Vector.vector 0 0 0
               }
