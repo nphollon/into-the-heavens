@@ -1,8 +1,22 @@
 module Math.Collision (isOutside, isInside, hull) where
 
 import Math.Vector as Vector exposing (Vector)
-import Types exposing (Hull, Body)
 import Math.Transform as Transform
+
+
+type alias Hull =
+  List
+    { keyPoint : Vector
+    , normal : Vector
+    }
+
+
+type alias Body a =
+  { a
+    | hull : Maybe Hull
+    , orientation : Vector
+    , position : Vector
+  }
 
 
 {-| Given a list of triangles, compute a hull. For a triangle of points (a,b,c),
@@ -35,7 +49,7 @@ hull xform triangles =
       |> List.filter (.normal >> isDefined)
 
 
-isInside : Vector -> Body -> Bool
+isInside : Vector -> Body a -> Bool
 isInside point body =
   let
     bodyPoint =
@@ -50,6 +64,6 @@ isInside point body =
     not (List.isEmpty hull) && List.all isBehind hull
 
 
-isOutside : Vector -> Body -> Bool
+isOutside : Vector -> Body a -> Bool
 isOutside point boundary =
   not (isInside point boundary)

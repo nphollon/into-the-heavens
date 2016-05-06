@@ -4,11 +4,10 @@ import Color
 import Dict exposing (Dict)
 import Random.PCG as Random
 import Types exposing (..)
-import Math.Collision as Collision
 import Math.Transform as Transform
 import Math.Vector as Vector exposing (Vector)
 import Math.Spherical as Spherical
-import Generate.Ship as Ship
+import Math.Tree as Tree exposing (Tree(..))
 
 
 spawnPlayer : Dict Id Body -> Dict Id Body
@@ -16,7 +15,16 @@ spawnPlayer =
   let
     playerBody =
       { defaultBody
-        | hull = Just (Collision.hull .position Ship.triangles)
+        | bounds =
+            Just
+              (Leaf
+                { a = 0.5
+                , b = 0.5
+                , c = 0.5
+                , position = Vector.vector 0 0 0
+                , orientation = Vector.vector 0 0 0
+                }
+              )
         , health = 1
         , ai = PlayerControlled defaultCockpit
       }
@@ -57,8 +65,16 @@ visitorBodyAt positionGenerator =
       , velocity = Vector.scale -0.1 position
       , orientation = orientationFor position
       , angVelocity = Vector.vector 0 0 0
-      , hull = Just (Collision.hull .position Ship.triangles)
-      , bounds = Nothing
+      , bounds =
+          Just
+            (Leaf
+              { a = 0.5
+              , b = 0.5
+              , c = 0.5
+              , position = Vector.vector 0 0 0
+              , orientation = Vector.vector 0 0 0
+              }
+            )
       , health = 1
       , ai =
           Hostile
@@ -81,8 +97,16 @@ spawnMissile parent targetId model =
             |> Vector.add parent.velocity
       , orientation = parent.orientation
       , angVelocity = Vector.vector 0 0 0
-      , hull = Just []
-      , bounds = Nothing
+      , bounds =
+          Just
+            (Leaf
+              { a = 0
+              , b = 0
+              , c = 0
+              , position = Vector.vector 0 0 0
+              , orientation = Vector.vector 0 0 0
+              }
+            )
       , health = 1
       , ai = Seeking 4 targetId
       }
@@ -105,7 +129,6 @@ spawnExplosion parent model =
       , velocity = parent.velocity
       , orientation = Vector.vector 0 0 0
       , angVelocity = Vector.vector 0 0 0
-      , hull = Nothing
       , bounds = Nothing
       , health = 1
       , ai = Waiting 3
@@ -173,7 +196,6 @@ defaultBody =
   , velocity = Vector.vector 0 0 0
   , orientation = Vector.vector 0 0 0
   , angVelocity = Vector.vector 0 0 0
-  , hull = Nothing
   , bounds = Nothing
   , health = 0
   , ai = Dumb

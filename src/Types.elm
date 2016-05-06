@@ -107,18 +107,10 @@ type alias Body =
   , velocity : Vector
   , orientation : Vector
   , angVelocity : Vector
-  , hull : Maybe Hull
   , bounds : Maybe (Tree BoundingBox)
   , health : Float
   , ai : Ai
   }
-
-
-type alias Hull =
-  List
-    { keyPoint : Vector
-    , normal : Vector
-    }
 
 
 type alias Acceleration =

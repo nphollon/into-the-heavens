@@ -1,8 +1,9 @@
 module Flight.Engine (update, shouldCrash) where
 
 import Dict exposing (Dict)
+import List.Extra as ListX
 import Types exposing (..)
-import Math.Collision as Collision
+import Math.BoundingBox as BoundingBox
 import Flight.Ai as Ai
 import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
@@ -164,32 +165,70 @@ thrust delta model =
 shouldCrash : Dict Id Body -> List EngineEffect
 shouldCrash universe =
   let
-    isExempt pointLabel point hullLabel hull =
-      Collision.isOutside point.position hull
-        || (pointLabel == hullLabel)
-        || (Util.isEthereal point)
-
-    collidedWith pointLabel point hullLabel hull effects =
-      if isExempt pointLabel point hullLabel hull then
-        effects
-      else if not (Util.isMissile point) then
-        DeductHealth hull.health pointLabel
-          :: DeductHealth point.health hullLabel
-          :: effects
-      else if Util.isShielded hull then
-        Destroy pointLabel
-          :: effects
+    collidedWith (( idA, bodyA ) as a) (( idB, bodyB ) as b) effects =
+      if BoundingBox.collide bodyA bodyB then
+        addEffects a b effects
       else
-        Destroy pointLabel
-          :: DeductHealth point.health hullLabel
-          :: effects
+        effects
+
+    addEffects ( idA, bodyA ) ( idB, bodyB ) effects =
+      case ( objectType bodyA, objectType bodyB ) of
+        ( Ethereal, _ ) ->
+          effects
+
+        ( _, Ethereal ) ->
+          effects
+
+        ( Missile, Missile ) ->
+          effects
+
+        ( Missile, Unshielded ) ->
+          Destroy idA
+            :: DeductHealth bodyA.health idB
+            :: effects
+
+        ( Unshielded, Missile ) ->
+          DeductHealth bodyB.health idA
+            :: Destroy idB
+            :: effects
+
+        ( Missile, Shielded ) ->
+          Destroy idA
+            :: effects
+
+        ( Shielded, Missile ) ->
+          Destroy idB
+            :: effects
+
+        _ ->
+          DeductHealth bodyB.health idA
+            :: DeductHealth bodyA.health idB
+            :: effects
+
+    objectType body =
+      if Util.isMissile body then
+        Missile
+      else if Util.isEthereal body then
+        Ethereal
+      else if Util.isShielded body then
+        Shielded
+      else
+        Unshielded
   in
-    Dict.foldl
-      (\id body effects ->
-        Dict.foldl (collidedWith id body) effects universe
-      )
-      []
-      universe
+    Dict.toList universe
+      |> ListX.selectSplit
+      |> List.foldl
+          (\( _, object, others ) effects ->
+            List.foldl (collidedWith object) effects others
+          )
+          []
+
+
+type ObjectType
+  = Missile
+  | Ethereal
+  | Shielded
+  | Unshielded
 
 
 shouldFire : Dict Id Body -> List EngineEffect

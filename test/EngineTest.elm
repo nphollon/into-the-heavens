@@ -4,7 +4,8 @@ import ElmTest exposing (..)
 import Dict exposing (Dict)
 import Types exposing (..)
 import Math.Vector as Vec
-import Math.Collision as Collision
+import Math.BoundingBox as BoundingBox exposing (BoundingBox)
+import Math.Tree as Tree exposing (Tree(..))
 import Flight.Spawn exposing (defaultBody, defaultCockpit)
 import Flight.Engine exposing (..)
 
@@ -128,23 +129,32 @@ missile : Float -> Body
 missile x =
   { defaultBody
     | health = x
-    , hull = Just []
+    , bounds =
+        Just
+          (Leaf
+            { a = 0
+            , b = 0
+            , c = 0
+            , position = Vec.vector 0 0 0
+            , orientation = Vec.vector 0 0 0
+            }
+          )
   }
 
 
-object : Float -> Hull -> Body
+object : Float -> Tree BoundingBox -> Body
 object x hull =
   { defaultBody
     | health = x
-    , hull = Just hull
+    , bounds = Just hull
   }
 
 
-shielded : Float -> Hull -> Body
+shielded : Float -> Tree BoundingBox -> Body
 shielded x hull =
   { defaultBody
     | health = x
-    , hull = Just hull
+    , bounds = Just hull
     , ai =
         PlayerControlled
           { defaultCockpit
@@ -160,25 +170,37 @@ shielded x hull =
 
 checkpoint : Body
 checkpoint =
-  { defaultBody | hull = Nothing }
+  { defaultBody | bounds = Nothing }
 
 
-hitHull : Hull
+hitHull : Tree BoundingBox
 hitHull =
-  Collision.hull
-    identity
-    [ ( Vec.vector 0 0 1, Vec.vector 1 0 1, Vec.vector 0 1 1 ) ]
+  Leaf
+    { a = 2
+    , b = 2
+    , c = 2
+    , position = Vec.vector 0 0 1
+    , orientation = Vec.vector 0 0 0
+    }
 
 
-outHull : Hull
+outHull : Tree BoundingBox
 outHull =
-  Collision.hull
-    identity
-    [ ( Vec.vector 1 1 0, Vec.vector 1 0 0, Vec.vector 1 0 1 ) ]
+  Leaf
+    { a = 2
+    , b = 2
+    , c = 2
+    , position = Vec.vector 0 0 3
+    , orientation = Vec.vector 0 0 0
+    }
 
 
-farHull : Hull
+farHull : Tree BoundingBox
 farHull =
-  Collision.hull
-    identity
-    [ ( Vec.vector 0 0 -1, Vec.vector 1 0 -1, Vec.vector 0 1 -1 ) ]
+  Leaf
+    { a = 2
+    , b = 2
+    , c = 2
+    , position = Vec.vector 0 0 10
+    , orientation = Vec.vector 0 0 0
+    }

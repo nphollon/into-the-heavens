@@ -17,7 +17,7 @@ data =
           , { defaultBody
               | position = Vector.vector -35 5 -10
               , angVelocity = Vector.vector 0 0 0
-              , hull = Nothing
+              , bounds = Nothing
               , health = 1.0e10
             }
           )
