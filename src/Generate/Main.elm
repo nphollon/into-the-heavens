@@ -10,6 +10,7 @@ import Generate.Ship as Ship
 import Generate.Missile as Missile
 import Generate.Explosion as Explosion
 import Generate.Column as Column
+import Generate.Prism as Prism
 
 
 writeModels : IO ()
@@ -23,6 +24,7 @@ writeModels =
     , ( Missile.mesh, "missile.json" )
     , ( Explosion.mesh, "explosion.json" )
     , ( Column.mesh, "column.json" )
+    , ( Prism.mesh, "prism.json" )
     ]
 
 

@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-echo "module Generate.Column (mesh, triangles) where
+echo "module Generate.Prism (mesh, triangles) where
 
 import Generate.Json exposing (Vertex)
 import Generate.FlatFace as FlatFace
@@ -41,4 +41,4 @@ cornerIndexes =
 
 grep ^f $1 | sed -e "s/^f \(.*\)/  , \[ \1\]/" | sed -e "s/\([0-9]\+\) /\1, /g"
 
-echo "    ]"
+echo "  ]"

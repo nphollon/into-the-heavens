@@ -32,6 +32,7 @@ library =
       , ( "Missile", "missile.json" )
       , ( "Explosion", "explosion.json" )
       , ( "Column", "column.json" )
+      , ( "Prism", "prism.json" )
       ]
 
     localResources =

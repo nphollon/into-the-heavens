@@ -1,4 +1,4 @@
-module Level.AtmosphereTest (data) where
+module Level.Pavilion (data) where
 
 import Dict
 import Color
@@ -9,8 +9,13 @@ import Flight.Spawn exposing (defaultBody)
 
 data : LevelData
 data =
-  { level = AtmosphereTest
-  , events = []
+  { level = Pavilion
+  , events =
+      [ ( Immediately
+        , [ Notify "Nothing to do here but admire the scenery."
+          ]
+        )
+      ]
   , universe =
       Dict.fromList
         [ ( 1

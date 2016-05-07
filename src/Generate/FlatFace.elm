@@ -26,12 +26,6 @@ toTriangles color positions =
           Vector.cross (Vector.sub j i) (Vector.sub k i)
             |> Vector.normalize
 
-        _ =
-          if isNaN normal.x then
-            Debug.log "NaN!" normal
-          else
-            normal
-
         toVertex p =
           { position = p
           , normal = normal

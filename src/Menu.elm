@@ -11,7 +11,8 @@ import Graphics.AppFrame as AppFrame
 import Flight.Init
 import Level.Outnumbered
 import Level.Tutorial
-import Level.AtmosphereTest
+import Level.Pavilion
+import Level.Prisms
 
 
 keyUpdate : Set KeyCode -> MenuState -> ( Mode, Effects Update )
@@ -70,22 +71,23 @@ view address state =
 
 mainMenuView : Signal.Address MenuAction -> Html
 mainMenuView address =
-  AppFrame.view
-    [ div
-        [ class "menu" ]
-        [ h2 [] [ text "Select a level" ]
-        , levelButton
-            (onClick address (StartGame Tutorial))
-            "Tutorial"
-        , levelButton
-            (onClick address (StartGame Outnumbered))
-            "Outnumbered"
-        , levelButton
-            (onClick address (StartGame AtmosphereTest))
-            "Atmosphere Test"
-        ]
-    ]
-    []
+  let
+    levelButton name data =
+      menuButton
+        (onClick address (StartGame data))
+        name
+  in
+    AppFrame.view
+      [ div
+          [ class "menu" ]
+          [ h2 [] [ text "Select a level" ]
+          , levelButton "Tutorial" Tutorial
+          , levelButton "Outnumbered" Outnumbered
+          , levelButton "Pavilion" Pavilion
+          , levelButton "Prisms" Prisms
+          ]
+      ]
+      []
 
 
 gameOverView : String -> String -> Signal.Address MenuAction -> Html
@@ -95,7 +97,7 @@ gameOverView message quote address =
         []
         [ h1 [ class "title" ] [ text message ]
         , h2 [ class "subtitle" ] [ text "Press 'N' to replay" ]
-        , levelButton
+        , menuButton
             (onClick address ToMainMenu)
             "Main Menu"
         ]
@@ -103,8 +105,8 @@ gameOverView message quote address =
     [ p [] [ text quote ] ]
 
 
-levelButton : Attribute -> String -> Html
-levelButton action label =
+menuButton : Attribute -> String -> Html
+menuButton action label =
   div
     [ class "menu-item" ]
     [ button [ action ] [ text label ] ]
@@ -119,5 +121,8 @@ dataFor level =
     Outnumbered ->
       Level.Outnumbered.data
 
-    AtmosphereTest ->
-      Level.AtmosphereTest.data
+    Pavilion ->
+      Level.Pavilion.data
+
+    Prisms ->
+      Level.Prisms.data

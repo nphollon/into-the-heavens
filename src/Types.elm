@@ -219,7 +219,8 @@ type Room
 type Level
   = Tutorial
   | Outnumbered
-  | AtmosphereTest
+  | Pavilion
+  | Prisms
 
 
 type alias Library =

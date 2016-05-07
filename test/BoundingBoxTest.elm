@@ -156,12 +156,27 @@ bodySuite =
           (BoundingBox.collide
             { defaultBody
               | position = Vector.vector 0 0 -2
-              , orientation = Vector.vector (degrees 45) 0 0
+              , orientation = Vector.vector (degrees -36.9) 0 0
               , bounds = Just (Leaf boxA)
             }
             { defaultBody
               | position = Vector.vector 0 0 2
-              , orientation = Vector.vector 0 (degrees 30) 0
+              , orientation = Vector.vector 0 (degrees 20.8) 0
+              , bounds = Just (Leaf boxA)
+            }
+          )
+  , test "unaligned bodies that do not collide"
+      <| assertEqual
+          False
+          (BoundingBox.collide
+            { defaultBody
+              | position = Vector.vector 0 0 -2
+              , orientation = Vector.vector (degrees -36.8) 0 0
+              , bounds = Just (Leaf boxA)
+            }
+            { defaultBody
+              | position = Vector.vector 0 0 2
+              , orientation = Vector.vector 0 (degrees 20.7) 0
               , bounds = Just (Leaf boxA)
             }
           )

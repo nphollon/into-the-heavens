@@ -49,8 +49,7 @@ boxCollide boxA boxB =
         |> Vector.toRecord
 
     rotation =
-      Vector.negate boxA.orientation
-        |> Transform.mulOrient boxB.orientation
+      Transform.mulOrient (Vector.negate boxA.orientation) boxB.orientation
         |> Matrix.makeRotate
 
     r1 =
