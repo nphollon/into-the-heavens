@@ -26,26 +26,26 @@ data =
               , bounds =
                   Just
                     (Node
-                      { a = 18
-                      , b = 12
-                      , c = 12
+                      { a = 6
+                      , b = 4
+                      , c = 4
                       , position = Vector.vector 0 0 0
                       , orientation = Vector.vector 0 0 0
                       }
                       (Leaf
-                        { a = 9
-                        , b = 6
-                        , c = 3
-                        , position = Vector.vector -9 -6 -9
+                        { a = 3
+                        , b = 2
+                        , c = 1
+                        , position = Vector.vector -3 -2 -3
                         , orientation = Vector.vector 0 0 0
                         }
                       )
                       (Leaf
-                        { a = 9
-                        , b = 6
-                        , c = 3
-                        , position = Vector.vector 12 3 9
-                        , orientation = Vector.vector 0 0 0
+                        { a = 3
+                        , b = 2
+                        , c = 1
+                        , position = Vector.vector 4 1 3
+                        , orientation = Vector.vector 0 0 (degrees 90)
                         }
                       )
                     )
