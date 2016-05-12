@@ -158,9 +158,9 @@ accelFromAction action object =
           Vector.scale -10 object.velocity
     , angular =
         Vector.vector
-          (goOrStop (toFloat action.pitch) (object.angVelocity.x))
-          (goOrStop (toFloat action.yaw) (object.angVelocity.y))
-          (goOrStop (toFloat action.roll) (object.angVelocity.z))
+          (goOrStop action.pitch (Vector.getX object.angVelocity))
+          (goOrStop action.yaw (Vector.getY object.angVelocity))
+          (goOrStop action.roll (Vector.getZ object.angVelocity))
     }
 
 

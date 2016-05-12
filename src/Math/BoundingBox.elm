@@ -95,15 +95,15 @@ boxCollide boxA boxB =
         <= (boxA.c + boxB.a * r.a31 + boxB.b * r.a32 + boxB.c * r.a33)
 
     bMajor =
-      abs (Vector.dot t r1)
+      abs (t.x * r.s11 + t.y * r.s21 + t.z * r.s31)
         <= (boxB.a + boxA.a * r.a11 + boxA.b * r.a21 + boxA.c * r.a31)
 
     bMiddle =
-      abs (Vector.dot t r2)
+      abs (t.x * r.s12 + t.y * r.s22 + t.z * r.s32)
         <= (boxB.b + boxA.a * r.a12 + boxA.b * r.a22 + boxA.c * r.a32)
 
     bMinor =
-      abs (Vector.dot t r3)
+      abs (t.x * r.s13 + t.y * r.s23 + t.z * r.s33)
         <= (boxB.c + boxA.a * r.a13 + boxA.b * r.a23 + boxA.c * r.a33)
 
     aMajorBMajor =

@@ -4,10 +4,7 @@ import Math.Vector3 as Vec3 exposing (Vec3)
 
 
 type alias Vector =
-  { x : Float
-  , y : Float
-  , z : Float
-  }
+  { x : Float, y : Float, z : Float }
 
 
 vector : Float -> Float -> Float -> Vector
@@ -32,18 +29,18 @@ getZ =
 
 add : Vector -> Vector -> Vector
 add a b =
-  { x = a.x + b.x
-  , y = a.y + b.y
-  , z = a.z + b.z
-  }
+  vector
+    (getX a + getX b)
+    (getY a + getY b)
+    (getZ a + getZ b)
 
 
 sub : Vector -> Vector -> Vector
 sub a b =
-  { x = a.x - b.x
-  , y = a.y - b.y
-  , z = a.z - b.z
-  }
+  vector
+    (getX a - getX b)
+    (getY a - getY b)
+    (getZ a - getZ b)
 
 
 negate : Vector -> Vector
@@ -53,23 +50,23 @@ negate =
 
 scale : Float -> Vector -> Vector
 scale c v =
-  { x = v.x * c
-  , y = v.y * c
-  , z = v.z * c
-  }
+  vector
+    (c * getX v)
+    (c * getY v)
+    (c * getZ v)
 
 
 dot : Vector -> Vector -> Float
 dot u v =
-  u.x * v.x + u.y * v.y + u.z * v.z
+  (getX u * getX v) + (getY u * getY v) + (getZ u * getZ v)
 
 
 cross : Vector -> Vector -> Vector
 cross u v =
-  { x = u.y * v.z - u.z * v.y
-  , y = u.z * v.x - u.x * v.z
-  , z = u.x * v.y - u.y * v.x
-  }
+  vector
+    ((getY u * getZ v) - (getZ u * getY v))
+    ((getZ u * getX v) - (getX u * getZ v))
+    ((getX u * getY v) - (getY u * getX v))
 
 
 normalize : Vector -> Vector
@@ -121,11 +118,14 @@ equal u v =
     equalFloat p q =
       (p - q) ^ 2 < 1.0e-5
   in
-    (equalFloat u.x v.x)
-      && (equalFloat u.y v.y)
-      && (equalFloat u.z v.z)
+    (equalFloat (getX u) (getX v))
+      && (equalFloat (getY u) (getY v))
+      && (equalFloat (getZ u) (getZ v))
 
 
 toRecord : Vector -> { x : Float, y : Float, z : Float }
 toRecord v =
-  v
+  { x = getX v
+  , y = getY v
+  , z = getZ v
+  }

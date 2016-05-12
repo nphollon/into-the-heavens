@@ -87,4 +87,7 @@ toCelestialSphere v =
     flatR =
       200000.0 + r
   in
-    Spherical.toRect flatR (asin (v.z / r)) (atan2 v.y v.x)
+    Spherical.toRect
+      flatR
+      (asin (Vector.getZ v / r))
+      (atan2 (Vector.getY v) (Vector.getX v))
