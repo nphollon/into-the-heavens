@@ -59,7 +59,6 @@ hull points =
       }
   in
     addSets sets start
-      |> repeat 18 tick
       |> Debug.log "Before"
       |> tick
       |> Debug.log "After"
@@ -134,7 +133,7 @@ removeFace id state =
           Debug.log "Removing Face" id
 
         newFaces =
-          hull2d apex oldVertexes
+          hull2d face apex oldVertexes
             |> triangleFan apex
 
         newSets =
@@ -143,40 +142,54 @@ removeFace id state =
         addSets newSets { state | pointSets = belowHorizon }
 
 
-{-| Project a list of points onto the plane defined by a vantage point,
+{-| Project a list of points onto the perspective plane
+defined by a vantage point and a face,
 compute the 2D convex hull (counterclockwise direction),
 return the unprojected points
 -}
-hull2d : Vector -> List Vector -> List Vector
-hull2d vantage points =
+hull2d : Face -> Vector -> List Vector -> List Vector
+hull2d face vantage points =
   let
-    normal =
-      List.foldl
-        (\point sum -> Vector.add sum (Vector.direction point vantage))
-        (Vector.vector 0 0 0)
-        points
-        |> Debug.log "normal"
+    x =
+      Vector.direction face.q face.p
 
-    bearing =
-      if (Vector.getX normal) == 0 then
-        Vector.cross normal (Vector.vector 1 0 0)
-      else
-        Vector.cross normal (Vector.vector 0 1 0)
+    normal =
+      Vector.cross (Vector.sub face.r face.p) x
+        |> Vector.normalize
 
     basis =
-      { x = bearing
-      , y = Vector.cross bearing normal
-      }
-
-    project point =
-      { original = point
-      , x = Vector.dot basis.x point
-      , y = Vector.dot basis.y point
+      { x = x
+      , y = Vector.cross normal x
+      , z = normal
       }
   in
-    List.map project points
+    points
+      |> List.map (flip Vector.sub vantage)
+      |> List.map (project basis)
       |> grahamScan
       |> List.map .original
+
+
+project : Basis -> Vector -> Point2d
+project basis point =
+  let
+    ortho =
+      { x = Vector.dot basis.x point
+      , y = Vector.dot basis.y point
+      , z = Vector.dot basis.z point
+      }
+  in
+    { original = point
+    , x = ortho.x / ortho.z
+    , y = ortho.y / ortho.z
+    }
+
+
+type alias Basis =
+  { x : Vector
+  , y : Vector
+  , z : Vector
+  }
 
 
 type alias Point2d =
