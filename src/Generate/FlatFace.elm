@@ -5,8 +5,10 @@ import Maybe.Extra as MaybeX
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Vector as Vector exposing (Vector)
 import Generate.Json exposing (Vertex)
+import Math.Hull as Hull
 
 
+{-
 triangles : Vec4 -> Array Vector -> List (List Int) -> List ( Vertex, Vertex, Vertex )
 triangles color cornerPositions cornerIndexes =
   let
@@ -39,3 +41,25 @@ toTriangles color positions =
 
     otherwise ->
       []
+-}
+
+
+triangles : Vec4 -> Array Vector -> a -> List ( Vertex, Vertex, Vertex )
+triangles color cornerPositions _ =
+  Array.toList cornerPositions
+    |> Hull.hull
+    |> List.map
+        (\( a, b, c ) ->
+          let
+            normal =
+              Vector.cross (Vector.sub b a) (Vector.sub c a)
+                |> Vector.normalize
+
+            toVertex position =
+              { position = position
+              , normal = normal
+              , color = color
+              }
+          in
+            ( toVertex a, toVertex b, toVertex c )
+        )

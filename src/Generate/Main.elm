@@ -18,13 +18,7 @@ writeModels =
   List.foldl
     (\x io -> io >>> (uncurry write x))
     (Console.pure ())
-    [ ( Sphere.mesh, "sphere.json" )
-    , ( Cluster.mesh, "background.json" )
-    , ( Ship.mesh, "ship.json" )
-    , ( Missile.mesh, "missile.json" )
-    , ( Explosion.mesh, "explosion.json" )
-    , ( Column.mesh, "column.json" )
-    , ( Prism.mesh, "prism.json" )
+    [ ( Prism.mesh, "prism.json" )
     ]
 
 

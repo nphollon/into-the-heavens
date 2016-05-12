@@ -1,7 +1,7 @@
 module Math.Hull (hull) where
 
 import Dict exposing (Dict)
-import Vector exposing (Vector)
+import Math.Vector as Vector exposing (Vector)
 
 
 type alias Pair a =
@@ -58,14 +58,39 @@ hull points =
       , nextId = 0
       }
   in
-    shortenStack (addSets sets start)
+    addSets sets start
+      |> repeat 18 tick
+      |> Debug.log "Before"
+      |> tick
+      |> Debug.log "After"
+      |> .pointSets
+      |> Dict.values
       |> List.map (.face >> vertexTuple)
+
+
+repeat : Int -> (State -> State) -> State -> State
+repeat i f s =
+  if i <= 0 then
+    s
+  else
+    repeat (i - 1) f (f s)
+
+
+tick : State -> State
+tick state =
+  case state.stack of
+    [] ->
+      state
+
+    id :: stack ->
+      { state | stack = stack }
+        |> removeFace id
 
 
 {-| Iterative part of hull computation
 -}
-shortenStack : State -> List PointSet
-shortenStack state =
+consumeStack : State -> List PointSet
+consumeStack state =
   case state.stack of
     [] ->
       Dict.values state.pointSets
@@ -73,7 +98,7 @@ shortenStack state =
     id :: stack ->
       { state | stack = stack }
         |> removeFace id
-        |> shortenStack
+        |> consumeStack
 
 
 {-| Pick the point in a pointset farthest from the face
@@ -105,8 +130,11 @@ removeFace id state =
             ( [], [] )
             aboveHorizon
 
+        _ =
+          Debug.log "Removing Face" id
+
         newFaces =
-          hull2d face oldVertexes
+          hull2d apex oldVertexes
             |> triangleFan apex
 
         newSets =
@@ -115,38 +143,35 @@ removeFace id state =
         addSets newSets { state | pointSets = belowHorizon }
 
 
-{-| Project a list of points onto the plane defined by a face,
+{-| Project a list of points onto the plane defined by a vantage point,
 compute the 2D convex hull (counterclockwise direction),
 return the unprojected points
 -}
-hull2d : Face -> List Vector -> List Vector
-hull2d face points =
+hull2d : Vector -> List Vector -> List Vector
+hull2d vantage points =
   let
-    a =
-      Vector.sub face.q face.p
+    normal =
+      List.foldl
+        (\point sum -> Vector.add sum (Vector.direction point vantage))
+        (Vector.vector 0 0 0)
+        points
+        |> Debug.log "normal"
 
-    b =
-      Vector.sub face.r face.p
+    bearing =
+      if (Vector.getX normal) == 0 then
+        Vector.cross normal (Vector.vector 1 0 0)
+      else
+        Vector.cross normal (Vector.vector 0 1 0)
 
     basis =
-      { a = a
-      , b =
-          Vector.sub
-            (Vector.scale (Vector.dot a a) b)
-            (Vector.scale (Vector.dot a b) a)
-      , c = Vector.cross a b
+      { x = bearing
+      , y = Vector.cross bearing normal
       }
 
     project point =
       { original = point
-      , x =
-          (Vector.getX basis.a * Vector.getX point)
-            + (Vector.getX basis.b * Vector.getY point)
-            + (Vector.getX basis.c * Vector.getZ point)
-      , y =
-          (Vector.getY basis.a * Vector.getX point)
-            + (Vector.getY basis.b * Vector.getY point)
-            + (Vector.getY basis.c * Vector.getZ point)
+      , x = Vector.dot basis.x point
+      , y = Vector.dot basis.y point
       }
   in
     List.map project points

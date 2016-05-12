@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-echo "module Generate.Prism (mesh, triangles) where
+echo "module Generate.$2 (mesh, triangles) where
 
 import Generate.Json exposing (Vertex)
 import Generate.FlatFace as FlatFace

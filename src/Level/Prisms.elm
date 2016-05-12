@@ -4,7 +4,6 @@ import Dict
 import Color
 import Types exposing (..)
 import Math.Vector as Vector
-import Math.Tree exposing (Tree(..))
 import Flight.Spawn exposing (defaultBody)
 
 
@@ -22,33 +21,8 @@ data =
         [ ( 1
           , { defaultBody
               | position = Vector.vector -35 5 -10
-              , angVelocity = Vector.vector 0 0 0
-              , bounds =
-                  Just
-                    (Node
-                      { a = 6
-                      , b = 4
-                      , c = 4
-                      , position = Vector.vector 0 0 0
-                      , orientation = Vector.vector 0 0 0
-                      }
-                      (Leaf
-                        { a = 3
-                        , b = 2
-                        , c = 1
-                        , position = Vector.vector -3 -2 -3
-                        , orientation = Vector.vector 0 0 0
-                        }
-                      )
-                      (Leaf
-                        { a = 3
-                        , b = 2
-                        , c = 1
-                        , position = Vector.vector 4 1 3
-                        , orientation = Vector.vector 0 0 (degrees 90)
-                        }
-                      )
-                    )
+              , angVelocity = Vector.vector 0.5 0 0.5
+              , bounds = Nothing
               , health = 1.0e10
             }
           )
