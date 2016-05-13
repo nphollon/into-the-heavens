@@ -1,4 +1,4 @@
-module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, toVec3, fromVec3, equal, toRecord) where
+module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, toVec3, fromVec3, equal, fromRecord, toRecord, fromTuple, toTuple) where
 
 import Math.Vector3 as Vec3 exposing (Vec3)
 
@@ -123,9 +123,24 @@ equal u v =
       && (equalFloat (getZ u) (getZ v))
 
 
+fromRecord : { x : Float, y : Float, z : Float } -> Vector
+fromRecord record =
+  vector record.x record.y record.z
+
+
 toRecord : Vector -> { x : Float, y : Float, z : Float }
 toRecord v =
   { x = getX v
   , y = getY v
   , z = getZ v
   }
+
+
+fromTuple : ( Float, Float, Float ) -> Vector
+fromTuple ( x, y, z ) =
+  vector x y z
+
+
+toTuple : Vector -> ( Float, Float, Float )
+toTuple v =
+  ( getX v, getY v, getZ v )

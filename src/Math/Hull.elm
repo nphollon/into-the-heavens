@@ -1,6 +1,7 @@
 module Math.Hull (hull) where
 
 import Dict exposing (Dict)
+import Set
 import Math.Vector as Vector exposing (Vector)
 
 
@@ -59,31 +60,8 @@ hull points =
       }
   in
     addSets sets start
-      |> Debug.log "Before"
-      |> tick
-      |> Debug.log "After"
-      |> .pointSets
-      |> Dict.values
+      |> consumeStack
       |> List.map (.face >> vertexTuple)
-
-
-repeat : Int -> (State -> State) -> State -> State
-repeat i f s =
-  if i <= 0 then
-    s
-  else
-    repeat (i - 1) f (f s)
-
-
-tick : State -> State
-tick state =
-  case state.stack of
-    [] ->
-      state
-
-    id :: stack ->
-      { state | stack = stack }
-        |> removeFace id
 
 
 {-| Iterative part of hull computation
@@ -129,9 +107,6 @@ removeFace id state =
             ( [], [] )
             aboveHorizon
 
-        _ =
-          Debug.log "Removing Face" id
-
         newFaces =
           hull2d face apex oldVertexes
             |> triangleFan apex
@@ -150,33 +125,45 @@ return the unprojected points
 hull2d : Face -> Vector -> List Vector -> List Vector
 hull2d face vantage points =
   let
-    x =
-      Vector.direction face.q face.p
+    projection =
+      project (basis face vantage) vantage
 
-    normal =
-      Vector.cross (Vector.sub face.r face.p) x
-        |> Vector.normalize
-
-    basis =
-      { x = x
-      , y = Vector.cross normal x
-      , z = normal
-      }
+    uniquePoints =
+      List.map Vector.toTuple points
+        |> Set.fromList
+        |> Set.toList
+        |> List.map Vector.fromTuple
   in
-    points
-      |> List.map (flip Vector.sub vantage)
-      |> List.map (project basis)
+    List.map projection uniquePoints
       |> grahamScan
       |> List.map .original
 
 
-project : Basis -> Vector -> Point2d
-project basis point =
+basis : Face -> Vector -> Basis
+basis face vantage =
   let
+    x =
+      Vector.sub face.q face.p
+
+    normal =
+      Vector.cross x (Vector.sub face.r face.p)
+  in
+    { x = x
+    , y = Vector.cross normal x
+    , z = normal
+    }
+
+
+project : Basis -> Vector -> Vector -> Point2d
+project basis vantage point =
+  let
+    offset =
+      Vector.sub point vantage
+
     ortho =
-      { x = Vector.dot basis.x point
-      , y = Vector.dot basis.y point
-      , z = Vector.dot basis.z point
+      { x = Vector.dot basis.x offset
+      , y = Vector.dot basis.y offset
+      , z = Vector.dot basis.z offset
       }
   in
     { original = point
@@ -199,6 +186,8 @@ type alias Point2d =
   }
 
 
+{-| Points must be unique
+-}
 grahamScan : List Point2d -> List Point2d
 grahamScan points =
   case points of
@@ -227,20 +216,12 @@ grahamScan points =
         scan point hull =
           case hull of
             hinge :: base :: points ->
-              if point == hinge then
-                hull
-              else if cross point hinge base < 0 then
+              if cross point hinge base < 0 then
                 scan point (base :: points)
               else
                 point :: hull
 
-            base :: [] ->
-              if base == point then
-                hull
-              else
-                point :: hull
-
-            [] ->
+            _ ->
               point :: hull
       in
         List.sortBy (cotangent pivotPoint) remainder
@@ -353,9 +334,7 @@ farthestFromBase face points =
 
 {-| Given a list of points, build a tetrahedron out of 4 extreme points.
 
-WARNING: Does not handle these cases:
-- All points coplanar (or colinear)
-- Only 2 extreme points (max or min in all three coordinates)
+WARNING: Does not handle coplanar/colinear point sets
 -}
 simplex : List Vector -> List Face
 simplex points =
@@ -381,7 +360,7 @@ simplex points =
       base =
         { p = fst baseLine
         , q = snd baseLine
-        , r = farthestFromLine baseLine extremeList
+        , r = farthestFromLine baseLine points
         }
 
       apex =
