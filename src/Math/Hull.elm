@@ -1,37 +1,12 @@
 module Math.Hull (hull) where
 
 import Dict exposing (Dict)
-import Set
 import Math.Vector as Vector exposing (Vector)
+import Math.Face as Face exposing (Face)
 
 
 type alias Pair a =
   ( a, a )
-
-
-type alias Face =
-  { p : Vector
-  , q : Vector
-  , r : Vector
-  }
-
-
-tri : Vector -> Vector -> Vector -> Face
-tri p q r =
-  { p = p
-  , q = q
-  , r = r
-  }
-
-
-vertexList : Face -> List Vector
-vertexList face =
-  [ face.p, face.q, face.r ]
-
-
-vertexTuple : Face -> ( Vector, Vector, Vector )
-vertexTuple face =
-  ( face.p, face.q, face.r )
 
 
 type alias PointSet =
@@ -61,7 +36,7 @@ hull points =
   in
     addSets sets start
       |> consumeStack
-      |> List.map (.face >> vertexTuple)
+      |> List.map (.face >> Face.vertexTuple)
 
 
 {-| Iterative part of hull computation
@@ -102,7 +77,7 @@ removeFace id state =
             (\_ pointSet ( points, vertexes ) ->
               (,)
                 (points ++ pointSet.points)
-                (vertexes ++ vertexList pointSet.face)
+                (vertexes ++ Face.vertexList pointSet.face)
             )
             ( [], [] )
             aboveHorizon
@@ -127,14 +102,9 @@ hull2d face vantage points =
   let
     projection =
       project (basis face vantage) vantage
-
-    uniquePoints =
-      List.map Vector.toTuple points
-        |> Set.fromList
-        |> Set.toList
-        |> List.map Vector.fromTuple
   in
-    List.map projection uniquePoints
+    Vector.unique points
+      |> List.map projection
       |> grahamScan
       |> List.map .original
 
@@ -236,7 +206,7 @@ triangleFan apex rim =
         rimShift =
           vs ++ [ v ]
       in
-        List.map2 (tri apex) rim rimShift
+        List.map2 (Face.face apex) rim rimShift
 
     [] ->
       []
@@ -367,16 +337,16 @@ simplex points =
         farthestFromBase base points
     in
       if isInFrontOf base apex then
-        [ tri base.p base.r base.q
-        , tri base.q base.r apex
-        , tri base.r base.p apex
-        , tri apex base.p base.q
+        [ Face.face base.p base.r base.q
+        , Face.face base.q base.r apex
+        , Face.face base.r base.p apex
+        , Face.face apex base.p base.q
         ]
       else
-        [ tri base.p base.q base.r
-        , tri base.q apex base.r
-        , tri base.r apex base.p
-        , tri apex base.q base.p
+        [ Face.face base.p base.q base.r
+        , Face.face base.q apex base.r
+        , Face.face base.r apex base.p
+        , Face.face apex base.q base.p
         ]
 
 

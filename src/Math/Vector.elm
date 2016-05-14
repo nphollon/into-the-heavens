@@ -1,6 +1,7 @@
-module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, toVec3, fromVec3, equal, fromRecord, toRecord, fromTuple, toTuple) where
+module Math.Vector (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, toVec3, fromVec3, equal, fromRecord, toRecord, fromTuple, toTuple, unique) where
 
 import Math.Vector3 as Vec3 exposing (Vec3)
+import Set
 
 
 type alias Vector =
@@ -144,3 +145,11 @@ fromTuple ( x, y, z ) =
 toTuple : Vector -> ( Float, Float, Float )
 toTuple v =
   ( getX v, getY v, getZ v )
+
+
+unique : List Vector -> List Vector
+unique points =
+  List.map toTuple points
+    |> Set.fromList
+    |> Set.toList
+    |> List.map fromTuple
