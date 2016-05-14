@@ -8,7 +8,6 @@ import Generate.Json exposing (Vertex)
 import Math.Hull as Hull
 
 
-{-
 triangles : Vec4 -> Array Vector -> List (List Int) -> List ( Vertex, Vertex, Vertex )
 triangles color cornerPositions cornerIndexes =
   let
@@ -41,11 +40,10 @@ toTriangles color positions =
 
     otherwise ->
       []
--}
 
 
-triangles : Vec4 -> Array Vector -> a -> List ( Vertex, Vertex, Vertex )
-triangles color cornerPositions _ =
+convexHull : Vec4 -> Array Vector -> a -> List ( Vertex, Vertex, Vertex )
+convexHull color cornerPositions _ =
   Array.toList cornerPositions
     |> Hull.hull
     |> List.map
