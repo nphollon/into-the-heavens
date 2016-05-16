@@ -47,10 +47,10 @@ convexHull color cornerPositions _ =
   Array.toList cornerPositions
     |> Hull.hull
     |> List.map
-        (\( a, b, c ) ->
+        (\{ p, q, r } ->
           let
             normal =
-              Vector.cross (Vector.sub b a) (Vector.sub c a)
+              Vector.cross (Vector.sub q p) (Vector.sub r p)
                 |> Vector.normalize
 
             toVertex position =
@@ -59,5 +59,5 @@ convexHull color cornerPositions _ =
               , color = color
               }
           in
-            ( toVertex a, toVertex b, toVertex c )
+            ( toVertex p, toVertex q, toVertex r )
         )

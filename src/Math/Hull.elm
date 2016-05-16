@@ -22,7 +22,7 @@ type alias State =
   }
 
 
-hull : List Vector -> List ( Vector, Vector, Vector )
+hull : List Vector -> List Face
 hull points =
   let
     sets =
@@ -36,7 +36,7 @@ hull points =
   in
     addSets sets start
       |> consumeStack
-      |> List.map (.face >> Face.vertexTuple)
+      |> List.map .face
 
 
 {-| Iterative part of hull computation
