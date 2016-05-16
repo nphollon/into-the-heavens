@@ -28,26 +28,24 @@ init xx xy xz yy yz zz =
 
 add : Covariance -> Covariance -> Covariance
 add (Covariance a) (Covariance b) =
-  Covariance
-    { xx = a.xx + b.xx
-    , xy = a.xy + b.xy
-    , xz = a.xz + b.xz
-    , yy = a.yy + b.yy
-    , yz = a.yz + b.yz
-    , zz = a.zz + b.zz
-    }
+  init
+    (a.xx + b.xx)
+    (a.xy + b.xy)
+    (a.xz + b.xz)
+    (a.yy + b.yy)
+    (a.yz + b.yz)
+    (a.zz + b.zz)
 
 
 scale : Float -> Covariance -> Covariance
 scale factor (Covariance cov) =
-  Covariance
-    { xx = factor * cov.xx
-    , xy = factor * cov.xy
-    , xz = factor * cov.xz
-    , yy = factor * cov.yy
-    , yz = factor * cov.yz
-    , zz = factor * cov.zz
-    }
+  init
+    (factor * cov.xx)
+    (factor * cov.xy)
+    (factor * cov.xz)
+    (factor * cov.yy)
+    (factor * cov.yz)
+    (factor * cov.zz)
 
 
 type alias Basis =
@@ -61,40 +59,52 @@ eigenbasis : Covariance -> Basis
 eigenbasis matrix =
   let
     solve m =
-      case convergeToEigenvector 20 m guess of
+      case convergeToEigenvector 50 m guess of
         Ok v ->
           v
 
         Err v ->
-          v |> Debug.log "did not converge"
+          v
 
     guess =
-      Vector.vector (1 / sqrt 3) (1 / sqrt 3) (1 / sqrt 3)
+      { value = 0
+      , vector = Vector.vector (1 / sqrt 3) (1 / sqrt 3) (1 / sqrt 3)
+      }
 
-    xSolution =
+    xEigen =
       solve matrix
 
-    xEigenvalue =
-      rayleighQuotient matrix xSolution
-
-    ySolution =
-      solve (removeEigenvalue xEigenvalue matrix)
+    yEigen =
+      solve (removeEigenvalue xEigen.value matrix)
   in
-    { x = xSolution
-    , y = ySolution
-    , z = Vector.cross xSolution ySolution
+    { x = xEigen.vector
+    , y = yEigen.vector
+    , z = Vector.cross xEigen.vector yEigen.vector
     }
 
 
-convergeToEigenvector : Float -> Covariance -> Vector -> Result Vector Vector
+type alias Eigen =
+  { value : Float
+  , vector : Vector
+  }
+
+
+convergeToEigenvector : Float -> Covariance -> Eigen -> Result Eigen Eigen
 convergeToEigenvector iter matrix guess =
   let
+    nextVector =
+      Vector.normalize (transform matrix guess.vector)
+
+    nextValue =
+      rayleighQuotient matrix nextVector
+
     nextGuess =
-      Vector.normalize (transform matrix guess)
+      { value = nextValue
+      , vector = nextVector
+      }
 
     solutionFound =
-      Vector.equal guess nextGuess
-        || Vector.equal guess (Vector.negate nextGuess)
+      (guess.value - nextGuess.value) ^ 2 < 1.0e-20
   in
     if solutionFound then
       Ok nextGuess
@@ -108,6 +118,17 @@ rayleighQuotient : Covariance -> Vector -> Float
 rayleighQuotient matrix vector =
   (Vector.dot vector (transform matrix vector))
     / (Vector.dot vector vector)
+
+
+adjugate : Covariance -> Covariance
+adjugate (Covariance c) =
+  init
+    (c.yy * c.zz - c.yz * c.yz)
+    (c.xz * c.yz - c.xy * c.zz)
+    (c.xy * c.yz - c.xz * c.yy)
+    (c.xx * c.zz - c.xz * c.xz)
+    (c.xy * c.xz - c.xx * c.yz)
+    (c.xx * c.yy - c.xy * c.xy)
 
 
 removeEigenvalue : Float -> Covariance -> Covariance

@@ -34,8 +34,19 @@ testSuite =
 
 assertBasisContains : Vector -> Basis -> Assertion
 assertBasisContains v basis =
-  if equalVector v basis.x || equalVector v basis.y || equalVector v basis.z then
-    pass
-  else
-    fail
-      ("Expected to find vector " ++ toString v ++ " in basis " ++ toString basis)
+  let
+    negV =
+      Vector.negate v
+  in
+    if
+      equalVector v basis.x
+        || equalVector v basis.y
+        || equalVector v basis.z
+        || equalVector negV basis.x
+        || equalVector negV basis.y
+        || equalVector negV basis.z
+    then
+      pass
+    else
+      fail
+        ("Expected to find vector " ++ toString v ++ " in basis " ++ toString basis)
