@@ -13,6 +13,7 @@ import EngineTest
 import TerrainTest
 import TreeTest
 import BoundingBoxTest
+import CovarianceTest
 
 
 testSuite : Test
@@ -29,6 +30,7 @@ testSuite =
     , TerrainTest.testSuite
     , TreeTest.testSuite
     , BoundingBoxTest.testSuite
+    , CovarianceTest.testSuite
     ]
 
 
