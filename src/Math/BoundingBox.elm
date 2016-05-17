@@ -1,9 +1,12 @@
-module Math.BoundingBox (BoundingBox, boxCollide, collide) where
+module Math.BoundingBox (BoundingBox, boxCollide, collide, boxCreate) where
 
 import Math.Vector as Vector exposing (Vector)
 import Math.Matrix as Matrix exposing (Matrix)
 import Math.Tree as Tree exposing (Tree)
 import Math.Transform as Transform
+import Math.Hull as Hull
+import Math.Face as Face exposing (Face)
+import Math.Covariance as Covariance exposing (Covariance)
 
 
 type alias BoundingBox =
@@ -157,3 +160,65 @@ boxCollide boxA boxB =
       && aMinorBMajor
       && aMinorBMiddle
       && aMinorBMinor
+
+
+boxCreate : List Face -> BoundingBox
+boxCreate faces =
+  let
+    area face =
+      0.5 * (Vector.length (Face.cross face))
+
+    centerOfTriangle { p, q, r } m =
+      Vector.add p q
+        |> Vector.add r
+        |> Vector.scale (1 / m)
+
+    hull =
+      faces
+        |> List.concatMap Face.vertexList
+        |> Hull.hull
+
+    areas =
+      List.map area hull
+
+    center =
+      List.map2 centerOfTriangle hull areas
+        |> List.foldl Vector.add (Vector.vector 0 0 0)
+        |> Vector.scale (1 / 6 / toFloat (List.length hull))
+
+    recenter face =
+      { p = Vector.sub face.p center
+      , q = Vector.sub face.q center
+      , r = Vector.sub face.r center
+      }
+
+    basis =
+      List.map2 (\face -> (,) (recenter face)) hull areas
+        |> Covariance.fromMesh
+        |> Covariance.eigenbasis
+
+    hullPoints =
+      List.concatMap Face.vertexList hull
+        |> Vector.unique
+  in
+    { a = radiusAlong basis.x hullPoints
+    , b = radiusAlong basis.y hullPoints
+    , c = radiusAlong basis.z hullPoints
+    , position = center
+    , orientation = Covariance.toOrientation basis
+    }
+
+
+radiusAlong : Vector -> List Vector -> Float
+radiusAlong axis cloud =
+  let
+    project point =
+      Vector.dot point axis
+
+    checkForExtreme x ( smallestSoFar, largestSoFar ) =
+      ( min smallestSoFar x, max largestSoFar x )
+
+    ( smallest, largest ) =
+      List.foldl (project >> checkForExtreme) ( 1 / 0, -1 / 0 ) cloud
+  in
+    0.5 * (largest - smallest)

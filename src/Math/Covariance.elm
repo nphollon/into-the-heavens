@@ -1,6 +1,7 @@
-module Math.Covariance (Covariance, Basis, add, scale, eigenbasis, init) where
+module Math.Covariance (Covariance, Basis, eigenbasis, init, toOrientation, fromMesh) where
 
 import Math.Vector as Vector exposing (Vector)
+import Math.Face exposing (Face)
 
 
 type Covariance
@@ -12,6 +13,75 @@ type Covariance
       , yz : Float
       , zz : Float
       }
+
+
+fromMesh : List ( Face, Float ) -> Covariance
+fromMesh faces =
+  let
+    partialCovariance face =
+      init
+        (covarianceElement One One face)
+        (covarianceElement One Two face)
+        (covarianceElement One Three face)
+        (covarianceElement Two Two face)
+        (covarianceElement Two Three face)
+        (covarianceElement Three Three face)
+
+    zeroMatrix =
+      init 0 0 0 0 0 0
+  in
+    List.map partialCovariance faces
+      |> List.foldl add zeroMatrix
+      |> scale (1 / toFloat (List.length faces))
+
+
+covarianceElement : Component -> Component -> ( Face, Float ) -> Float
+covarianceElement j k ( face, area ) =
+  let
+    pj =
+      component j face.p
+
+    pk =
+      component k face.p
+
+    qj =
+      component j face.q
+
+    qk =
+      component k face.q
+
+    rj =
+      component j face.r
+
+    rk =
+      component k face.r
+
+    productOfSums =
+      (pj + qj + rj) * (pk + qk + rk)
+
+    sumOfProducts =
+      (pj * pk) + (qj * qk) + (rj * rk)
+  in
+    area * (productOfSums + sumOfProducts)
+
+
+type Component
+  = One
+  | Two
+  | Three
+
+
+component : Component -> Vector -> Float
+component comp =
+  case comp of
+    One ->
+      Vector.getX
+
+    Two ->
+      Vector.getY
+
+    Three ->
+      Vector.getZ
 
 
 init : Float -> Float -> Float -> Float -> Float -> Float -> Covariance
@@ -53,6 +123,24 @@ type alias Basis =
   , y : Vector
   , z : Vector
   }
+
+
+toOrientation : Basis -> Vector
+toOrientation basis =
+  let
+    axis =
+      Vector.vector
+        (Vector.getZ basis.y - Vector.getY basis.z)
+        (Vector.getX basis.z - Vector.getZ basis.x)
+        (Vector.getY basis.x - Vector.getX basis.y)
+
+    twoSinAngle =
+      Vector.length axis
+
+    angle =
+      asin (0.5 * twoSinAngle)
+  in
+    Vector.scale (angle / twoSinAngle) axis
 
 
 eigenbasis : Covariance -> Basis
