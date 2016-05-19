@@ -20,8 +20,24 @@ data =
       Dict.fromList
         [ ( 1
           , { defaultBody
-              | position = Vector.vector -35 5 -10
-              , angVelocity = Vector.vector 0.5 0 0.5
+              | position = Vector.vector -3 0 -10
+              , angVelocity = Vector.vector 0 0 0
+              , bounds = Nothing
+              , health = 1.0e10
+            }
+          )
+        , ( 2
+          , { defaultBody
+              | position = Vector.vector 0 0 -10
+              , angVelocity = Vector.vector 0 0 0
+              , bounds = Nothing
+              , health = 1.0e10
+            }
+          )
+        , ( 3
+          , { defaultBody
+              | position = Vector.vector 3 0 -10
+              , angVelocity = Vector.vector 0 0 0
               , bounds = Nothing
               , health = 1.0e10
             }
@@ -31,7 +47,17 @@ data =
       [ Background "Background"
       , Object
           { bodyId = 1
+          , meshName = "Prism Hull"
+          , shader = Matte Color.white
+          }
+      , Object
+          { bodyId = 2
           , meshName = "Prism"
+          , shader = Matte Color.white
+          }
+      , Object
+          { bodyId = 3
+          , meshName = "Prism Box"
           , shader = Matte Color.white
           }
       ]

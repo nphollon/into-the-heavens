@@ -25,6 +25,8 @@ writeModels =
     , ( Explosion.mesh, "explosion.json" )
     , ( Column.mesh, "column.json" )
     , ( Prism.mesh, "prism.json" )
+    , ( Prism.hull, "prism-hull.json" )
+    , ( Prism.box, "prism-box.json" )
     ]
 
 

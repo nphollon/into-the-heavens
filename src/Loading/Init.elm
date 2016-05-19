@@ -33,6 +33,8 @@ library =
       , ( "Explosion", "explosion.json" )
       , ( "Column", "column.json" )
       , ( "Prism", "prism.json" )
+      , ( "Prism Hull", "prism-hull.json" )
+      , ( "Prism Box", "prism-box.json" )
       ]
 
     localResources =
