@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-echo "module Generate.$2 (mesh, triangles) where
+echo "module Generate.$2 (mesh, hull, box) where
 
 import Generate.Json exposing (Vertex)
 import Generate.FlatFace as FlatFace
@@ -12,12 +12,22 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 
 mesh : Drawable Vertex
 mesh =
-  Triangle triangles
+  map FlatFace.triangles
 
 
-triangles : List ( Vertex, Vertex, Vertex )
-triangles =
-  FlatFace.triangles color cornerPositions cornerIndexes
+hull : Drawable Vertex
+hull =
+  map FlatFace.convexHull
+
+
+box : Drawable Vertex
+box =
+  map FlatFace.boundingBox
+
+
+map : (Vec4 -> Array Vector -> List (List Int) -> List ( Vertex, Vertex, Vertex )) -> Drawable Vertex
+map transform =
+  Triangle (transform color cornerPositions cornerIndexes)
 
 
 color : Vec4

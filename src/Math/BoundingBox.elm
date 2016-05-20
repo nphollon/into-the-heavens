@@ -171,12 +171,16 @@ boxCreate faces =
     centerOfTriangle { p, q, r } m =
       Vector.add p q
         |> Vector.add r
-        |> Vector.scale (1 / m)
+        |> Vector.scale m
 
     hull =
       faces
         |> List.concatMap Face.vertexList
         |> Hull.hull
+
+    hullPoints =
+      List.concatMap Face.vertexList hull
+        |> Vector.unique
 
     areas =
       List.map area hull
@@ -197,20 +201,31 @@ boxCreate faces =
         |> Covariance.fromMesh
         |> Covariance.eigenbasis
 
-    hullPoints =
-      List.concatMap Face.vertexList hull
-        |> Vector.unique
+    orientation =
+      Transform.basisToOrientation basis
+        |> Vector.negate
+
+    xProj =
+      projectOnto basis.x hullPoints
+
+    yProj =
+      projectOnto basis.y hullPoints
+
+    zProj =
+      projectOnto basis.z hullPoints
   in
-    { a = radiusAlong basis.x hullPoints
-    , b = radiusAlong basis.y hullPoints
-    , c = radiusAlong basis.z hullPoints
-    , position = center
-    , orientation = Covariance.toOrientation basis
+    { a = xProj.radius
+    , b = yProj.radius
+    , c = zProj.radius
+    , position =
+        Vector.vector xProj.center yProj.center zProj.center
+          |> Transform.rotate orientation
+    , orientation = orientation
     }
 
 
-radiusAlong : Vector -> List Vector -> Float
-radiusAlong axis cloud =
+projectOnto : Vector -> List Vector -> { center : Float, radius : Float }
+projectOnto axis cloud =
   let
     project point =
       Vector.dot point axis
@@ -221,4 +236,6 @@ radiusAlong axis cloud =
     ( smallest, largest ) =
       List.foldl (project >> checkForExtreme) ( 1 / 0, -1 / 0 ) cloud
   in
-    0.5 * (largest - smallest)
+    { radius = 0.5 * (largest - smallest)
+    , center = 0.5 * (largest + smallest)
+    }

@@ -21,25 +21,16 @@ data =
         [ ( 1
           , { defaultBody
               | position = Vector.vector -3 0 -10
-              , angVelocity = Vector.vector 0 0 0
-              , bounds = Nothing
-              , health = 1.0e10
             }
           )
         , ( 2
           , { defaultBody
               | position = Vector.vector 0 0 -10
-              , angVelocity = Vector.vector 0 0 0
-              , bounds = Nothing
-              , health = 1.0e10
             }
           )
         , ( 3
           , { defaultBody
               | position = Vector.vector 3 0 -10
-              , angVelocity = Vector.vector 0 0 0
-              , bounds = Nothing
-              , health = 1.0e10
             }
           )
         ]

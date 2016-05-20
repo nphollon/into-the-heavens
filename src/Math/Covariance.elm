@@ -1,4 +1,4 @@
-module Math.Covariance (Covariance, Basis, eigenbasis, init, toOrientation, fromMesh) where
+module Math.Covariance (Covariance, Basis, eigenbasis, init, fromMesh) where
 
 import Math.Vector as Vector exposing (Vector)
 import Math.Face exposing (Face)
@@ -125,24 +125,6 @@ type alias Basis =
   }
 
 
-toOrientation : Basis -> Vector
-toOrientation basis =
-  let
-    axis =
-      Vector.vector
-        (Vector.getZ basis.y - Vector.getY basis.z)
-        (Vector.getX basis.z - Vector.getZ basis.x)
-        (Vector.getY basis.x - Vector.getX basis.y)
-
-    twoSinAngle =
-      Vector.length axis
-
-    angle =
-      asin (0.5 * twoSinAngle)
-  in
-    Vector.scale (angle / twoSinAngle) axis
-
-
 eigenbasis : Covariance -> Basis
 eigenbasis matrix =
   let
@@ -156,7 +138,7 @@ eigenbasis matrix =
 
     guess =
       { value = 0
-      , vector = Vector.vector (1 / sqrt 3) (1 / sqrt 3) (1 / sqrt 3)
+      , vector = Vector.vector (3 / 13) (4 / 13) (12 / 13)
       }
 
     xEigen =
@@ -175,6 +157,10 @@ type alias Eigen =
   { value : Float
   , vector : Vector
   }
+
+
+
+{- Power iteration -}
 
 
 convergeToEigenvector : Float -> Covariance -> Eigen -> Result Eigen Eigen

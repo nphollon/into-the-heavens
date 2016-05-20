@@ -48,7 +48,6 @@ boundingBox color cornerPositions _ =
       Array.toList cornerPositions
         |> Hull.hull
         |> BoundingBox.boxCreate
-        |> Debug.log "Bounding box"
 
     corner x y z =
       Vector.vector (x * box.a) (y * box.b) (z * box.c)
@@ -77,8 +76,9 @@ boundingBox color cornerPositions _ =
 
     lsw =
       corner -1 -1 -1
-
-    boxMesh =
+  in
+    List.map
+      (toVertexTriangle color)
       [ ( une, unw, usw )
       , ( usw, use, une )
       , ( lne, lse, lsw )
@@ -92,8 +92,6 @@ boundingBox color cornerPositions _ =
       , ( unw, lnw, lsw )
       , ( lsw, usw, unw )
       ]
-  in
-    []
 
 
 toVertexTriangle : Vec4 -> ( Vector, Vector, Vector ) -> ( Vertex, Vertex, Vertex )
