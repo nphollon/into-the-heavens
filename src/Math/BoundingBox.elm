@@ -1,8 +1,8 @@
-module Math.BoundingBox (BoundingBox, boxCollide, collide, boxCreate) where
+module Math.BoundingBox (BoundingBox, boxCollide, collide, boxCreate, create) where
 
 import Math.Vector as Vector exposing (Vector)
 import Math.Matrix as Matrix exposing (Matrix)
-import Math.Tree as Tree exposing (Tree)
+import Math.Tree as Tree exposing (Tree(..))
 import Math.Transform as Transform
 import Math.Hull as Hull
 import Math.Face as Face exposing (Face)
@@ -162,17 +162,76 @@ boxCollide boxA boxB =
       && aMinorBMinor
 
 
+type alias FaceFacts =
+  { face : Face
+  , area : Float
+  , center : Vector
+  }
+
+
+getFacts : Face -> FaceFacts
+getFacts face =
+  let
+    area =
+      0.5 * (Vector.length (Face.cross face))
+
+    center =
+      Vector.add face.p face.q
+        |> Vector.add face.r
+        |> Vector.scale area
+  in
+    { face = face
+    , area = area
+    , center = center
+    }
+
+
+create : Int -> List Face -> Tree BoundingBox
+create maxIter faces =
+  Leaf (boxCreate faces)
+
+
+
+{-
+find bb
+
+if maxIter has been reached
+  return leaf bb
+else if length faces == 1
+  return leaf bb
+else
+  (left, right) = partitionFaces bb faces
+  return
+    node bb (create (iter - 1) left) (create (iter - 1) right)
+-}
+
+
+partitionFaces : BoundingBox -> List Face -> Maybe ( List Face, List Face )
+partitionFaces box faces =
+  Nothing
+
+
+
+{-
+get face centers
+
+project face centers onto box.a
+if all faces project to same point
+  project face centers onto box.b
+  if all faces project to same point
+    project face centers onto box.c
+    if all faces project to same point
+      return Nothing
+
+sort faces by center-projection
+
+return Just (1st half of sorted faces, 2nd half of sorted faces)
+-}
+
+
 boxCreate : List Face -> BoundingBox
 boxCreate faces =
   let
-    area face =
-      0.5 * (Vector.length (Face.cross face))
-
-    centerOfTriangle { p, q, r } m =
-      Vector.add p q
-        |> Vector.add r
-        |> Vector.scale m
-
     hull =
       faces
         |> List.concatMap Face.vertexList
@@ -182,12 +241,12 @@ boxCreate faces =
       List.concatMap Face.vertexList hull
         |> Vector.unique
 
-    areas =
-      List.map area hull
+    facts =
+      List.map getFacts hull
 
     center =
-      List.map2 centerOfTriangle hull areas
-        |> List.foldl Vector.add (Vector.vector 0 0 0)
+      facts
+        |> List.foldl (.center >> Vector.add) (Vector.vector 0 0 0)
         |> Vector.scale (1 / 6 / toFloat (List.length hull))
 
     recenter face =
@@ -197,7 +256,8 @@ boxCreate faces =
       }
 
     basis =
-      List.map2 (\face -> (,) (recenter face)) hull areas
+      facts
+        |> List.map (\fact -> ( recenter fact.face, fact.area ))
         |> Covariance.fromMesh
         |> Covariance.eigenbasis
 
