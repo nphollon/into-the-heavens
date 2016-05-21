@@ -266,7 +266,7 @@ isInFrontOf face point =
       Vector.cross (edge face.q) (edge face.r)
         |> Vector.dot (edge point)
   in
-    tripleProduct > 0
+    tripleProduct > 1.0e-10
 
 
 {-| Return "distance" of a point to a surface. The surface
