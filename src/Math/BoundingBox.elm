@@ -1,5 +1,6 @@
 module Math.BoundingBox (BoundingBox, boxCollide, collide, boxCreate, create) where
 
+import List.Extra as ListX
 import Math.Vector as Vector exposing (Vector)
 import Math.Matrix as Matrix exposing (Matrix)
 import Math.Tree as Tree exposing (Tree(..))
@@ -187,46 +188,81 @@ getFacts face =
 
 
 create : Int -> List Face -> Tree BoundingBox
-create maxIter faces =
-  Leaf (boxCreate faces)
+create iter faces =
+  let
+    bb =
+      boxCreate faces
+  in
+    if iter <= 0 then
+      Leaf bb
+    else
+      case partitionFaces bb faces of
+        Nothing ->
+          Leaf bb
 
-
-
-{-
-find bb
-
-if maxIter has been reached
-  return leaf bb
-else if length faces == 1
-  return leaf bb
-else
-  (left, right) = partitionFaces bb faces
-  return
-    node bb (create (iter - 1) left) (create (iter - 1) right)
--}
+        Just ( left, right ) ->
+          (Node bb)
+            (create (iter - 1) left)
+            (create (iter - 1) right)
 
 
 partitionFaces : BoundingBox -> List Face -> Maybe ( List Face, List Face )
 partitionFaces box faces =
-  Nothing
+  let
+    transform =
+      Transform.rotate box.orientation
+
+    basis =
+      { x = transform (Vector.vector 1 0 0)
+      , y = transform (Vector.vector 0 1 0)
+      , z = transform (Vector.vector 0 0 1)
+      }
+
+    projections =
+      [ sortByProjection basis.x
+      , sortByProjection basis.y
+      , sortByProjection basis.z
+      ]
+  in
+    List.map getFacts faces
+      |> tryApply projections
+      |> Maybe.map splitEvenly
 
 
+sortByProjection : Vector -> List FaceFacts -> Maybe (List Face)
+sortByProjection axis factsList =
+  let
+    project facts =
+      ( Vector.dot facts.center axis, facts )
 
-{-
-get face centers
+    sorted =
+      List.map project factsList
+        |> List.sortBy fst
 
-project face centers onto box.a
-if all faces project to same point
-  project face centers onto box.b
-  if all faces project to same point
-    project face centers onto box.c
-    if all faces project to same point
-      return Nothing
+    extractFace ( _, facts ) =
+      facts.face
+  in
+    if List.head sorted == ListX.last sorted then
+      Nothing
+    else
+      Just (List.map extractFace sorted)
 
-sort faces by center-projection
 
-return Just (1st half of sorted faces, 2nd half of sorted faces)
--}
+tryApply : List (a -> Maybe b) -> a -> Maybe b
+tryApply maybes arg =
+  let
+    tryAgain newFunction lastValue =
+      if lastValue == Nothing then
+        newFunction arg
+      else
+        lastValue
+  in
+    List.foldl tryAgain Nothing maybes
+
+
+splitEvenly : List a -> ( List a, List a )
+splitEvenly whole =
+  ListX.splitAt (List.length whole // 2) whole
 
 
 boxCreate : List Face -> BoundingBox
