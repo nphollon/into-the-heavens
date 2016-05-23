@@ -4,35 +4,24 @@ echo "module Generate.$2 (mesh, hull, box) where
 
 import Generate.Json exposing (Vertex)
 import Generate.FlatFace as FlatFace
-import WebGL exposing (Drawable(..))
+import WebGL exposing (Drawable)
 import Array exposing (Array)
 import Math.Vector as Vector exposing (Vector)
-import Math.Vector4 as Vec4 exposing (Vec4)
 
 
 mesh : Drawable Vertex
 mesh =
-  map FlatFace.triangles
+  FlatFace.triangles cornerPositions cornerIndexes
 
 
 hull : Drawable Vertex
 hull =
-  map FlatFace.convexHull
+  FlatFace.convexHull cornerPositions
 
 
 box : Drawable Vertex
 box =
-  map FlatFace.boundingBox
-
-
-map : (Vec4 -> Array Vector -> List (List Int) -> List ( Vertex, Vertex, Vertex )) -> Drawable Vertex
-map transform =
-  Triangle (transform color cornerPositions cornerIndexes)
-
-
-color : Vec4
-color =
-  Vec4.vec4 0 0 1 1
+  FlatFace.boundingBox cornerPositions
 
 
 cornerPositions : Array Vector

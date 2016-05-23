@@ -1,4 +1,4 @@
-module Generate.Ship (mesh, triangles) where
+module Generate.Ship (mesh) where
 
 import Generate.Json exposing (Vertex)
 import Generate.FlatFace as FlatFace
@@ -10,11 +10,6 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 
 mesh : Drawable Vertex
 mesh =
-  Triangle triangles
-
-
-triangles : List ( Vertex, Vertex, Vertex )
-triangles =
   let
     zPeak =
       (1 + sqrt 2) * 2 ^ -0.25
@@ -49,8 +44,5 @@ triangles =
       , [ 5, 1, 8 ]
       , [ 8, 4, 7 ]
       ]
-
-    color =
-      Vec4.vec4 0.28125 0.234375 0.47265625 1
   in
-    FlatFace.triangles color cornerPositions cornerIndexes
+    FlatFace.triangles cornerPositions cornerIndexes

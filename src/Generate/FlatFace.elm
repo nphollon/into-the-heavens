@@ -1,6 +1,7 @@
 module Generate.FlatFace (triangles, convexHull, boundingBox) where
 
 import Array exposing (Array)
+import WebGL exposing (Drawable(..))
 import Maybe.Extra as MaybeX
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Vector as Vector exposing (Vector)
@@ -10,39 +11,44 @@ import Math.Transform as Transform
 import Generate.Json exposing (Vertex)
 
 
-triangles : Vec4 -> Array Vector -> List (List Int) -> List ( Vertex, Vertex, Vertex )
-triangles color cornerPositions cornerIndexes =
-  let
-    toPositions indexes =
-      MaybeX.traverse (\i -> Array.get i cornerPositions) indexes
-  in
-    List.filterMap toPositions cornerIndexes
-      |> List.concatMap (toTriangles color)
+triangles : Array Vector -> List (List Int) -> Drawable Vertex
+triangles cornerPositions cornerIndexes =
+  toVectorTriangles cornerPositions cornerIndexes
+    |> List.map toVertexTriangle
+    |> Triangle
 
 
-toTriangles : Vec4 -> List Vector -> List ( Vertex, Vertex, Vertex )
-toTriangles color positions =
-  case positions of
-    i :: (j :: (k :: list)) ->
-      List.map2
-        (\a b -> toVertexTriangle color ( i, a, b ))
-        (j :: k :: list)
-        (k :: list)
-
-    otherwise ->
-      []
-
-
-convexHull : Vec4 -> Array Vector -> a -> List ( Vertex, Vertex, Vertex )
-convexHull color cornerPositions _ =
+convexHull : Array Vector -> Drawable Vertex
+convexHull cornerPositions =
   Array.toList cornerPositions
     |> Hull.hull
-    |> List.map
-        (\{ p, q, r } -> toVertexTriangle color ( p, q, r ))
+    |> List.map (\{ p, q, r } -> toVertexTriangle ( p, q, r ))
+    |> Triangle
 
 
-boundingBox : Vec4 -> Array Vector -> a -> List ( Vertex, Vertex, Vertex )
-boundingBox color cornerPositions _ =
+toVectorTriangles : Array Vector -> List (List Int) -> List ( Vector, Vector, Vector )
+toVectorTriangles cornerPositions cornerIndexes =
+  let
+    lookup =
+      MaybeX.traverse (flip Array.get cornerPositions)
+
+    decomposePolygon points =
+      case points of
+        i :: (j :: (k :: list)) ->
+          List.map2
+            ((,,) i)
+            (j :: k :: list)
+            (k :: list)
+
+        otherwise ->
+          []
+  in
+    List.filterMap lookup cornerIndexes
+      |> List.concatMap decomposePolygon
+
+
+boundingBox : Array Vector -> Drawable Vertex
+boundingBox cornerPositions =
   let
     box =
       Array.toList cornerPositions
@@ -77,39 +83,39 @@ boundingBox color cornerPositions _ =
     lsw =
       corner -1 -1 -1
   in
-    List.map
-      (toVertexTriangle color)
-      [ ( une, unw, usw )
-      , ( usw, use, une )
-      , ( lne, lse, lsw )
-      , ( lsw, lnw, lne )
-      , ( une, lne, lnw )
-      , ( lnw, unw, une )
-      , ( use, usw, lsw )
-      , ( lsw, lse, use )
-      , ( une, use, lse )
-      , ( lse, lne, une )
-      , ( unw, lnw, lsw )
-      , ( lsw, usw, unw )
-      ]
+    Triangle
+      <| (List.map toVertexTriangle)
+          [ ( une, unw, usw )
+          , ( usw, use, une )
+          , ( lne, lse, lsw )
+          , ( lsw, lnw, lne )
+          , ( une, lne, lnw )
+          , ( lnw, unw, une )
+          , ( use, usw, lsw )
+          , ( lsw, lse, use )
+          , ( une, use, lse )
+          , ( lse, lne, une )
+          , ( unw, lnw, lsw )
+          , ( lsw, usw, unw )
+          ]
 
 
-toVertexTriangle : Vec4 -> ( Vector, Vector, Vector ) -> ( Vertex, Vertex, Vertex )
-toVertexTriangle color ( p, q, r ) =
+toVertexTriangle : ( Vector, Vector, Vector ) -> ( Vertex, Vertex, Vertex )
+toVertexTriangle ( p, q, r ) =
   let
     normal =
       Vector.cross (Vector.sub q p) (Vector.sub r p)
         |> Vector.normalize
   in
     (,,)
-      (toVertex color p normal)
-      (toVertex color q normal)
-      (toVertex color r normal)
+      (toVertex p normal)
+      (toVertex q normal)
+      (toVertex r normal)
 
 
-toVertex : Vec4 -> Vector -> Vector -> Vertex
-toVertex color position normal =
-  { color = color
+toVertex : Vector -> Vector -> Vertex
+toVertex position normal =
+  { color = Vec4.vec4 1 1 1 1
   , position = position
   , normal = normal
   }

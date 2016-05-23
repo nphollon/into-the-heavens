@@ -1,4 +1,4 @@
-module Generate.Missile (mesh, triangles) where
+module Generate.Missile (mesh) where
 
 import Generate.Json exposing (Vertex)
 import Generate.FlatFace as FlatFace
@@ -10,11 +10,6 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 
 mesh : Drawable Vertex
 mesh =
-  Triangle triangles
-
-
-triangles : List ( Vertex, Vertex, Vertex )
-triangles =
   let
     zPeak =
       0
@@ -41,8 +36,5 @@ triangles =
       , [ 0, 1, 4 ]
       , [ 1, 2, 3, 4 ]
       ]
-
-    color =
-      Vec4.vec4 0.8 1 0 1
   in
-    FlatFace.triangles color cornerPositions cornerIndexes
+    FlatFace.triangles cornerPositions cornerIndexes
