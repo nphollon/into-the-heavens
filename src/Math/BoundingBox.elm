@@ -213,16 +213,20 @@ partitionFaces box faces =
       Transform.rotate box.orientation
 
     basis =
-      { x = transform (Vector.vector 1 0 0)
-      , y = transform (Vector.vector 0 1 0)
-      , z = transform (Vector.vector 0 0 1)
-      }
+      [ ( box.a, Vector.vector 1 0 0 )
+      , ( box.b, Vector.vector 0 1 0 )
+      , ( box.c, Vector.vector 0 0 1 )
+      ]
+
+    orderedBasis =
+      List.sortWith
+        (\a b -> compare (fst b) (fst a))
+        basis
 
     projections =
-      [ sortByProjection basis.x
-      , sortByProjection basis.y
-      , sortByProjection basis.z
-      ]
+      List.map
+        (snd >> transform >> sortByProjection)
+        orderedBasis
   in
     List.map getFacts faces
       |> tryApply projections

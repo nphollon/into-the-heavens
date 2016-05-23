@@ -309,7 +309,7 @@ WARNING: Does not handle coplanar/colinear point sets
 simplex : List Vector -> List Face
 simplex points =
   if List.length points < 4 then
-    []
+    degenerateSimplex points
   else
     let
       extremes =
@@ -348,6 +348,16 @@ simplex points =
         , Face.face base.r apex base.p
         , Face.face apex base.q base.p
         ]
+
+
+degenerateSimplex : List Vector -> List Face
+degenerateSimplex points =
+  case points of
+    p :: q :: r :: _ ->
+      [ Face.face p q r ]
+
+    _ ->
+      []
 
 
 {-| check if a given point should replace an

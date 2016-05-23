@@ -17,9 +17,9 @@ hull =
   FlatFace.convexHull cornerPositions
 
 
-box : Drawable Vertex
-box =
-  FlatFace.boundingBox cornerPositions
+box : Int -> Drawable Vertex
+box level =
+  FlatFace.boundingBoxTree level cornerPositions cornerIndexes
 
 
 cornerPositions : Array Vector

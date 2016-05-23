@@ -1,4 +1,9 @@
-module Math.Tree (satisfies, Tree(..)) where
+module Math.Tree (satisfies, leaves, Tree(..)) where
+
+
+type Tree a
+  = Leaf a
+  | Node a (Tree a) (Tree a)
 
 
 satisfies : (a -> a -> Bool) -> Tree a -> Tree a -> Bool
@@ -29,6 +34,11 @@ satisfies check a b =
         False
 
 
-type Tree a
-  = Leaf a
-  | Node a (Tree a) (Tree a)
+leaves : Tree a -> List a
+leaves tree =
+  case tree of
+    Leaf a ->
+      [ a ]
+
+    Node _ left right ->
+      leaves left ++ leaves right
