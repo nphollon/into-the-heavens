@@ -1,4 +1,4 @@
-module Math.BoundingBox (BoundingBox, boxCollide, collide, boxCreate, create, projectAndSplit) where
+module Math.BoundingBox (BoundingBox, boxCollide, collide, boxCreate, create, projectAndSplit, partitionFaces) where
 
 import List.Extra as ListX
 import Math.Vector as Vector exposing (Vector)
@@ -235,6 +235,9 @@ partitionFaces box faces =
 projectAndSplit : Vector -> List FaceFacts -> Maybe ( List Face, List Face )
 projectAndSplit axis factsList =
   let
+    equal a b =
+      (a - b) ^ 2 < 1.0e-10
+
     project facts =
       ( Vector.dot facts.center axis, facts )
 
@@ -257,7 +260,7 @@ projectAndSplit axis factsList =
       { acc | firstHalf = facts.face :: acc.firstHalf }
 
     updateBothHalves ( value, facts ) acc =
-      if value == acc.splitValue then
+      if equal value acc.splitValue then
         { acc | firstHalf = facts.face :: acc.firstHalf }
       else
         { acc
@@ -317,7 +320,7 @@ boxCreate faces =
     center =
       facts
         |> List.foldl
-            (\fact -> Vector.scale (1 / fact.area) fact.center |> Vector.add)
+            (\fact -> Vector.scale (fact.area) fact.center |> Vector.add)
             (Vector.vector 0 0 0)
         |> Vector.scale (1 / 2 / toFloat (List.length hull))
 

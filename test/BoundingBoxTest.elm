@@ -325,4 +325,13 @@ projectAndSplitSuite =
               , facts 3 five
               ]
             )
+    , test "tolerance in floating point comparisons"
+        <| assertEqual
+            Nothing
+            (projectAndSplit
+              [ facts 0 one
+              , facts 1.0e-10 two
+              , facts -1.0e-10 three
+              ]
+            )
     ]
