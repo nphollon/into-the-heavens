@@ -5,6 +5,7 @@ import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
 import Math.Matrix as Matrix
 import Math.Tree exposing (Tree(..))
+import Math.Face as Face
 import Math.BoundingBox as BoundingBox exposing (BoundingBox)
 import Flight.Spawn exposing (defaultBody)
 
@@ -15,6 +16,7 @@ testSuite =
     "Collision detection"
     [ suite "Oriented bounding box primitives" obbSuite
     , suite "Body collisions" bodySuite
+    , suite "Box splitting" projectAndSplitSuite
     ]
 
 
@@ -181,3 +183,146 @@ bodySuite =
             }
           )
   ]
+
+
+projectAndSplitSuite : List Test
+projectAndSplitSuite =
+  let
+    one =
+      Face.face
+        (Vector.vector 1 1 1)
+        (Vector.vector 1 1 1)
+        (Vector.vector 1 1 1)
+
+    two =
+      Face.face
+        (Vector.vector 2 2 2)
+        (Vector.vector 2 2 2)
+        (Vector.vector 2 2 2)
+
+    three =
+      Face.face
+        (Vector.vector 3 3 3)
+        (Vector.vector 3 3 3)
+        (Vector.vector 3 3 3)
+
+    four =
+      Face.face
+        (Vector.vector 4 4 4)
+        (Vector.vector 4 4 4)
+        (Vector.vector 4 4 4)
+
+    five =
+      Face.face
+        (Vector.vector 5 5 5)
+        (Vector.vector 5 5 5)
+        (Vector.vector 5 5 5)
+
+    facts x face =
+      { face = face
+      , area = 0
+      , center = Vector.vector x 0 0
+      }
+
+    projectAndSplit =
+      BoundingBox.projectAndSplit (Vector.vector 1 0 0)
+  in
+    [ test "split fails if projections are identical"
+        <| assertEqual
+            Nothing
+            (projectAndSplit
+              [ facts 1 one
+              , facts 1 two
+              , facts 1 three
+              , facts 1 four
+              , facts 1 five
+              ]
+            )
+    , test "split halfway point if projections are different and list size is even"
+        <| assertEqual
+            (Just ( [ one, two ], [ three, four ] ))
+            (projectAndSplit
+              [ facts 1 one
+              , facts 2 two
+              , facts 3 three
+              , facts 4 four
+              ]
+            )
+    , test "split just after halfway point if projections are different and list size is odd"
+        <| assertEqual
+            (Just ( [ one, two, three ], [ four, five ] ))
+            (projectAndSplit
+              [ facts 1 one
+              , facts 2 two
+              , facts 3 three
+              , facts 4 four
+              , facts 5 five
+              ]
+            )
+    , test "split by value if 4 items of lower and 1 of higher"
+        <| assertEqual
+            (Just ( [ one, two, three, four ], [ five ] ))
+            (projectAndSplit
+              [ facts 1 one
+              , facts 1 two
+              , facts 1 three
+              , facts 1 four
+              , facts 2 five
+              ]
+            )
+    , test "split by value if 3 items of lower and 2 of higher"
+        <| assertEqual
+            (Just ( [ one, two, three ], [ four, five ] ))
+            (projectAndSplit
+              [ facts 1 one
+              , facts 1 two
+              , facts 1 three
+              , facts 2 four
+              , facts 2 five
+              ]
+            )
+    , test "split by value if 2 items of lower and 3 of higher"
+        <| assertEqual
+            (Just ( [ one, two ], [ three, four, five ] ))
+            (projectAndSplit
+              [ facts 1 one
+              , facts 1 two
+              , facts 2 three
+              , facts 2 four
+              , facts 2 five
+              ]
+            )
+    , test "split by value if 1 item of lower and 4 of higher"
+        <| assertEqual
+            (Just ( [ one ], [ two, three, four, five ] ))
+            (projectAndSplit
+              [ facts 1 one
+              , facts 2 two
+              , facts 2 three
+              , facts 2 four
+              , facts 2 five
+              ]
+            )
+    , test "median group goes to first half even if split is very unbalanced"
+        <| assertEqual
+            (Just ( [ one, two, three, four ], [ five ] ))
+            (projectAndSplit
+              [ facts 1 one
+              , facts 1 two
+              , facts 2 three
+              , facts 2 four
+              , facts 3 five
+              ]
+            )
+    , test "median group goes to first half even if split is unbalanced"
+        <| assertEqual
+            (Just ( [ one, two, three ], [ four, five ] ))
+            (projectAndSplit
+              [ facts 1 one
+              , facts 2 two
+              , facts 2 three
+              , facts 3 four
+              , facts 3 five
+              ]
+            )
+    ]

@@ -11,6 +11,7 @@ import Generate.Missile as Missile
 import Generate.Explosion as Explosion
 import Generate.Column as Column
 import Generate.Prism as Prism
+import Generate.Arches as Arches
 
 
 writeModels : IO ()

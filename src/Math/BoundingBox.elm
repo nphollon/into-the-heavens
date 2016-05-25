@@ -1,4 +1,4 @@
-module Math.BoundingBox (BoundingBox, boxCollide, collide, boxCreate, create) where
+module Math.BoundingBox (BoundingBox, boxCollide, collide, boxCreate, create, projectAndSplit) where
 
 import List.Extra as ListX
 import Math.Vector as Vector exposing (Vector)
@@ -179,7 +179,7 @@ getFacts face =
     center =
       Vector.add face.p face.q
         |> Vector.add face.r
-        |> Vector.scale area
+        |> Vector.scale (1 / 3)
   in
     { face = face
     , area = area
@@ -225,31 +225,66 @@ partitionFaces box faces =
 
     projections =
       List.map
-        (snd >> transform >> sortByProjection)
+        (snd >> transform >> projectAndSplit)
         orderedBasis
   in
     List.map getFacts faces
       |> tryApply projections
-      |> Maybe.map splitEvenly
 
 
-sortByProjection : Vector -> List FaceFacts -> Maybe (List Face)
-sortByProjection axis factsList =
+projectAndSplit : Vector -> List FaceFacts -> Maybe ( List Face, List Face )
+projectAndSplit axis factsList =
   let
     project facts =
       ( Vector.dot facts.center axis, facts )
 
-    sorted =
-      List.map project factsList
-        |> List.sortBy fst
+    init =
+      { firstHalf = []
+      , lastHalf = []
+      , splitValue = 0 / 0
+      , index = 0
+      , done = False
+      }
 
-    extractFace ( _, facts ) =
-      facts.face
+    addFace projectedFacts accumulator =
+      if accumulator.done then
+        updateFirstHalf projectedFacts accumulator
+      else
+        updateBothHalves projectedFacts accumulator
+          |> checkIfDone
+
+    updateFirstHalf ( _, facts ) acc =
+      { acc | firstHalf = facts.face :: acc.firstHalf }
+
+    updateBothHalves ( value, facts ) acc =
+      if value == acc.splitValue then
+        { acc | firstHalf = facts.face :: acc.firstHalf }
+      else
+        { acc
+          | lastHalf = acc.firstHalf ++ acc.lastHalf
+          , firstHalf = [ facts.face ]
+          , splitValue = value
+        }
+
+    checkIfDone acc =
+      if (acc.index >= limit) && not (List.isEmpty acc.lastHalf) then
+        { acc | done = True }
+      else
+        { acc | index = acc.index + 1 }
+
+    limit =
+      List.length factsList // 2
+
+    returnValue accumulated =
+      if List.isEmpty accumulated.lastHalf then
+        Nothing
+      else
+        Just ( accumulated.firstHalf, accumulated.lastHalf )
   in
-    if List.head sorted == ListX.last sorted then
-      Nothing
-    else
-      Just (List.map extractFace sorted)
+    List.map project factsList
+      |> List.sortBy fst
+      |> List.foldr addFace init
+      |> returnValue
 
 
 tryApply : List (a -> Maybe b) -> a -> Maybe b
@@ -262,11 +297,6 @@ tryApply maybes arg =
         lastValue
   in
     List.foldl tryAgain Nothing maybes
-
-
-splitEvenly : List a -> ( List a, List a )
-splitEvenly whole =
-  ListX.splitAt (List.length whole // 2) whole
 
 
 boxCreate : List Face -> BoundingBox
@@ -286,8 +316,10 @@ boxCreate faces =
 
     center =
       facts
-        |> List.foldl (.center >> Vector.add) (Vector.vector 0 0 0)
-        |> Vector.scale (1 / 6 / toFloat (List.length hull))
+        |> List.foldl
+            (\fact -> Vector.scale (1 / fact.area) fact.center |> Vector.add)
+            (Vector.vector 0 0 0)
+        |> Vector.scale (1 / 2 / toFloat (List.length hull))
 
     recenter face =
       { p = Vector.sub face.p center
