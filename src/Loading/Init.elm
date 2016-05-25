@@ -32,18 +32,7 @@ library =
       , ( "Missile", "missile.json" )
       , ( "Explosion", "explosion.json" )
       , ( "Column", "column.json" )
-      , ( "Prism", "prism.json" )
-      , ( "Prism Hull", "prism-hull.json" )
-      , ( "Prism Box 0", "prism-box0.json" )
-      , ( "Prism Box 1", "prism-box1.json" )
-      , ( "Prism Box 2", "prism-box2.json" )
-      , ( "Prism Box 3", "prism-box3.json" )
-      , ( "Prism Box 4", "prism-box4.json" )
-      , ( "Prism Box 5", "prism-box5.json" )
-      , ( "Prism Box 6", "prism-box6.json" )
-      , ( "Prism Box 7", "prism-box7.json" )
-      , ( "Prism Box 8", "prism-box8.json" )
-      , ( "Prism Box 9", "prism-box9.json" )
+      , ( "Donut", "donut.json" )
       ]
 
     localResources =

@@ -12,7 +12,6 @@ import Flight.Init
 import Level.Outnumbered
 import Level.Tutorial
 import Level.Pavilion
-import Level.Prisms
 
 
 keyUpdate : Set KeyCode -> MenuState -> ( Mode, Effects Update )
@@ -59,7 +58,7 @@ view address state =
     Won level ->
       gameOverView
         "You won"
-        "\"The machine does not isolate us from the great problems of nature but plunges us more deeply into them.\" ~ Antoine de St. Exupéry"
+        "\"The machine does not isolate us from the great problems of nature.\" ~ Antoine de St. Exupéry"
         address
 
     Lost level ->
@@ -84,7 +83,6 @@ mainMenuView address =
           , levelButton "Tutorial" Tutorial
           , levelButton "Outnumbered" Outnumbered
           , levelButton "Pavilion" Pavilion
-          , levelButton "Prisms" Prisms
           ]
       ]
       []
@@ -123,6 +121,3 @@ dataFor level =
 
     Pavilion ->
       Level.Pavilion.data
-
-    Prisms ->
-      Level.Prisms.data

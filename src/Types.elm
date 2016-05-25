@@ -220,7 +220,6 @@ type Level
   = Tutorial
   | Outnumbered
   | Pavilion
-  | Prisms
 
 
 type alias Library =
