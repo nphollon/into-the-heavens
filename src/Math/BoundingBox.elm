@@ -1,6 +1,8 @@
-module Math.BoundingBox (BoundingBox, boxCollide, collide, boxCreate, create, projectAndSplit, partitionFaces) where
+module Math.BoundingBox (BoundingBox, boxCollide, collide, boxCreate, create, projectAndSplit, encode, decode) where
 
 import List.Extra as ListX
+import Json.Encode as Encode exposing (Value)
+import Json.Decode as Decode exposing (Decoder, (:=))
 import Math.Vector as Vector exposing (Vector)
 import Math.Matrix as Matrix exposing (Matrix)
 import Math.Tree as Tree exposing (Tree(..))
@@ -17,6 +19,47 @@ type alias BoundingBox =
   , position : Vector
   , orientation : Vector
   }
+
+
+encode : BoundingBox -> Value
+encode box =
+  let
+    encodeVector v =
+      Encode.list
+        [ Encode.float (Vector.getX v)
+        , Encode.float (Vector.getY v)
+        , Encode.float (Vector.getZ v)
+        ]
+  in
+    Encode.object
+      [ ( "a", Encode.float box.a )
+      , ( "b", Encode.float box.b )
+      , ( "c", Encode.float box.c )
+      , ( "position", encodeVector box.position )
+      , ( "orientation", encodeVector box.orientation )
+      ]
+
+
+decode : Decoder BoundingBox
+decode =
+  let
+    construct a b c position orientation =
+      { a = a
+      , b = b
+      , c = c
+      , position = position
+      , orientation = orientation
+      }
+
+    decodeVector =
+      Decode.tuple3 Vector.vector Decode.float Decode.float Decode.float
+  in
+    (Decode.object5 construct)
+      ("a" := Decode.float)
+      ("b" := Decode.float)
+      ("c" := Decode.float)
+      ("position" := decodeVector)
+      ("orientation" := decodeVector)
 
 
 type alias Body a =
