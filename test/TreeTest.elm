@@ -1,26 +1,38 @@
 module TreeTest (testSuite) where
 
 import ElmTest exposing (..)
-import Math.Tree exposing (..)
+import Math.Tree as Tree exposing (Tree(..))
+import Json.Encode as Encode
+import Json.Decode as Decode
 
 
 testSuite : Test
 testSuite =
+  suite
+    "Tree structure"
+    [ satisfiesSuite
+    , leavesSuite
+    , jsonSuite
+    ]
+
+
+satisfiesSuite : Test
+satisfiesSuite =
   let
-    assertCollide a b =
-      assertEqual True (satisfies (==) a b)
+    assertSatisfy a b =
+      assertEqual True (Tree.satisfies (==) a b)
 
     assertMiss a b =
-      assertEqual False (satisfies (==) a b)
+      assertEqual False (Tree.satisfies (==) a b)
   in
     suite
-      "recursive collision detection"
+      "recursive condition checking"
       [ test "non-colliding leafs do not collide"
           <| assertMiss
               (Leaf 1)
               (Leaf 2)
       , test "colliding leafs collide"
-          <| assertCollide
+          <| assertSatisfy
               (Leaf 1)
               (Leaf 1)
       , test "false if leaf collides with node but not children"
@@ -28,11 +40,11 @@ testSuite =
               (Leaf 1)
               (Node 1 (Leaf 2) (Leaf 3))
       , test "true if leaf collides with node and the first child"
-          <| assertCollide
+          <| assertSatisfy
               (Leaf 1)
               (Node 1 (Leaf 1) (Leaf 3))
       , test "true if leaf collides with node and the second child"
-          <| assertCollide
+          <| assertSatisfy
               (Leaf 1)
               (Node 1 (Leaf 3) (Leaf 1))
       , test "false if leaf collides with children but not node"
@@ -44,11 +56,11 @@ testSuite =
               (Node 1 (Leaf 2) (Leaf 3))
               (Leaf 1)
       , test "true if node and first child collide with leaf"
-          <| assertCollide
+          <| assertSatisfy
               (Node 1 (Leaf 1) (Leaf 3))
               (Leaf 1)
       , test "true if node and second child collide with leaf"
-          <| assertCollide
+          <| assertSatisfy
               (Node 1 (Leaf 3) (Leaf 1))
               (Leaf 1)
       , test "false if children but not node collide with leaf"
@@ -64,19 +76,58 @@ testSuite =
               (Node 1 (Leaf 2) (Leaf 3))
               (Node 4 (Leaf 2) (Leaf 3))
       , test "true if first children collide"
-          <| assertCollide
+          <| assertSatisfy
               (Node 1 (Leaf 2) (Leaf 3))
               (Node 1 (Leaf 2) (Leaf 4))
       , test "true if first child collides with second child"
-          <| assertCollide
+          <| assertSatisfy
               (Node 1 (Leaf 2) (Leaf 3))
               (Node 1 (Leaf 4) (Leaf 2))
       , test "true if second child collides with first child"
-          <| assertCollide
+          <| assertSatisfy
               (Node 1 (Leaf 2) (Leaf 3))
               (Node 1 (Leaf 3) (Leaf 4))
       , test "true if second children collide"
-          <| assertCollide
+          <| assertSatisfy
               (Node 1 (Leaf 2) (Leaf 3))
               (Node 1 (Leaf 4) (Leaf 3))
+      ]
+
+
+leavesSuite : Test
+leavesSuite =
+  suite
+    "getting the leaves of a tree"
+    [ test "Return leaf value as singleton list"
+        <| assertEqual
+            [ 5 ]
+            (Tree.leaves (Leaf 5))
+    , test "Return both leaves of a three-node tree"
+        <| assertEqual
+            [ 7, 8 ]
+            (Tree.leaves (Node 9 (Leaf 7) (Leaf 8)))
+    , test "Concatenate all leaves of a multi-level tree"
+        <| assertEqual
+            [ 1, 3, 2 ]
+            (Tree.leaves (Node 0 (Leaf 1) (Node 4 (Leaf 3) (Leaf 2))))
+    ]
+
+
+jsonSuite : Test
+jsonSuite =
+  let
+    assertLosslessJson tree =
+      assertEqual
+        (Ok tree)
+        (Decode.decodeValue
+          (Tree.decode Decode.int)
+          (Tree.encode Encode.int tree)
+        )
+  in
+    suite
+      "encoding and decoding json"
+      [ test "leaf encodes and decodes again without losing data"
+          <| assertLosslessJson (Leaf 5)
+      , test "node encodes and decodes again without losing data"
+          <| assertLosslessJson (Node 1 (Leaf 2) (Leaf 3))
       ]
