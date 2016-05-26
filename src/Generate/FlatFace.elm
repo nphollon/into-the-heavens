@@ -1,4 +1,4 @@
-module Generate.FlatFace (triangles, convexHull, boundingBoxTree) where
+module Generate.FlatFace (ModelData, flatFace, convexHull, drawBoundingBoxes, boundingBoxTree) where
 
 import Array exposing (Array)
 import WebGL exposing (Drawable(..))
@@ -13,29 +13,39 @@ import Math.Tree as Tree exposing (Tree(..))
 import Generate.Json exposing (Vertex)
 
 
-triangles : Array Vector -> List (List Int) -> Drawable Vertex
-triangles cornerPositions cornerIndexes =
-  toFaces cornerPositions cornerIndexes
+type alias ModelData =
+  { vertexPositions : Array Vector
+  , vertexIndexes : List (List Int)
+  }
+
+
+flatFace : ModelData -> Drawable Vertex
+flatFace data =
+  toFaces data
     |> List.map toVertexTriangle
     |> Triangle
 
 
-convexHull : Array Vector -> Drawable Vertex
-convexHull cornerPositions =
-  Array.toList cornerPositions
+convexHull : ModelData -> Drawable Vertex
+convexHull data =
+  Array.toList data.vertexPositions
     |> Hull.hull
     |> List.map toVertexTriangle
     |> Triangle
 
 
-boundingBoxTree : Int -> Array Vector -> List (List Int) -> Drawable Vertex
-boundingBoxTree level cornerPositions cornerIndexes =
-  toFaces cornerPositions cornerIndexes
-    |> BoundingBox.create level
+drawBoundingBoxes : Int -> ModelData -> Drawable Vertex
+drawBoundingBoxes level data =
+  boundingBoxTree level data
     |> Tree.leaves
     |> List.concatMap boundingBox
     |> List.map toVertexTriangle
     |> Triangle
+
+
+boundingBoxTree : Int -> ModelData -> Tree BoundingBox
+boundingBoxTree level data =
+  BoundingBox.create level (toFaces data)
 
 
 boundingBox : BoundingBox -> List Face
@@ -84,11 +94,11 @@ boundingBox box =
     ]
 
 
-toFaces : Array Vector -> List (List Int) -> List Face
-toFaces cornerPositions cornerIndexes =
+toFaces : ModelData -> List Face
+toFaces { vertexPositions, vertexIndexes } =
   let
     lookup =
-      MaybeX.traverse (flip Array.get cornerPositions)
+      MaybeX.traverse (flip Array.get vertexPositions)
 
     decomposePolygon points =
       case points of
@@ -101,7 +111,7 @@ toFaces cornerPositions cornerIndexes =
         otherwise ->
           []
   in
-    List.filterMap lookup cornerIndexes
+    List.filterMap lookup vertexIndexes
       |> List.concatMap decomposePolygon
 
 

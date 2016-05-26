@@ -37,25 +37,18 @@ vertex hue position =
 
     starColor =
       if hue < 1.5 then
-        --colorVector 157 180 255
         colorVector 57 80 255
       else if hue < 7 then
-        --colorVector 170 191 255
         colorVector 70 91 255
       else if hue < 32.5 then
-        --colorVector 202 216 255
         colorVector 102 116 255
       else if hue < 58 then
-        --colorVector 251 248 255
         colorVector 251 248 255
       else if hue < 77.3 then
-        --colorVector 255 244 232
         colorVector 255 144 132
       else if hue < 89.6 then
-        --colorVector 255 221 180
         colorVector 255 121 80
       else
-        --colorVector 255 189 111
         colorVector 255 89 11
   in
     { position = position

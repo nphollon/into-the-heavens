@@ -11,6 +11,7 @@ import Generate.Missile as Missile
 import Generate.Explosion as Explosion
 import Generate.Column as Column
 import Generate.Donut as Donut
+import Generate.FlatFace as FlatFace exposing (ModelData, flatFace)
 
 
 writeModels : IO ()
@@ -18,13 +19,13 @@ writeModels =
   List.foldl
     (\x io -> io >>> (uncurry write x))
     (Console.pure ())
-    [ ( Sphere.mesh, "sphere.json" )
-    , ( Cluster.mesh, "background.json" )
-    , ( Ship.mesh, "ship.json" )
-    , ( Missile.mesh, "missile.json" )
+    [ ( Cluster.mesh, "background.json" )
     , ( Explosion.mesh, "explosion.json" )
-    , ( Column.mesh, "column.json" )
-    , ( Donut.mesh, "donut.json" )
+    , ( flatFace Sphere.model, "sphere.json" )
+    , ( flatFace Ship.model, "ship.json" )
+    , ( flatFace Missile.model, "missile.json" )
+    , ( flatFace Column.model, "column.json" )
+    , ( flatFace Donut.model, "donut.json" )
     ]
 
 

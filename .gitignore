@@ -9,3 +9,4 @@ temp/
 .vagrant
 \.~*#
 public_html/data/*
+*.mtl

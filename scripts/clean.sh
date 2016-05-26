@@ -2,6 +2,7 @@
 
 rm -rf temp
 rm public_html/heavens.js
+rm public_html/data/*
 
 if [[ $1 == "--full" ]];
 then

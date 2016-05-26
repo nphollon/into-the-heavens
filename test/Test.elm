@@ -10,7 +10,6 @@ import SwitchTest
 import SphericalTest
 import SpawnTest
 import EngineTest
-import TerrainTest
 import TreeTest
 import BoundingBoxTest
 import CovarianceTest
@@ -27,7 +26,6 @@ testSuite =
     , SphericalTest.testSuite
     , SpawnTest.testSuite
     , EngineTest.testSuite
-    , TerrainTest.testSuite
     , TreeTest.testSuite
     , BoundingBoxTest.testSuite
     , CovarianceTest.testSuite
