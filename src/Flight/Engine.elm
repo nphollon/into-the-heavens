@@ -182,15 +182,8 @@ shouldCrash boxLibrary universe =
       else
         effects
 
-    -- TODO remove ethereal
     addEffects ( idA, bodyA ) ( idB, bodyB ) effects =
       case ( objectType bodyA, objectType bodyB ) of
-        ( Ethereal, _ ) ->
-          effects
-
-        ( _, Ethereal ) ->
-          effects
-
         ( Missile, Missile ) ->
           effects
 
@@ -220,8 +213,6 @@ shouldCrash boxLibrary universe =
     objectType body =
       if Util.isMissile body then
         Missile
-      else if Util.isEthereal body then
-        Ethereal
       else if Util.isShielded body then
         Shielded
       else
@@ -238,7 +229,6 @@ shouldCrash boxLibrary universe =
 
 type ObjectType
   = Missile
-  | Ethereal
   | Shielded
   | Unshielded
 
