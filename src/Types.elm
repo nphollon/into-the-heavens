@@ -107,7 +107,7 @@ type alias Body =
   , velocity : Vector
   , orientation : Vector
   , angVelocity : Vector
-  , bounds : Maybe (Tree BoundingBox)
+  , bounds : Maybe String
   , health : Float
   , ai : Ai
   }
@@ -223,7 +223,9 @@ type Level
 
 
 type alias Library =
-  Dict String (Drawable Vertex)
+  { meshes : Dict String (Drawable Vertex)
+  , boxes : Dict String (Tree BoundingBox)
+  }
 
 
 type alias Response =

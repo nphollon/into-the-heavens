@@ -3,7 +3,8 @@ module Flight.Engine (update, shouldCrash) where
 import Dict exposing (Dict)
 import List.Extra as ListX
 import Types exposing (..)
-import Math.BoundingBox as BoundingBox
+import Math.BoundingBox as BoundingBox exposing (BoundingBox)
+import Math.Tree as Tree exposing (Tree)
 import Flight.Ai as Ai
 import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
@@ -12,14 +13,14 @@ import Flight.Util as Util
 
 
 update : Float -> GameState -> GameState
-update dt =
-  processActions dt
-    >> Ai.aiUpdate dt
-    >> checkSchedule
-    >> check shouldChangeTarget
-    >> check shouldCrash
-    >> check shouldFire
-    >> thrust dt
+update dt state =
+  processActions dt state
+    |> Ai.aiUpdate dt
+    |> checkSchedule
+    |> check shouldChangeTarget
+    |> check (shouldCrash state.library.boxes)
+    |> check shouldFire
+    |> thrust dt
 
 
 processActions : Float -> GameState -> GameState
@@ -162,15 +163,26 @@ thrust delta model =
   { model | universe = Mech.evolve delta model.universe }
 
 
-shouldCrash : Dict Id Body -> List EngineEffect
-shouldCrash universe =
+shouldCrash : Dict String (Tree BoundingBox) -> Dict Id Body -> List EngineEffect
+shouldCrash boxLibrary universe =
   let
-    collidedWith (( idA, bodyA ) as a) (( idB, bodyB ) as b) effects =
-      if BoundingBox.collide bodyA bodyB then
+    lookup boxName =
+      Maybe.andThen boxName (flip Dict.get boxLibrary)
+
+    collide bodyA bodyB =
+      Maybe.map2
+        (\boxA boxB -> BoundingBox.collide bodyA boxA bodyB boxB)
+        (lookup bodyA.bounds)
+        (lookup bodyB.bounds)
+        |> Maybe.withDefault False
+
+    checkPair a b effects =
+      if collide (snd a) (snd b) then
         addEffects a b effects
       else
         effects
 
+    -- TODO remove ethereal
     addEffects ( idA, bodyA ) ( idB, bodyB ) effects =
       case ( objectType bodyA, objectType bodyB ) of
         ( Ethereal, _ ) ->
@@ -219,7 +231,7 @@ shouldCrash universe =
       |> ListX.selectSplit
       |> List.foldl
           (\( _, object, others ) effects ->
-            List.foldl (collidedWith object) effects others
+            List.foldl (checkPair object) effects others
           )
           []
 

@@ -5,8 +5,6 @@ import Color
 import Types exposing (..)
 import Math.Vector as Vector
 import Flight.Spawn exposing (defaultBody)
-import Generate.Ship as Ship
-import Generate.FlatFace exposing (boundingBoxTree)
 
 
 data : LevelData
@@ -26,7 +24,7 @@ data =
           , { defaultBody
               | position = Vector.vector -35 5 -10
               , angVelocity = Vector.vector 1 0 0
-              , bounds = Just (boundingBoxTree 3 Ship.model)
+              , bounds = Just "Donut"
               , health = 1.0e10
             }
           )

@@ -7,9 +7,6 @@ import Types exposing (..)
 import Math.Transform as Transform
 import Math.Vector as Vector exposing (Vector)
 import Math.Spherical as Spherical
-import Math.Tree exposing (Tree(..))
-import Generate.Ship as Ship
-import Generate.FlatFace exposing (boundingBoxTree)
 
 
 spawnPlayer : Dict Id Body -> Dict Id Body
@@ -17,7 +14,7 @@ spawnPlayer =
   let
     playerBody =
       { defaultBody
-        | bounds = Just (boundingBoxTree 5 Ship.model)
+        | bounds = Just "Player"
         , health = 1
         , ai = PlayerControlled defaultCockpit
       }
@@ -58,7 +55,7 @@ visitorBodyAt positionGenerator =
       , velocity = Vector.scale -0.1 position
       , orientation = orientationFor position
       , angVelocity = Vector.vector 0 0 0
-      , bounds = Just (boundingBoxTree 0 Ship.model)
+      , bounds = Just "Ship"
       , health = 1
       , ai =
           Hostile
@@ -81,16 +78,7 @@ spawnMissile parent targetId model =
             |> Vector.add parent.velocity
       , orientation = parent.orientation
       , angVelocity = Vector.vector 0 0 0
-      , bounds =
-          Just
-            (Leaf
-              { a = 0
-              , b = 0
-              , c = 0
-              , position = Vector.vector 0 0 0
-              , orientation = Vector.vector 0 0 0
-              }
-            )
+      , bounds = Just "Missile"
       , health = 1
       , ai = Seeking 4 targetId
       }

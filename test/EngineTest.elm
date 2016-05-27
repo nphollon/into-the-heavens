@@ -32,15 +32,15 @@ testSuite =
       [ test "no collision, no effects"
           <| assertEqual
               []
-          <| shouldCrash
+          <| shouldCrash boxLibrary
           <| Dict.fromList
               [ ( ids.missile, missile 1 )
-              , ( ids.visitor, object 1 farHull )
+              , ( ids.visitor, object 1 "farHull" )
               ]
       , test "missiles ignore each other"
           <| assertEqual
               []
-          <| shouldCrash
+          <| shouldCrash boxLibrary
           <| Dict.fromList
               [ ( ids.missileA, missile 1 )
               , ( ids.missileB, missile 1 )
@@ -50,77 +50,77 @@ testSuite =
               [ Destroy ids.missile
               , DeductHealth 1 ids.visitor
               ]
-          <| shouldCrash
+          <| shouldCrash boxLibrary
           <| Dict.fromList
               [ ( ids.missile, missile 1 )
-              , ( ids.visitor, object 1 hitHull )
+              , ( ids.visitor, object 1 "hitHull" )
               ]
       , test "2 HP missile deducts 2 HP from ship"
           <| assertEqual
               [ Destroy ids.missile
               , DeductHealth 2 ids.visitor
               ]
-          <| shouldCrash
+          <| shouldCrash boxLibrary
           <| Dict.fromList
               [ ( ids.missile, missile 2 )
-              , ( ids.visitor, object 1 hitHull )
+              , ( ids.visitor, object 1 "hitHull" )
               ]
       , test "shielded ship is protected from missile"
           <| assertEqual
               [ Destroy ids.missile ]
-          <| shouldCrash
+          <| shouldCrash boxLibrary
           <| Dict.fromList
               [ ( ids.missile, missile 1 )
-              , ( ids.visitor, shielded 1 hitHull )
+              , ( ids.visitor, shielded 1 "hitHull" )
               ]
       , test "ships deduct their health from each other"
           <| assertEqual
               [ DeductHealth 3 ids.smallShip
               , DeductHealth 2 ids.bigShip
               ]
-          <| shouldCrash
+          <| shouldCrash boxLibrary
           <| Dict.fromList
-              [ ( ids.smallShip, object 2 outHull )
-              , ( ids.bigShip, object 3 hitHull )
+              [ ( ids.smallShip, object 2 "outHull" )
+              , ( ids.bigShip, object 3 "hitHull" )
               ]
       , test "ships colliding ignore shields"
           <| assertEqual
               [ DeductHealth 3 ids.unshielded
               , DeductHealth 2 ids.shielded
               ]
-          <| shouldCrash
+          <| shouldCrash boxLibrary
           <| Dict.fromList
-              [ ( ids.unshielded, object 2 outHull )
-              , ( ids.shielded, shielded 3 hitHull )
+              [ ( ids.unshielded, object 2 "outHull" )
+              , ( ids.shielded, shielded 3 "hitHull" )
               ]
       , test "ship collisions are commutative"
           <| assertEqual
               [ DeductHealth 3 ids.first
               , DeductHealth 3 ids.second
               ]
-          <| shouldCrash
+          <| shouldCrash boxLibrary
           <| Dict.fromList
-              [ ( ids.first, shielded 3 outHull )
-              , ( ids.second, object 3 hitHull )
+              [ ( ids.first, shielded 3 "outHull" )
+              , ( ids.second, object 3 "hitHull" )
               ]
       , test "accumulate effects from multiple collisions"
           <| assertEqual
               [ Destroy ids.missileB
               , Destroy ids.missileA
               ]
-          <| shouldCrash
+          <| shouldCrash boxLibrary
           <| Dict.fromList
               [ ( ids.missileA, missile 1 )
               , ( ids.missileB, missile 1 )
-              , ( ids.visitor, shielded 1 hitHull )
+              , ( ids.visitor, shielded 1 "hitHull" )
               ]
       , test "ethereal objects do not collide"
           <| assertEqual
               []
-          <| shouldCrash
+          <| shouldCrash boxLibrary
           <| Dict.fromList
               [ ( ids.checkpoint, checkpoint )
-              , ( ids.visitor, object 1 hitHull )
+              , ( ids.visitor, object 1 "hitHull" )
               ]
       ]
 
@@ -130,19 +130,11 @@ missile x =
   { defaultBody
     | health = x
     , bounds =
-        Just
-          (Leaf
-            { a = 0
-            , b = 0
-            , c = 0
-            , position = Vec.vector 0 0 0
-            , orientation = Vec.vector 0 0 0
-            }
-          )
+        Just "Missile"
   }
 
 
-object : Float -> Tree BoundingBox -> Body
+object : Float -> String -> Body
 object x hull =
   { defaultBody
     | health = x
@@ -150,7 +142,7 @@ object x hull =
   }
 
 
-shielded : Float -> Tree BoundingBox -> Body
+shielded : Float -> String -> Body
 shielded x hull =
   { defaultBody
     | health = x
@@ -173,34 +165,42 @@ checkpoint =
   { defaultBody | bounds = Nothing }
 
 
-hitHull : Tree BoundingBox
-hitHull =
-  Leaf
-    { a = 2
-    , b = 2
-    , c = 2
-    , position = Vec.vector 0 0 1
-    , orientation = Vec.vector 0 0 0
-    }
-
-
-outHull : Tree BoundingBox
-outHull =
-  Leaf
-    { a = 2
-    , b = 2
-    , c = 2
-    , position = Vec.vector 0 0 3
-    , orientation = Vec.vector 0 0 0
-    }
-
-
-farHull : Tree BoundingBox
-farHull =
-  Leaf
-    { a = 2
-    , b = 2
-    , c = 2
-    , position = Vec.vector 0 0 10
-    , orientation = Vec.vector 0 0 0
-    }
+boxLibrary =
+  Dict.fromList
+    [ ( "hitHull"
+      , Leaf
+          { a = 2
+          , b = 2
+          , c = 2
+          , position = Vec.vector 0 0 1
+          , orientation = Vec.vector 0 0 0
+          }
+      )
+    , ( "outHull"
+      , Leaf
+          { a = 2
+          , b = 2
+          , c = 2
+          , position = Vec.vector 0 0 3
+          , orientation = Vec.vector 0 0 0
+          }
+      )
+    , ( "farHull"
+      , Leaf
+          { a = 2
+          , b = 2
+          , c = 2
+          , position = Vec.vector 0 0 10
+          , orientation = Vec.vector 0 0 0
+          }
+      )
+    , ( "Missile"
+      , Leaf
+          { a = 0
+          , b = 0
+          , c = 0
+          , position = Vec.vector 0 0 0
+          , orientation = Vec.vector 0 0 0
+          }
+      )
+    ]

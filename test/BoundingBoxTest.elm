@@ -126,69 +126,59 @@ boxB =
 
 bodySuite : Test
 bodySuite =
-  suite
-    "Body collisions"
-    [ test "body with no bounds"
-        <| assertEqual
-            False
-            (BoundingBox.collide defaultBody defaultBody)
-    , test "bodies that do not collide"
-        <| assertEqual
-            False
-            (BoundingBox.collide
+  let
+    box =
+      Leaf boxA
+
+    assertHit a b =
+      assertEqual
+        True
+        (BoundingBox.collide a box b box)
+
+    assertMiss a b =
+      assertEqual
+        False
+        (BoundingBox.collide a box b box)
+  in
+    suite
+      "Body collisions"
+      [ test "bodies that do not collide"
+          <| assertMiss
               { defaultBody
                 | position = Vector.vector 0 0 0
-                , bounds = Just (Leaf boxA)
               }
               { defaultBody
                 | position = Vector.vector 10 0 0
-                , bounds = Just (Leaf boxA)
               }
-            )
-    , test "aligned bodies that do collide"
-        <| assertEqual
-            True
-            (BoundingBox.collide
+      , test "aligned bodies that do collide"
+          <| assertHit
               { defaultBody
                 | position = Vector.vector 0 0 0
-                , bounds = Just (Leaf boxA)
               }
               { defaultBody
                 | position = Vector.vector 1 0 0
-                , bounds = Just (Leaf boxA)
               }
-            )
-    , test "unaligned bodies that do collide"
-        <| assertEqual
-            True
-            (BoundingBox.collide
+      , test "unaligned bodies that do collide"
+          <| assertHit
               { defaultBody
                 | position = Vector.vector 0 0 -2
                 , orientation = Vector.vector (degrees -36.9) 0 0
-                , bounds = Just (Leaf boxA)
               }
               { defaultBody
                 | position = Vector.vector 0 0 2
                 , orientation = Vector.vector 0 (degrees 20.8) 0
-                , bounds = Just (Leaf boxA)
               }
-            )
-    , test "unaligned bodies that do not collide"
-        <| assertEqual
-            False
-            (BoundingBox.collide
+      , test "unaligned bodies that do not collide"
+          <| assertMiss
               { defaultBody
                 | position = Vector.vector 0 0 -2
                 , orientation = Vector.vector (degrees -36.8) 0 0
-                , bounds = Just (Leaf boxA)
               }
               { defaultBody
                 | position = Vector.vector 0 0 2
                 , orientation = Vector.vector 0 (degrees 20.7) 0
-                , bounds = Just (Leaf boxA)
               }
-            )
-    ]
+      ]
 
 
 projectAndSplitSuite : Test

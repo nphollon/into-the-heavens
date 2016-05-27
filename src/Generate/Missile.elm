@@ -1,11 +1,9 @@
 module Generate.Missile (model) where
 
 import Array
-import Generate.FlatFace as FlatFace exposing (ModelData)
 import Math.Vector as Vector exposing (Vector)
 
 
-model : ModelData
 model =
   let
     zPeak =

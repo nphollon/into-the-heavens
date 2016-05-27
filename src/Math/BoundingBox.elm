@@ -66,26 +66,22 @@ type alias Body a =
   { a
     | position : Vector
     , orientation : Vector
-    , bounds : Maybe (Tree BoundingBox)
   }
 
 
-collide : Body a -> Body a -> Bool
-collide a b =
+collide : Body b -> Tree BoundingBox -> Body b' -> Tree BoundingBox -> Bool
+collide bodyA boxTreeA bodyB boxTreeB =
   let
+    add { position, orientation } addend =
+      { addend
+        | position = Vector.add position addend.position
+        , orientation = Transform.mulOrient orientation addend.orientation
+      }
+
     condition boxA boxB =
-      boxCollide (add a boxA) (add b boxB)
+      boxCollide (add bodyA boxA) (add bodyB boxB)
   in
-    Maybe.map2 (Tree.satisfies condition) a.bounds b.bounds
-      |> Maybe.withDefault False
-
-
-add : Body b -> BoundingBox -> BoundingBox
-add { position, orientation } addend =
-  { addend
-    | position = Vector.add position addend.position
-    , orientation = Transform.mulOrient orientation addend.orientation
-  }
+    Tree.satisfies condition boxTreeA boxTreeB
 
 
 boxCollide : BoundingBox -> BoundingBox -> Bool

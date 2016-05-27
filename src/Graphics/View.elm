@@ -47,7 +47,7 @@ scene width height model =
       flip Util.fromId model
 
     mesh =
-      flip Dict.get model.library
+      flip Dict.get model.library.meshes
 
     draw object =
       case object of

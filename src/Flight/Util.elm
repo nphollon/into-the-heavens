@@ -5,7 +5,6 @@ import Maybe.Extra as MaybeX
 import Types exposing (..)
 import Math.Transform as Transform
 import Math.Vector as Vector
-import Math.Tree as Tree exposing (Tree(..))
 import Flight.Spawn as Spawn
 
 
@@ -109,12 +108,7 @@ isVisitor body =
 
 isMissile : Body -> Bool
 isMissile body =
-  case body.bounds of
-    Just (Leaf box) ->
-      box.a == 0 && box.b == 0 && box.c == 0
-
-    _ ->
-      False
+  body.bounds == Just "Missile"
 
 
 isEthereal : Body -> Bool

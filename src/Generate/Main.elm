@@ -3,15 +3,15 @@ module Main (..) where
 import Task exposing (Task)
 import Console exposing (IO, (>>>))
 import WebGL exposing (Drawable)
-import Generate.Json as Json exposing (Vertex)
+import Generate.Json as Json exposing (..)
 import Generate.Sphere as Sphere
+import Generate.SimpleSphere as SimpleSphere
 import Generate.Cluster as Cluster
 import Generate.Ship as Ship
 import Generate.Missile as Missile
 import Generate.Explosion as Explosion
 import Generate.Column as Column
 import Generate.Donut as Donut
-import Generate.FlatFace as FlatFace exposing (ModelData, flatFace)
 
 
 writeModels : IO ()
@@ -19,21 +19,24 @@ writeModels =
   List.foldl
     (\x io -> io >>> (uncurry write x))
     (Console.pure ())
-    [ ( Cluster.mesh, "background.json" )
-    , ( Explosion.mesh, "explosion.json" )
-    , ( flatFace Sphere.model, "sphere.json" )
-    , ( flatFace Ship.model, "ship.json" )
-    , ( flatFace Missile.model, "missile.json" )
-    , ( flatFace Column.model, "column.json" )
-    , ( flatFace Donut.model, "donut.json" )
+    [ ( encodeMesh Cluster.mesh, "background.json" )
+    , ( encodeMesh Explosion.mesh, "explosion.json" )
+    , ( encodeModel Sphere.model, "sphere.json" )
+    , ( encodeModel Ship.model, "ship.json" )
+    , ( encodeModel Missile.model, "missile.json" )
+    , ( encodeModel Column.model, "column.json" )
+    , ( encodeModel Donut.model, "donut.json" )
+    , ( encodeBoundingBox 11 Donut.model, "donut.box" )
+    , ( encodeBoundingBox 1 Ship.model, "ship.box" )
+    , ( encodeBoundingBox 11 SimpleSphere.model, "sphere.box" )
     ]
 
 
-write : Drawable Vertex -> String -> IO ()
-write model filename =
+write : String -> String -> IO ()
+write content filename =
   Console.writeFile
     { file = "public_html/data/" ++ filename
-    , content = Json.encode model
+    , content = content
     }
 
 

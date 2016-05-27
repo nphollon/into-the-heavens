@@ -3,7 +3,6 @@ module Level.Tutorial (data) where
 import Dict
 import Types exposing (..)
 import Math.Vector as Vector
-import Math.Tree exposing (Tree(..))
 import Flight.Spawn exposing (defaultBody)
 
 
@@ -38,16 +37,7 @@ data =
           , { defaultBody
               | position = Vector.vector -35 5 -10
               , angVelocity = Vector.vector 0 3.0e-2 0
-              , bounds =
-                  Just
-                    (Leaf
-                      { a = 8
-                      , b = 8
-                      , c = 8
-                      , position = Vector.vector 0 0 0
-                      , orientation = Vector.vector 0 0 0
-                      }
-                    )
+              , bounds = Just "Sphere"
               , health = 1.0e10
             }
           )
