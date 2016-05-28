@@ -10,8 +10,9 @@ import Types exposing (..)
 import Graphics.AppFrame as AppFrame
 import Flight.Init
 import Level.Outnumbered
-import Level.Tutorial
+import Level.FlightTest
 import Level.Pavilion
+import Level.OneByOne
 
 
 keyUpdate : Set KeyCode -> MenuState -> ( Mode, Effects Update )
@@ -80,9 +81,10 @@ mainMenuView address =
       [ div
           [ class "menu" ]
           [ h2 [] [ text "Select a level" ]
-          , levelButton "Tutorial" Tutorial
-          , levelButton "Outnumbered" Outnumbered
+          , levelButton "Flight Practice" FlightTest
+          , levelButton "One By One" OneByOne
           , levelButton "Pavilion" Pavilion
+          , levelButton "Outnumbered" Outnumbered
           ]
       ]
       []
@@ -113,11 +115,14 @@ menuButton action label =
 dataFor : Level -> LevelData
 dataFor level =
   case level of
-    Tutorial ->
-      Level.Tutorial.data
+    FlightTest ->
+      Level.FlightTest.data
 
     Outnumbered ->
       Level.Outnumbered.data
 
     Pavilion ->
       Level.Pavilion.data
+
+    OneByOne ->
+      Level.OneByOne.data

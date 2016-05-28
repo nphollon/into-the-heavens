@@ -216,12 +216,6 @@ type Room
   | Lost Level
 
 
-type Level
-  = Tutorial
-  | Outnumbered
-  | Pavilion
-
-
 type alias Library =
   { meshes : Dict String (Drawable Vertex)
   , boxes : Dict String (Tree BoundingBox)
@@ -247,3 +241,10 @@ tick constructor state =
 noEffects : (a -> Mode) -> a -> ( Mode, Effects Update )
 noEffects constructor state =
   ( constructor state, Effects.none )
+
+
+type Level
+  = FlightTest
+  | OneByOne
+  | Pavilion
+  | Outnumbered

@@ -1,5 +1,6 @@
 module Level.Outnumbered (data) where
 
+import Color
 import Dict exposing (Dict)
 import Types exposing (..)
 import Math.Vector as Vector
@@ -27,8 +28,13 @@ data =
           ]
         )
       , ( NoMoreVisitors
+        , [ Notify "They just keep coming."
+          , SpawnShips 8
+          ]
+        )
+      , ( NoMoreVisitors
         , [ Notify "Come back inside before dinner gets cold."
-          , SpawnCheckpoint "home" (Vector.vector 0 -1 0)
+          , SpawnCheckpoint "home" (Vector.vector 0 0 0)
           ]
         )
       , ( ReachedCheckpoint "home", [ Victory ] )
@@ -49,7 +55,7 @@ data =
       , Object
           { bodyId = 1
           , meshName = "Sphere"
-          , shader = Planet
+          , shader = Matte Color.darkGreen
           }
       ]
   , names = Dict.empty
