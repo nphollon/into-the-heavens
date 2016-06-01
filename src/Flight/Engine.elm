@@ -139,12 +139,15 @@ applyEffect effect model =
       Util.setPlayerTarget model
 
     Destroy id ->
-      Util.blowUp id model
+      Util.remove id model
 
     DestroyByName name ->
       Util.getId name model
-        |> Maybe.map (flip Util.blowUp model)
+        |> Maybe.map (flip Util.remove model)
         |> Maybe.withDefault model
+
+    Explode id ->
+      Util.explode id model
 
     DeductHealth n id ->
       hit n id model
@@ -286,4 +289,4 @@ hit damage id model =
               model.universe
       }
     else
-      applyEffect (Destroy id) model
+      applyEffect (Explode id) model

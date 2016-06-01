@@ -75,6 +75,7 @@ type EngineEffect
   | SpawnCheckpoint String Vector
   | Destroy Id
   | DestroyByName String
+  | Explode Id
   | ChangeTarget
   | DeductHealth Float Id
   | Notify String

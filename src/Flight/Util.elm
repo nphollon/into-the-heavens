@@ -1,4 +1,4 @@
-module Flight.Util (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isEthereal, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, blowUp) where
+module Flight.Util (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isEthereal, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, remove, explode) where
 
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
@@ -182,19 +182,21 @@ getId name model =
   Dict.get name model.names
 
 
-blowUp : Id -> GameState -> GameState
-blowUp id model =
+explode : Id -> GameState -> GameState
+explode id model =
   case Dict.get id model.universe of
     Just object ->
-      if isVisitor object then
-        Spawn.spawnExplosion
-          object
-          { model
-            | universe = Dict.remove id model.universe
-            , score = model.score + 1
-          }
-      else
-        { model | universe = Dict.remove id model.universe }
+      Spawn.spawnExplosion
+        object
+        { model
+          | universe = Dict.remove id model.universe
+          , score = model.score + 1
+        }
 
     Nothing ->
       model
+
+
+remove : Id -> GameState -> GameState
+remove id model =
+  { model | universe = Dict.remove id model.universe }
