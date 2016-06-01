@@ -83,7 +83,6 @@ mainMenuView address =
           [ h2 [] [ text "Select a level" ]
           , levelButton "Flight Practice" FlightTest
           , levelButton "One By One" OneByOne
-          , levelButton "Pavilion" Pavilion
           , levelButton "Outnumbered" Outnumbered
           ]
       ]
