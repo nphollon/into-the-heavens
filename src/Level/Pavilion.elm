@@ -12,11 +12,41 @@ data =
   { level = Pavilion
   , events =
       [ ( Immediately
-        , [ Notify "Nothing to do here but admire the scenery."
-          , SpawnCheckpoint "exit" (Vector.vector 0 -5 0)
+        , [ Notify "Fly to the checkpoint when you are ready."
+          , SpawnCheckpoint "begin" (Vector.vector 0 -5 0)
           ]
         )
-      , ( ReachedCheckpoint "exit", [ Victory ] )
+      , ( ReachedCheckpoint "begin"
+        , [ DestroyByName "begin"
+          , Notify "You have 2 visitors."
+          , SpawnShips 2
+          ]
+        )
+      , ( NoMoreVisitors
+        , [ Notify "You have 2 more visitors."
+          , SpawnShips 2
+          ]
+        )
+      , ( NoMoreVisitors
+        , [ Notify "You have 2 more visitors."
+          , SpawnShips 2
+          ]
+        )
+      , ( NoMoreVisitors
+        , [ Notify "You have 2 more visitors."
+          , SpawnShips 2
+          ]
+        )
+      , ( NoMoreVisitors
+        , [ Notify "You have 2 more visitors."
+          , SpawnShips 2
+          ]
+        )
+      , ( NoMoreVisitors
+        , [ Notify "Victory!"
+          ]
+        )
+      , ( SecondsLater 3, [ Victory ] )
       ]
   , universe =
       Dict.fromList
