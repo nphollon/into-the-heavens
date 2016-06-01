@@ -11,8 +11,10 @@ import Generate.Ship as Ship
 import Generate.Missile as Missile
 import Generate.Explosion as Explosion
 import Generate.Column as Column
+import Generate.SimpleColumn as SimpleColumn
 import Generate.Donut as Donut
 import Generate.Cage as Cage
+import Generate.OrthoVertex as OrthoVertex
 
 
 writeModels : IO ()
@@ -28,10 +30,13 @@ writeModels =
     , ( encodeModel Column.model, "column.json" )
     , ( encodeModel Donut.model, "donut.json" )
     , ( encodeModel Cage.model, "cage.json" )
+    , ( encodeModel OrthoVertex.model, "ortho-vertex.json" )
     , ( encodeBoundingBox 11 Donut.model, "donut.box" )
     , ( encodeBoundingBox 1 Ship.model, "ship.box" )
     , ( encodeBoundingBox 11 SimpleSphere.model, "sphere.box" )
     , ( encodeBoundingBox 0 Cage.model, "cage.box" )
+    , ( encodeBoundingBox 7 SimpleColumn.model, "column.box" )
+    , ( encodeBoundingBox 2 OrthoVertex.model, "ortho-vertex.box" )
     ]
 
 

@@ -36,6 +36,7 @@ library =
       , ( "Column", "column.json" )
       , ( "Donut", "donut.json" )
       , ( "Cage", "cage.json" )
+      , ( "OrthoVertex", "ortho-vertex.json" )
       ]
         |> List.map (get decodeMesh)
         |> Task.sequence
@@ -45,6 +46,8 @@ library =
       , ( "Ship", "ship.box" )
       , ( "Sphere", "sphere.box" )
       , ( "Cage", "cage.box" )
+      , ( "OrthoVertex", "ortho-vertex.box" )
+      , ( "Column", "column.box" )
       ]
         |> List.map (get (Tree.decode BoundingBox.decode))
         |> Task.sequence
