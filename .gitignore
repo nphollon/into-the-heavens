@@ -10,3 +10,4 @@ temp/
 \.~*#
 public_html/data/*
 *.mtl
+node_modules

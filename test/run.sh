@@ -5,9 +5,10 @@ elm_out="$temp_dir/test-raw.js"
 io_out="$temp_dir/test.js"
 io_sh="elm-stuff/packages/laszlopandy/elm-console/1.1.1/elm-io.sh"
 main_elm="Test.elm"
+elm_make="../node_modules/.bin/elm-make"
 
 cd test
-elm make $main_elm --output $elm_out --yes
+$elm_make $main_elm --output $elm_out --yes
 
 if [ $? -ne 0 ]; then exit 1; fi;
 

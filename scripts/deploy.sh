@@ -5,6 +5,7 @@ elm_out="$temp_dir/elm.js"
 min_out="$temp_dir/elm.js.min"
 final_out="public_html/heavens.js"
 main_elm="src/Main.elm"
+elm_make="node_modules/.bin/elm-make"
 
 function compile {
     test/run.sh;
@@ -16,7 +17,7 @@ function compile {
     echo; echo;
     echo "Hostname: $1";
 
-    elm make $main_elm --output $elm_out --yes --warn
+    $elm_make $main_elm --output $elm_out --yes --warn
     if [ $? -ne 0 ]; then exit 1; fi;
 
     uglifyjs $elm_out -m -c warnings=false -o $min_out
