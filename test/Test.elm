@@ -1,7 +1,5 @@
-module Main (..) where
+module Main exposing (..)
 
-import Task exposing (Task)
-import Console
 import ElmTest exposing (..)
 import TransformTest
 import AiTest
@@ -17,21 +15,20 @@ import CovarianceTest
 
 testSuite : Test
 testSuite =
-  suite
-    "All tests"
-    [ TransformTest.testSuite
-    , AiTest.testSuite
-    , FormatTest.testSuite
-    , SwitchTest.testSuite
-    , SphericalTest.testSuite
-    , SpawnTest.testSuite
-    , EngineTest.testSuite
-    , TreeTest.testSuite
-    , BoundingBoxTest.testSuite
-    , CovarianceTest.testSuite
-    ]
+    suite "All tests"
+        [ TransformTest.testSuite
+        , AiTest.testSuite
+        , FormatTest.testSuite
+        , SwitchTest.testSuite
+        , SphericalTest.testSuite
+        , SpawnTest.testSuite
+        , EngineTest.testSuite
+        , TreeTest.testSuite
+        , BoundingBoxTest.testSuite
+        , CovarianceTest.testSuite
+        ]
 
 
-port io : Signal (Task x ())
-port io =
-  Console.run (consoleRunner testSuite)
+main : Program Never
+main =
+    runSuite testSuite
