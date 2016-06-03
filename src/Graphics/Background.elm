@@ -1,4 +1,4 @@
-module Graphics.Background (entity) where
+module Graphics.Background exposing (entity)
 
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 as Mat4 exposing (Mat4)
@@ -8,30 +8,30 @@ import Math.Matrix as Matrix
 
 
 type alias Varying =
-  { fragColor : Vec4
-  }
+    { fragColor : Vec4
+    }
 
 
 type alias Uniform =
-  { perspective : Mat4
-  , cameraOrientation : Mat4
-  }
+    { perspective : Mat4
+    , cameraOrientation : Mat4
+    }
 
 
 entity : Camera -> Drawable Vertex -> Renderable
 entity camera bkg =
-  let
-    uniform =
-      { perspective = camera.perspective
-      , cameraOrientation = Matrix.toMat4 camera.orientation
-      }
-  in
-    WebGL.render vertexShader fragmentShader bkg uniform
+    let
+        uniform =
+            { perspective = camera.perspective
+            , cameraOrientation = Matrix.toMat4 camera.orientation
+            }
+    in
+        WebGL.render vertexShader fragmentShader bkg uniform
 
 
 vertexShader : Shader Vertex Uniform Varying
 vertexShader =
-  [glsl|
+    [glsl|
   attribute vec3 vertPosition;
   attribute vec4 vertColor;
 
@@ -55,7 +55,7 @@ vertexShader =
 
 fragmentShader : Shader {} Uniform Varying
 fragmentShader =
-  [glsl|
+    [glsl|
   precision mediump float;
   varying vec4 fragColor;
 

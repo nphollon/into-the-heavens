@@ -1,29 +1,32 @@
-module Menu.Init (mainMenu, crash, victory) where
+module Menu.Init exposing (mainMenu, crash, victory)
 
-import Effects exposing (Effects)
-import Random.PCG exposing (Seed)
+import Random.Pcg exposing (Seed)
 import Types exposing (..)
 
 
-mainMenu : Seed -> Library -> ( Mode, Effects Update )
+mainMenu : Seed -> Library -> ( Mode, Cmd Update )
 mainMenu =
-  menu LevelSelect
+    menu LevelSelect
 
 
-crash : Level -> Seed -> Library -> ( Mode, Effects Update )
+crash : Level -> Seed -> Library -> ( Mode, Cmd Update )
 crash =
-  Lost >> menu
+    Lost >> menu
 
 
-victory : Level -> Seed -> Library -> ( Mode, Effects Update )
+victory : Level -> Seed -> Library -> ( Mode, Cmd Update )
 victory =
-  Won >> menu
+    Won >> menu
 
 
-menu : Room -> Seed -> Library -> ( Mode, Effects Update )
+menu : Room -> Seed -> Library -> ( Mode, Cmd Update )
 menu room seed library =
-  { seed = seed
-  , library = library
-  , room = room
-  }
-    |> noEffects MenuMode
+    let
+        model =
+            MenuMode
+                { seed = seed
+                , library = library
+                , room = room
+                }
+    in
+        model ! []

@@ -1,4 +1,4 @@
-module Graphics.Explosion (entity) where
+module Graphics.Explosion exposing (entity)
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector4 as Vec4 exposing (Vec4)
@@ -10,49 +10,49 @@ import Types exposing (Vertex, Camera)
 
 
 type alias Uniform =
-  { perspective : Mat4
-  , cameraOrientation : Mat4
-  , cameraPosition : Vec3
-  , placement : Mat4
-  , inversePlacement : Mat4
-  , lightness : Float
-  }
+    { perspective : Mat4
+    , cameraOrientation : Mat4
+    , cameraPosition : Vec3
+    , placement : Mat4
+    , inversePlacement : Mat4
+    , lightness : Float
+    }
 
 
 type alias Varying =
-  { fragColor : Vec4
-  }
+    { fragColor : Vec4
+    }
 
 
 type alias VertexShader =
-  Shader Vertex Uniform Varying
+    Shader Vertex Uniform Varying
 
 
 type alias FragmentShader =
-  Shader {} Uniform Varying
+    Shader {} Uniform Varying
 
 
 entity : Float -> Matrix -> Camera -> Drawable Vertex -> Renderable
 entity percentCountdown placement camera mesh =
-  let
-    radius =
-      8 * (1 - percentCountdown) ^ 0.4
+    let
+        radius =
+            8 * (1 - percentCountdown) ^ 0.4
 
-    uniform =
-      { perspective = camera.perspective
-      , cameraOrientation = Matrix.toMat4 camera.orientation
-      , cameraPosition = Vector.toVec3 camera.position
-      , placement = Matrix.toMat4 (Matrix.scale radius placement)
-      , inversePlacement = Matrix.toMat4 (Matrix.inverse placement)
-      , lightness = percentCountdown
-      }
-  in
-    WebGL.render vertex fragment mesh uniform
+        uniform =
+            { perspective = camera.perspective
+            , cameraOrientation = Matrix.toMat4 camera.orientation
+            , cameraPosition = Vector.toVec3 camera.position
+            , placement = Matrix.toMat4 (Matrix.scale radius placement)
+            , inversePlacement = Matrix.toMat4 (Matrix.inverse placement)
+            , lightness = percentCountdown
+            }
+    in
+        WebGL.render vertex fragment mesh uniform
 
 
 vertex : VertexShader
 vertex =
-  [glsl|
+    [glsl|
   precision mediump float;
 
   attribute vec3 vertPosition;
@@ -93,7 +93,7 @@ vertex =
 
 fragment : FragmentShader
 fragment =
-  [glsl|
+    [glsl|
   precision mediump float;
   varying vec4 fragColor;
 

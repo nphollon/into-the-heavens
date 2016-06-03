@@ -1,4 +1,4 @@
-module Graphics.Foreground (entity) where
+module Graphics.Foreground exposing (entity)
 
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector4 as Vec4 exposing (Vec4)
@@ -11,77 +11,76 @@ import Math.Vector as Vector
 
 
 type alias Uniform a =
-  { a
-    | perspective : Mat4
-    , cameraOrientation : Mat4
-    , cameraPosition : Vec3
-    , placement : Mat4
-    , inversePlacement : Mat4
-  }
+    { a
+        | perspective : Mat4
+        , cameraOrientation : Mat4
+        , cameraPosition : Vec3
+        , placement : Mat4
+        , inversePlacement : Mat4
+    }
 
 
 type alias Varying a =
-  { a
-    | fragColor : Vec4
-  }
+    { a
+        | fragColor : Vec4
+    }
 
 
 type alias VertexShader a b =
-  Shader Vertex (Uniform a) (Varying b)
+    Shader Vertex (Uniform a) (Varying b)
 
 
 type alias FragmentShader a b =
-  Shader {} (Uniform a) (Varying b)
+    Shader {} (Uniform a) (Varying b)
 
 
 vectorColor : Color -> Vec4
 vectorColor c =
-  let
-    rgb =
-      Color.toRgb c
-  in
-    Vec4.vec4
-      (toFloat rgb.red / 255)
-      (toFloat rgb.green / 255)
-      (toFloat rgb.blue / 255)
-      rgb.alpha
+    let
+        rgb =
+            Color.toRgb c
+    in
+        Vec4.vec4 (toFloat rgb.red / 255)
+            (toFloat rgb.green / 255)
+            (toFloat rgb.blue / 255)
+            rgb.alpha
 
 
 entity : ShaderType -> Matrix -> Camera -> Drawable Vertex -> Renderable
 entity objectType placement camera world =
-  let
-    uniform =
-      { perspective = camera.perspective
-      , cameraOrientation = Matrix.toMat4 camera.orientation
-      , cameraPosition = Vector.toVec3 camera.position
-      , placement = Matrix.toMat4 placement
-      , inversePlacement = Matrix.toMat4 (Matrix.inverse placement)
-      }
+    let
+        uniform =
+            { perspective = camera.perspective
+            , cameraOrientation = Matrix.toMat4 camera.orientation
+            , cameraPosition = Vector.toVec3 camera.position
+            , placement = Matrix.toMat4 placement
+            , inversePlacement = Matrix.toMat4 (Matrix.inverse placement)
+            }
 
-    matteUniform c =
-      { perspective = camera.perspective
-      , cameraOrientation = Matrix.toMat4 camera.orientation
-      , cameraPosition = Vector.toVec3 camera.position
-      , placement = Matrix.toMat4 placement
-      , inversePlacement = Matrix.toMat4 (Matrix.inverse placement)
-      , color = vectorColor c
-      }
-  in
-    case objectType of
-      Planet ->
-        WebGL.render planetVertex planetFragment world uniform
+        matteUniform c =
+            { perspective = camera.perspective
+            , cameraOrientation = Matrix.toMat4 camera.orientation
+            , cameraPosition = Vector.toVec3 camera.position
+            , placement = Matrix.toMat4 placement
+            , inversePlacement = Matrix.toMat4 (Matrix.inverse placement)
+            , color = vectorColor c
+            }
+    in
+        case objectType of
+            Planet ->
+                WebGL.render planetVertex planetFragment world uniform
 
-      Matte color ->
-        matteUniform color
-          |> WebGL.render matteVertex matteFragment world
+            Matte color ->
+                matteUniform color
+                    |> WebGL.render matteVertex matteFragment world
 
-      NoLighting ->
-        WebGL.render decorVertex decorFragment world uniform
+            NoLighting ->
+                WebGL.render decorVertex decorFragment world uniform
 
 
 planetVertex : VertexShader {} { cosAngleIncidence : Float }
 planetVertex =
-  [glsl|
+    [glsl|
   precision mediump float;
 
   attribute vec3 vertPosition;
@@ -126,7 +125,7 @@ planetVertex =
 
 planetFragment : FragmentShader {} { cosAngleIncidence : Float }
 planetFragment =
-  [glsl|
+    [glsl|
   precision mediump float;
   varying vec4 fragColor;
   varying float cosAngleIncidence;
@@ -164,7 +163,7 @@ planetFragment =
 
 matteVertex : VertexShader { color : Vec4 } { cosAngleIncidence : Float }
 matteVertex =
-  [glsl|
+    [glsl|
   precision mediump float;
 
   attribute vec3 vertPosition;
@@ -208,7 +207,7 @@ matteVertex =
 
 matteFragment : FragmentShader { color : Vec4 } { cosAngleIncidence : Float }
 matteFragment =
-  [glsl|
+    [glsl|
   precision mediump float;
   varying vec4 fragColor;
   varying float cosAngleIncidence;
@@ -222,7 +221,7 @@ matteFragment =
 
 decorVertex : VertexShader {} {}
 decorVertex =
-  [glsl|
+    [glsl|
   precision mediump float;
 
   attribute vec3 vertPosition;
@@ -263,7 +262,7 @@ decorVertex =
 
 decorFragment : FragmentShader {} {}
 decorFragment =
-  [glsl|
+    [glsl|
   precision mediump float;
   varying vec4 fragColor;
 

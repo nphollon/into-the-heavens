@@ -1,16 +1,12 @@
 window.onload = function () {
     "use strict";
 
-    var app = Elm.embed(
-        Elm.Main,
-        document.getElementById("app"),
-        { seed:
-          [ Math.floor(Math.random()*0xFFFFFFFF)
-          , Math.floor(Math.random()*0xFFFFFFFF)
-          ]
+    var flags =
+        { seed: [ Math.floor(Math.random()*0xFFFFFFFF), Math.floor(Math.random()*0xFFFFFFFF) ]
         , isMobile : mobileCheck()
-        }
-    );
+        };
+    
+    var app = Elm.Main.embed(document.getElementById("app"), flags);
 }
 
 var mobileCheck = function() {

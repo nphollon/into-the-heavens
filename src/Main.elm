@@ -1,11 +1,7 @@
-module Main (..) where
+module Main exposing (..)
 
-import Keyboard
-import Signal exposing (forwardTo)
 import Html exposing (Html)
-import StartApp exposing (App)
-import Effects exposing (Effects, Never)
-import Task exposing (Task)
+import Html.App as App
 import Types exposing (..)
 import Loading
 import Loading.Init
@@ -13,71 +9,59 @@ import Menu
 import Flight
 
 
-main : Signal Html
+main : Program Flags
 main =
-  app.html
+    App.programWithFlags
+        { init = init
+        , update = update
+        , subscriptions = subscriptions
+        , view = view
+        }
 
 
-app : App Mode
-app =
-  StartApp.start
-    { init = init
-    , inputs = inputs
-    , update = update
-    , view = view
-    }
+init : Flags -> ( Mode, Cmd Update )
+init flags =
+    ( Loading.Init.menu flags, Loading.Init.library )
 
 
-init : ( Mode, Effects Update )
-init =
-  ( Loading.Init.menu seed, Loading.Init.library )
+subscriptions : Mode -> Sub Update
+subscriptions mode =
+    Sub.none --Keyboard and AnimationFrame
 
 
-inputs : List (Signal Update)
-inputs =
-  [ Signal.map Keys Keyboard.keysDown ]
-
-
-update : Update -> Mode -> ( Mode, Effects Update )
+update : Update -> Mode -> ( Mode, Cmd Update )
 update action mode =
-  case ( action, mode ) of
-    ( Tick clockTime, GameMode data ) ->
-      Flight.timeUpdate clockTime data
+    case ( action, mode ) of
+        ( Tick clockTime, GameMode data ) ->
+            Flight.timeUpdate clockTime data
 
-    ( Keys keys, GameMode data ) ->
-      Flight.controlUpdate keys data
+        ( Keys keys, GameMode data ) ->
+            Flight.controlUpdate keys data
 
-    ( Keys keys, MenuMode data ) ->
-      Menu.keyUpdate keys data
+        ( Keys keys, MenuMode data ) ->
+            Menu.keyUpdate keys data
 
-    ( Keys keys, LoadingMode data ) ->
-      Loading.keyUpdate keys data
+        ( Keys keys, LoadingMode data ) ->
+            Loading.keyUpdate keys data
 
-    ( LoadingUpdate response, LoadingMode data ) ->
-      Loading.meshesUpdate response data
+        ( LoadingUpdate response, LoadingMode data ) ->
+            Loading.meshesUpdate response data
 
-    ( MenuUpdate action, MenuMode data ) ->
-      Menu.actionUpdate action data
+        ( MenuUpdate action, MenuMode data ) ->
+            Menu.actionUpdate action data
 
-    _ ->
-      noEffects identity mode
-
-
-view : Signal.Address Update -> Mode -> Html
-view address mode =
-  case mode of
-    GameMode data ->
-      Flight.view data
-
-    LoadingMode data ->
-      Loading.view isMobile data
-
-    MenuMode data ->
-      Menu.view (forwardTo address MenuUpdate) data
+        _ ->
+            mode ! []
 
 
-port isMobile : Bool
-port seed : ( Int, Int )
-port tasks : Signal (Task Never ())
-port tasks =
-  app.tasks
+view : Mode -> Html Update
+view mode =
+    case mode of
+        GameMode data ->
+            Flight.view data
+
+        LoadingMode data ->
+            Loading.view data
+
+        MenuMode data ->
+            App.map MenuUpdate (Menu.view data)
