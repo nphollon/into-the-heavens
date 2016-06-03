@@ -2,6 +2,8 @@ module Main exposing (..)
 
 import Html exposing (Html)
 import Html.App as App
+import AnimationFrame
+import Keyboard
 import Types exposing (..)
 import Loading
 import Loading.Init
@@ -26,7 +28,11 @@ init flags =
 
 subscriptions : Mode -> Sub Update
 subscriptions mode =
-    Sub.none --Keyboard and AnimationFrame
+    Sub.batch
+        [ Keyboard.downs KeyDown
+        , Keyboard.ups KeyUp
+        , AnimationFrame.times Tick
+        ]
 
 
 update : Update -> Mode -> ( Mode, Cmd Update )
@@ -35,18 +41,21 @@ update action mode =
         ( Tick clockTime, GameMode data ) ->
             Flight.timeUpdate clockTime data
 
-        ( Keys keys, GameMode data ) ->
-            Flight.controlUpdate keys data
+        ( KeyDown key, GameMode data ) ->
+            Flight.keyDown key data
 
-        ( Keys keys, MenuMode data ) ->
-            Menu.keyUpdate keys data
+        ( KeyUp key, GameMode data ) ->
+            Flight.keyUp key data
 
-        ( Keys keys, LoadingMode data ) ->
-            Loading.keyUpdate keys data
+        ( KeyDown key, LoadingMode data ) ->
+            Loading.keyUpdate key data
 
         ( LoadingUpdate response, LoadingMode data ) ->
             Loading.meshesUpdate response data
 
+        ( KeyDown key, MenuMode data ) ->
+            Menu.keyUpdate key data
+                
         ( MenuUpdate action, MenuMode data ) ->
             Menu.actionUpdate action data
 

@@ -1,6 +1,5 @@
-module Flight exposing (timeUpdate, controlUpdate, view)
+module Flight exposing (timeUpdate, keyDown, keyUp, view)
 
-import Dict exposing (Dict)
 import Set exposing (Set)
 import Char exposing (KeyCode)
 import Time exposing (Time)
@@ -10,6 +9,17 @@ import Flight.Engine as Engine
 import Flight.Util as Util
 import Menu.Init
 import Graphics.View as View
+
+
+keyDown : KeyCode -> GameState -> ( Mode, Cmd Update )
+keyDown key model =
+    GameMode { model | playerActions = Set.insert key model.playerActions }
+        ! []
+
+keyUp : KeyCode -> GameState -> ( Mode, Cmd Update )
+keyUp key model =
+    GameMode { model | playerActions = Set.remove key model.playerActions }
+        ! []
 
 
 timeUpdate : Time -> GameState -> ( Mode, Cmd Update )
@@ -62,31 +72,6 @@ reduceLag model =
                 |> Engine.update updateDelta
                 |> reduceLag
 
-
-controlUpdate : Set KeyCode -> GameState -> ( Mode, Cmd Update )
-controlUpdate keysDown model =
-    let
-        keyMap =
-            Dict.fromList
-                [ ( 'D', RightTurn )
-                , ( 'A', LeftTurn )
-                , ( 'S', DownTurn )
-                , ( 'W', UpTurn )
-                , ( 'I', Thrust )
-                , ( 'K', Brake )
-                , ( 'H', ShieldsUp )
-                , ( 'J', Firing )
-                , ( 'L', TargetFacing )
-                ]
-        newModel =
-            GameMode
-            { model
-                | playerActions =
-                  List.filterMap (Char.fromCode >> flip Dict.get keyMap)
-                  (Set.toList keysDown)
-            }
-    in
-        newModel ! []
 
 view : GameState -> Html a
 view =

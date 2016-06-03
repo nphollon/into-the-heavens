@@ -1,6 +1,5 @@
 module Menu exposing (keyUpdate, actionUpdate, view)
 
-import Set exposing (Set)
 import Char exposing (KeyCode)
 import Html exposing (..)
 import Html.Attributes exposing (class)
@@ -14,39 +13,40 @@ import Level.Pavilion
 import Level.OneByOne
 
 
-keyUpdate : Set KeyCode -> MenuState -> ( Mode, Cmd Update )
-keyUpdate keySet model =
-    let
-        reset =
-            Set.member (Char.toCode 'N') keySet
+keyUpdate : KeyCode -> MenuState -> ( Mode, Cmd Update )
+keyUpdate key model =
+    if key == Char.toCode 'N' then
+        case model.room of
+            Won level ->
+                load level model
 
-        maybeLevel =
-            case model.room of
-                LevelSelect ->
-                    Nothing
+            Lost level ->
+                load level model
 
-                Won level ->
-                    Just level
-
-                Lost level ->
-                    Just level
-    in
-        case ( reset, maybeLevel ) of
-            ( True, Just level ) ->
-                actionUpdate (StartGame level) model
-
-            _ ->
-                (MenuMode model) ! []
+            LevelSelect ->
+                noCmd model
+    else
+        noCmd model
 
 
 actionUpdate : MenuAction -> MenuState -> ( Mode, Cmd Update )
 actionUpdate input model =
     case input of
         StartGame level ->
-            Flight.Init.game (dataFor level) model.seed model.library
+            load level model
 
         ToMainMenu ->
-            (MenuMode { model | room = LevelSelect }) ! []
+            noCmd { model | room = LevelSelect }
+
+
+load : Level -> MenuState -> ( Mode, Cmd Update )
+load level model =
+    Flight.Init.game (dataFor level) model.seed model.library
+
+
+noCmd : MenuState -> ( Mode, Cmd Update )
+noCmd model =
+    MenuMode model ! []
 
 
 view : MenuState -> Html MenuAction
@@ -83,12 +83,12 @@ mainMenuView =
 
 
 gameOverView : String -> String -> Html MenuAction
-gameOverView message quote  =
+gameOverView message quote =
     AppFrame.view
         [ div []
             [ h1 [ class "title" ] [ text message ]
             , h2 [ class "subtitle" ] [ text "Press 'N' to replay" ]
-            , menuButton (onClick ToMainMenu)                "Main Menu"
+            , menuButton (onClick ToMainMenu) "Main Menu"
             ]
         ]
         [ p [] [ text quote ] ]

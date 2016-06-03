@@ -1,6 +1,7 @@
-module Flight.Util exposing (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isEthereal, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, remove, explode)
+module Flight.Util exposing (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isEthereal, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, remove, explode, keyMap)
 
 import Dict exposing (Dict)
+import Char exposing (KeyCode)
 import Maybe.Extra as MaybeX
 import Types exposing (..)
 import Math.Transform as Transform
@@ -197,3 +198,37 @@ explode id model =
 remove : Id -> GameState -> GameState
 remove id model =
     { model | universe = Dict.remove id model.universe }
+
+
+keyMap : PlayerAction -> KeyCode
+keyMap action =
+    case action of
+        RightTurn ->
+            Char.toCode 'D'
+
+        LeftTurn ->
+            Char.toCode 'A'
+
+        DownTurn ->
+            Char.toCode 'S'
+
+        UpTurn ->
+            Char.toCode 'W'
+
+        Thrust ->
+            Char.toCode 'I'
+
+        Brake ->
+            Char.toCode 'K'
+
+        ShieldsUp ->
+            Char.toCode 'H'
+
+        Firing ->
+            Char.toCode 'J'
+
+        TargetFacing ->
+            Char.toCode 'L'
+
+        _ ->
+            -1

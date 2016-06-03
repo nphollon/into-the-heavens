@@ -1,5 +1,6 @@
 module Flight.Engine exposing (update, shouldCrash)
 
+import Set
 import Dict exposing (Dict)
 import List.Extra as ListX
 import Types exposing (..)
@@ -26,8 +27,8 @@ update dt state =
 processActions : Float -> GameState -> GameState
 processActions dt model =
     let
-        toggle playerAction =
-            List.member playerAction model.playerActions
+        toggle action =
+            Set.member (Util.keyMap action) model.playerActions
 
         twoWayToggle neg pos =
             case ( toggle neg, toggle pos ) of

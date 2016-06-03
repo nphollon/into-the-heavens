@@ -29,8 +29,8 @@ type Mode
 type Update
     = MenuUpdate MenuAction
     | LoadingUpdate Response
-    | Keys (Set KeyCode)
     | KeyDown KeyCode
+    | KeyUp KeyCode
     | Tick Time
 
 
@@ -51,7 +51,7 @@ type alias GameState =
     , gameTime : Float
     , lastEventTime : Float
     , events : List ( EventCondition, List EngineEffect )
-    , playerActions : List PlayerAction
+    , playerActions : Set KeyCode
     , universe : Dict Id Body
     , names : Dict String Id
     , graphics : List GraphicsObject

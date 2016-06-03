@@ -1,6 +1,7 @@
 module Flight.Init exposing (game)
 
 import Dict
+import Set
 import Random.Pcg as Random exposing (Seed)
 import Types exposing (..)
 import Flight.Util as Util
@@ -20,7 +21,7 @@ game data seed library =
         , score = 0
         , log = []
         , lastEventTime = 0
-        , playerActions = []
+        , playerActions = Set.empty
         , names = Dict.empty
         , level = data.level
         , events = data.events

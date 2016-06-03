@@ -1,7 +1,6 @@
 module Loading exposing (keyUpdate, meshesUpdate, view)
 
 import Char exposing (KeyCode)
-import Set exposing (Set)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
@@ -10,10 +9,10 @@ import Graphics.AppFrame as AppFrame
 import Menu.Init
 
 
-keyUpdate : Set KeyCode -> LoadingState -> ( Mode, Cmd Update )
-keyUpdate keySet model =
-    case ( model.response, Set.member (Char.toCode 'N') keySet ) of
-        ( Just (Ok library), True ) ->
+keyUpdate : KeyCode -> LoadingState -> ( Mode, Cmd Update )
+keyUpdate key model =
+    case ( model.response, Char.fromCode key ) of
+        ( Just (Ok library), 'N' ) ->
             Menu.Init.mainMenu model.seed library
 
         _ ->
