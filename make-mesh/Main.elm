@@ -43,7 +43,7 @@ writeModels =
 write : String -> String -> IO ()
 write content filename =
   Console.writeFile
-    { file = "public_html/data/" ++ filename
+    { file = "../public_html/data/" ++ filename
     , content = content
     }
 

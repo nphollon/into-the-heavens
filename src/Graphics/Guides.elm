@@ -1,4 +1,4 @@
-module Generate.Guides (crosshair, target, targetable, incoming, shield, bar) where
+module Graphics.Guides (crosshair, target, targetable, incoming, shield, bar) where
 
 import WebGL exposing (Drawable(..))
 import Types exposing (Vertex)

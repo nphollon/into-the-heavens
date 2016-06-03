@@ -13,7 +13,7 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Vector as Vector exposing (Vector)
 import Math.BoundingBox as BoundingBox exposing (BoundingBox)
 import Math.Tree as Tree exposing (Tree(..))
-import Generate.Guides as Guides
+import Graphics.Guides as Guides
 
 
 menu : ( Int, Int ) -> Mode

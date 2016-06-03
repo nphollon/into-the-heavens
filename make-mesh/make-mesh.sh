@@ -1,10 +1,12 @@
 #/usr/bin/env bash
 
-elm_out="temp/make-mesh-raw.js"
-io_out="temp/make-mesh.js"
-io_sh="elm-stuff/packages/laszlopandy/elm-console/1.1.0/elm-io.sh"
-main_elm="src/Generate/Main.elm"
+temp_dir=${TMPDIR:-"/tmp"}
+elm_out="$temp_dir/make-mesh-raw.js"
+io_out="$temp_dir/make-mesh.js"
+io_sh="elm-stuff/packages/laszlopandy/elm-console/1.1.1/elm-io.sh"
+main_elm="Main.elm"
 
+cd make-mesh
 elm make $main_elm --output $elm_out --yes
 
 if [ $? -ne 0 ]; then exit 1; fi;

@@ -1,6 +1,5 @@
 module Math.BoundingBox (BoundingBox, boxCollide, collide, boxCreate, create, projectAndSplit, encode, decode) where
 
-import List.Extra as ListX
 import Json.Encode as Encode exposing (Value)
 import Json.Decode as Decode exposing (Decoder, (:=))
 import Math.Vector as Vector exposing (Vector)
