@@ -3,7 +3,7 @@
 temp_dir=${TMPDIR:-"/tmp"}
 elm_out="$temp_dir/make-mesh-raw.js"
 io_out="$temp_dir/make-mesh.js"
-io_sh="elm-stuff/packages/laszlopandy/elm-console/1.1.1/elm-io.sh"
+io_sh="elm-io.sh"
 main_elm="Main.elm"
 
 cd make-mesh
