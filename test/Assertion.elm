@@ -19,17 +19,6 @@ equalPair a b =
     equalFloat (fst a) (fst b) && equalFloat (snd a) (snd b)
 
 
-type alias Triangle =
-    ( ( Float, Float ), ( Float, Float ), ( Float, Float ) )
-
-
-equalTriangle : Triangle -> Triangle -> Bool
-equalTriangle ( a1, a2, a3 ) ( b1, b2, b3 ) =
-    equalPair a1 b1
-        && equalPair a2 b2
-        && equalPair a3 b3
-
-
 assertEqualFloat : Float -> Float -> Assertion
 assertEqualFloat a b =
     if equalFloat a b then
@@ -71,20 +60,3 @@ assertListContents expected actual =
                 ++ toString missing
                 ++ " and should not have contained "
                 ++ toString extra
-
-
-assertMesh : List Triangle -> List Triangle -> Assertion
-assertMesh expected actual =
-    let
-        testTriangle a b =
-            if equalTriangle a b then
-                Nothing
-            else
-                Just ( a, b )
-
-        pairs =
-            List.map2 testTriangle
-                (List.sort expected)
-                (List.sort actual)
-    in
-        assertEqual [] (List.filterMap identity pairs)
