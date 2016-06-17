@@ -17,19 +17,22 @@ float x =
             else
                 "-"
 
-        intPart =
-            floor (abs x)
+        cents =
+            round (abs x * 100)
 
-        centPart =
-            round (abs x * 100) - (intPart * 100)
+        integerPart =
+            cents // 100
+
+        centRemainder =
+            cents % 100
 
         decimal =
-            if centPart < 10 then
+            if centRemainder < 10 then
                 ".0"
             else
                 "."
     in
-        String.concat [ sign, toString intPart, decimal, toString centPart ]
+        String.concat [ sign, toString integerPart, decimal, toString centRemainder ]
 
 
 percent : Float -> Int

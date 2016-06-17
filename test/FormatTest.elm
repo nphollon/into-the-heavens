@@ -43,6 +43,9 @@ testSuite =
             , test "number that rounds to -0.01 gets minus sign"
                 <| assertEqual "-0.01"
                     (Format.float -5.0e-3)
+            , test "0.995 gets rounded to 1.00"
+                <| assertEqual "+1.00"
+                    (Format.float 0.995)
             ]
         , suite "Percents"
             [ test "unity is 100 percent"
