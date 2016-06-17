@@ -25,7 +25,7 @@ data =
           )
         , ( ReachedCheckpoint "second"
           , [ DestroyByName "second"
-            , SpawnCheckpoint "south pole" (Vector.vector -35 -14.5 -10)
+            , SpawnCheckpoint "south pole" (Vector.vector -35 -15.2 -10)
             , Notify "Find the checkpoint on the surface of the planet."
             ]
           )
@@ -51,7 +51,7 @@ data =
             , ( 2
               , { defaultBody
                     | position = Vector.vector 0 0 5
-                    , angVelocity = Vector.vector 1 0 0
+                    , angVelocity = Vector.vector 0.5 0 0
                     , bounds = Just "Donut"
                     , health = 1.0e10
                 }
