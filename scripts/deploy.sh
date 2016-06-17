@@ -11,9 +11,6 @@ function compile {
     test/run.sh;
     if [ $? -ne 0 ]; then exit 1; fi;
 
-    make-mesh/make-mesh.sh;
-    if [ $? -ne 0 ]; then exit 1; fi;
-
     echo; echo;
     echo "Hostname: $1";
 
