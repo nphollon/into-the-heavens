@@ -140,18 +140,30 @@ angleSpring damping targetPosition body =
 accelFromAction : Action -> Body -> Acceleration
 accelFromAction action object =
     let
+        turningSpeed =
+            2.0
+
+        turningAccel =
+            5.0
+
+        speed =
+            5.0
+
+        accel =
+            5.0
+
         goOrStop dir vel =
-            if dir == 0 then
-                -6 * vel
-            else
-                5 * toFloat dir
+            turningAccel * (turningSpeed * toFloat dir - vel)
+
+        targetSpeed =
+            speed * (1 + toFloat action.thrust)
+
+        targetVelocity =
+            Vector.vector 0 0 -targetSpeed
+                |> Transform.rotate object.orientation
     in
         { linear =
-            if action.thrust >= 0 then
-                Vector.vector 0 0 (toFloat action.thrust * -10)
-                    |> Transform.rotate object.orientation
-            else
-                Vector.scale -10 object.velocity
+            Vector.scale accel (Vector.sub targetVelocity object.velocity)
         , angular =
             Vector.vector (goOrStop action.pitch (Vector.getX object.angVelocity))
                 (goOrStop action.yaw (Vector.getY object.angVelocity))
