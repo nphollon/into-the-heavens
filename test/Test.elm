@@ -11,6 +11,7 @@ import EngineTest
 import TreeTest
 import BoundingBoxTest
 import CovarianceTest
+import FinanceTest
 
 
 testSuite : Test
@@ -26,6 +27,7 @@ testSuite =
         , TreeTest.testSuite
         , BoundingBoxTest.testSuite
         , CovarianceTest.testSuite
+        , FinanceTest.testSuite
         ]
 
 
