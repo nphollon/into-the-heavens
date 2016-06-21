@@ -6,7 +6,7 @@ main_elm="Test.elm"
 elm_make="elm-make"
 
 cd test
-$elm_make $main_elm --output $elm_out --yes
+$elm_make --yes --warn $main_elm --output $elm_out
 
 if [ $? -ne 0 ]; then exit 1; fi;
 
