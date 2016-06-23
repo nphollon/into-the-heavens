@@ -160,6 +160,7 @@ checkpoint =
     { defaultBody | bounds = Nothing }
 
 
+boxLibrary : Dict String (Tree BoundingBox)
 boxLibrary =
     Dict.fromList
         [ ( "hitHull"

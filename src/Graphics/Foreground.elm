@@ -67,9 +67,6 @@ entity objectType placement camera world =
             }
     in
         case objectType of
-            Planet ->
-                WebGL.render planetVertex planetFragment world uniform
-
             Matte color ->
                 matteUniform color
                     |> WebGL.render matteVertex matteFragment world
@@ -78,90 +75,7 @@ entity objectType placement camera world =
                 WebGL.render decorVertex decorFragment world uniform
 
 
-planetVertex : VertexShader {} { cosAngleIncidence : Float }
-planetVertex =
-    [glsl|
-  precision mediump float;
-
-  attribute vec3 vertPosition;
-  attribute vec4 vertColor;
-  attribute vec3 normal;
-
-  uniform vec3 cameraPosition;
-  uniform mat4 perspective;
-  uniform mat4 cameraOrientation;
-  uniform mat4 placement;
-  uniform mat4 inversePlacement;
-
-  varying vec4 fragColor;
-  varying float cosAngleIncidence;
-
-  void main() {
-    vec4 worldFrame = placement * vec4(vertPosition, 1);
-    vec4 cameraFrame =
-      cameraOrientation * (worldFrame - vec4(cameraPosition, 0));
-
-    float projOffset;
-
-    if (cameraFrame.z < 0.0 || cameraFrame.z < length(cameraFrame.xy)) {
-      projOffset = length(cameraFrame.xyz);
-    } else {
-      projOffset = 0.0;
-    }
-
-    vec4 projection = cameraFrame - vec4(0, 0, projOffset, 0);
-
-    gl_Position = perspective * projection;
-
-    vec3 dirToLight = vec3(0, sqrt(0.5), sqrt(0.5));
-    vec3 placedNormal = vec3(vec4(normal, 0) * inversePlacement);
-
-    cosAngleIncidence = dot(placedNormal/length(placedNormal), dirToLight);
-
-    fragColor = vertColor;
-  }
-  |]
-
-
-planetFragment : FragmentShader {} { cosAngleIncidence : Float }
-planetFragment =
-    [glsl|
-  precision mediump float;
-  varying vec4 fragColor;
-  varying float cosAngleIncidence;
-
-  void main () {
-    float latitude = fragColor.y;
-    float height = fragColor.z;
-
-    float arcticCircle = 3.14159 / 3.0;
-    float pole = 3.14159 / 4.0;
-    float temperateSnowline = 0.4;
-
-    float snowline;
-
-    if (abs(latitude) > arcticCircle) {
-      snowline =
-        temperateSnowline * (abs(latitude) - pole) / (arcticCircle - pole);
-    } else {
-      snowline = temperateSnowline;
-    }
-
-    if (height > snowline) {
-      gl_FragColor = vec4(0.8, 0.9, 1.0, 1.0);
-    } else if (height > 0.0) {
-      gl_FragColor = vec4(0.13, 0.54, 0.13, 1.0);
-    } else {
-      gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
-    }
-
-    gl_FragColor *= cosAngleIncidence;
-    gl_FragColor.w = 1.0;
-  }
-  |]
-
-
-matteVertex : VertexShader { color : Vec4 } { cosAngleIncidence : Float }
+matteVertex : VertexShader { color : Vec4 } { cosAngleIncidence : Float, distance : Float }
 matteVertex =
     [glsl|
   precision mediump float;
@@ -178,6 +92,7 @@ matteVertex =
 
   varying vec4 fragColor;
   varying float cosAngleIncidence;
+  varying float distance;
 
   void main() {
     vec4 worldFrame = placement * vec4(vertPosition, 1);
@@ -200,21 +115,27 @@ matteVertex =
     vec3 placedNormal = vec3(vec4(normal, 0) * inversePlacement);
 
     cosAngleIncidence = dot(placedNormal/length(placedNormal), dirToLight);
+    distance = length(cameraFrame.xyz);
     fragColor = color;
   }
   |]
 
 
-matteFragment : FragmentShader { color : Vec4 } { cosAngleIncidence : Float }
+matteFragment : FragmentShader { color : Vec4 } { cosAngleIncidence : Float, distance : Float }
 matteFragment =
     [glsl|
   precision mediump float;
   varying vec4 fragColor;
   varying float cosAngleIncidence;
+  varying float distance;
 
   void main () {
     gl_FragColor = fragColor * cosAngleIncidence;
     gl_FragColor.w = 1.0;
+
+    if (distance < 4.0) {
+      gl_FragColor.r = 1.0;
+    }
   }
   |]
 

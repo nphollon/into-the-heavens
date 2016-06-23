@@ -18,8 +18,9 @@ import Math.BoundingBox exposing (BoundingBox)
 
 
 type alias Flags =
-    { seed : (Int, Int), isMobile : Bool }
-        
+    { seed : ( Int, Int ), isMobile : Bool }
+
+
 type Mode
     = GameMode GameState
     | LoadingMode LoadingState
@@ -189,8 +190,7 @@ type GraphicsObject
 
 
 type ShaderType
-    = Planet
-    | Matte Color
+    = Matte Color
     | NoLighting
 
 

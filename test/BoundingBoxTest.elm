@@ -2,9 +2,7 @@ module BoundingBoxTest exposing (testSuite)
 
 import ElmTest exposing (..)
 import Json.Decode as Decode
-import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
-import Math.Matrix as Matrix
 import Math.Tree exposing (Tree(..))
 import Math.Face as Face
 import Math.BoundingBox as BoundingBox exposing (BoundingBox)
