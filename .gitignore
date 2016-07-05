@@ -12,3 +12,4 @@ public_html/data/*
 *.mtl
 node_modules
 /make-mesh/make-mesh.html
+/public_html/make-mesh.html
