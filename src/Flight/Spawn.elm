@@ -6,6 +6,7 @@ import Random.Pcg as Random
 import Types exposing (..)
 import Math.Transform as Transform
 import Math.Vector as Vector exposing (Vector)
+import Math.Quaternion as Quaternion
 import Math.Spherical as Spherical
 
 
@@ -70,10 +71,10 @@ spawnMissile : Body -> Id -> GameState -> GameState
 spawnMissile parent targetId model =
     let
         body =
-            { position = Transform.fromBodyFrame (Vector.vector 0 -0.5 0.1) parent
+            { position = Transform.fromBodyFrame parent (Vector.vector 0 -0.5 0.1)
             , velocity =
                 Vector.vector 0 0 -30
-                    |> Transform.rotate parent.orientation
+                    |> Quaternion.rotateVector parent.orientation
                     |> Vector.add parent.velocity
             , orientation = parent.orientation
             , angVelocity = Vector.vector 0 0 0
@@ -98,7 +99,7 @@ spawnExplosion parent model =
         body =
             { position = parent.position
             , velocity = parent.velocity
-            , orientation = Vector.vector 0 0 0
+            , orientation = Quaternion.identity
             , angVelocity = Vector.vector 0 0 0
             , bounds = Nothing
             , health = 1
@@ -165,7 +166,7 @@ defaultBody : Body
 defaultBody =
     { position = Vector.vector 0 0 0
     , velocity = Vector.vector 0 0 0
-    , orientation = Vector.vector 0 0 0
+    , orientation = Quaternion.identity
     , angVelocity = Vector.vector 0 0 0
     , bounds = Nothing
     , health = 0

@@ -6,9 +6,10 @@ import List.Extra as ListX
 import Html exposing (..)
 import Html.Attributes as Attributes exposing (class)
 import WebGL exposing (Drawable, Renderable)
+import Math.Matrix4 as Mat4 exposing (Mat4)
 import Types exposing (..)
-import Math.Vector as Vector
-import Math.Matrix as Matrix exposing (Matrix)
+import Math.Vector as Vector exposing (Vector)
+import Math.Quaternion as Quaternion exposing (Quaternion)
 import Math.Transform as Transform
 import Flight.Util as Util
 import Graphics.AppFrame as AppFrame
@@ -138,11 +139,15 @@ drawExplosion camera body mesh =
         |> MaybeX.maybeToList
 
 
-objectPlacement : Body -> Matrix
+objectPlacement : Body -> Mat4
 objectPlacement object =
-    Transform.placement 1
-        object.position
-        object.orientation
+    placement object.position object.orientation
+
+
+placement : Vector -> Quaternion -> Mat4
+placement position orientation =
+    Mat4.mul (Mat4.makeTranslate (Vector.toVec3 position))
+        (Quaternion.toMat4 orientation)
 
 
 percentCountdown : Body -> Float
@@ -155,7 +160,7 @@ percentCountdown object =
             0.5
 
 
-decorPlacement : Body -> Camera -> Matrix
+decorPlacement : Body -> Camera -> Mat4
 decorPlacement object camera =
     let
         direction =
@@ -166,7 +171,8 @@ decorPlacement object camera =
                 |> Vector.add camera.position
     in
         Transform.rotationFor (Vector.vector 0 0 1) direction
-            |> Transform.placement 1.0e-2 position
+            |> placement position
+            |> Mat4.scale3 1.0e-2 1.0e-2 1.0e-2
 
 
 log : GameState -> Html a

@@ -5,6 +5,7 @@ import Assertion exposing (..)
 import Dict
 import Types exposing (..)
 import Math.Vector as Vec exposing (Vector)
+import Math.Quaternion as Quaternion
 import Flight.Spawn exposing (defaultBody)
 import Flight.Ai as Ai
 import Flight.Util as Util
@@ -81,18 +82,34 @@ hostileSteering =
                     (criticalDamping defaultBody)
             , test "Accelerates towards target if yaw 90 degrees"
                 <| assertEqualVector (Vec.vector 0 -5 0)
-                    (criticalDamping { defaultBody | orientation = Vec.vector 0 (turns 0.25) 0 })
+                    (criticalDamping
+                        { defaultBody
+                            | orientation =
+                                Quaternion.fromVector (Vec.vector 0 (turns 0.25) 0)
+                        }
+                    )
             , test "Accelerates towards target if pitch 90 degrees"
                 <| assertEqualVector (Vec.vector -5 0 0)
-                    (criticalDamping { defaultBody | orientation = Vec.vector (turns 0.25) 0 0 })
+                    (criticalDamping
+                        { defaultBody
+                            | orientation =
+                                Quaternion.fromVector (Vec.vector (turns 0.25) 0 0)
+                        }
+                    )
             , test "Acceleration ignores roll"
                 <| assertEqualVector (Vec.vector 0 0 0)
-                    (criticalDamping { defaultBody | orientation = Vec.vector 0 0 (turns 0.25) })
+                    (criticalDamping
+                        { defaultBody
+                            | orientation =
+                                Quaternion.fromVector (Vec.vector 0 0 (turns 0.25))
+                        }
+                    )
             , test "Accelerates towards target if rotated on oblique axis"
                 <| assertEqualVector (Vec.vector -1.0e-2 -1.0e-2 0)
                     (criticalDamping
                         { defaultBody
-                            | orientation = Vec.vector (turns 5.0e-4) (turns 5.0e-4) 0
+                            | orientation =
+                                Quaternion.fromVector (Vec.vector (turns 5.0e-4) (turns 5.0e-4) 0)
                         }
                     )
             , test "Accelerate in some direction if facing directly away from target"
@@ -107,7 +124,7 @@ hostileSteering =
                 <| assertEqualVector (Vec.vector 0 -12 0)
                     (criticalDamping
                         { defaultBody
-                            | orientation = Vec.vector 0 (turns 0.1) 0
+                            | orientation = Quaternion.fromVector (Vec.vector 0 (turns 0.1) 0)
                             , angVelocity = Vec.vector 0 (turns 0.125) 0
                         }
                     )
@@ -115,7 +132,7 @@ hostileSteering =
                 <| assertEqualVector (Vec.vector 0 -14 0)
                     (underdamping
                         { defaultBody
-                            | orientation = Vec.vector 0 (turns 0.1) 0
+                            | orientation = Quaternion.fromVector (Vec.vector 0 (turns 0.1) 0)
                             , angVelocity = Vec.vector 0 (turns 0.125) 0
                         }
                     )
@@ -123,7 +140,7 @@ hostileSteering =
                 <| assertEqualVector (Vec.vector 0 -5 -20)
                     (criticalDamping
                         { defaultBody
-                            | orientation = Vec.vector 0 (turns 0.25) 0
+                            | orientation = Quaternion.fromVector (Vec.vector 0 (turns 0.25) 0)
                             , angVelocity = Vec.vector 0 0 (turns 0.25)
                         }
                     )
@@ -135,7 +152,7 @@ hostileSteering =
                     )
                     (criticalDamping
                         { defaultBody
-                            | orientation = Vec.vector (turns 0.25) 0 0
+                            | orientation = Quaternion.fromVector (Vec.vector (turns 0.25) 0 0)
                             , position = Vec.vector -5 -2 -2
                         }
                     )
@@ -158,7 +175,7 @@ assertTriggerChange shouldFire position orientation targetPosition =
         body =
             { defaultBody
                 | position = position
-                , orientation = orientation
+                , orientation = Quaternion.fromVector orientation
             }
 
         target =

@@ -4,6 +4,7 @@ import Dict
 import Color
 import Types exposing (..)
 import Math.Vector as Vector
+import Math.Quaternion as Quaternion
 import Flight.Spawn exposing (defaultBody)
 
 
@@ -53,7 +54,7 @@ data =
             [ ( 1
               , { defaultBody
                     | position = Vector.vector -60 0 -60
-                    , orientation = Vector.vector 0 0 0
+                    , orientation = Quaternion.identity
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }
@@ -61,7 +62,7 @@ data =
             , ( 2
               , { defaultBody
                     | position = Vector.vector 60 0 -60
-                    , orientation = Vector.vector 0 0 0
+                    , orientation = Quaternion.identity
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }
@@ -69,7 +70,7 @@ data =
             , ( 3
               , { defaultBody
                     | position = Vector.vector 60 0 60
-                    , orientation = Vector.vector (turns 0.5) 0 0
+                    , orientation = Quaternion.fromAxisAngle (Vector.vector 1 0 0) (turns 0.5)
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }
@@ -77,7 +78,7 @@ data =
             , ( 4
               , { defaultBody
                     | position = Vector.vector -60 0 60
-                    , orientation = Vector.vector (turns 0.5) 0 0
+                    , orientation = Quaternion.fromAxisAngle (Vector.vector 1 0 0) (turns 0.5)
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }
@@ -85,7 +86,7 @@ data =
             , ( 5
               , { defaultBody
                     | position = Vector.vector -60 -60 0
-                    , orientation = Vector.vector (turns 0.25) 0 0
+                    , orientation = Quaternion.fromAxisAngle (Vector.vector 1 0 0) (turns 0.25)
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }
@@ -93,7 +94,7 @@ data =
             , ( 6
               , { defaultBody
                     | position = Vector.vector -60 60 0
-                    , orientation = Vector.vector (turns 0.25) 0 0
+                    , orientation = Quaternion.fromAxisAngle (Vector.vector 1 0 0) (turns 0.25)
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }
@@ -101,7 +102,7 @@ data =
             , ( 7
               , { defaultBody
                     | position = Vector.vector 60 -60 0
-                    , orientation = Vector.vector (turns -0.25) 0 0
+                    , orientation = Quaternion.fromAxisAngle (Vector.vector 1 0 0) (turns -0.25)
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }
@@ -109,7 +110,7 @@ data =
             , ( 8
               , { defaultBody
                     | position = Vector.vector 60 60 0
-                    , orientation = Vector.vector (turns -0.25) 0 0
+                    , orientation = Quaternion.fromAxisAngle (Vector.vector 1 0 0) (turns -0.25)
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }
@@ -117,7 +118,7 @@ data =
             , ( 9
               , { defaultBody
                     | position = Vector.vector 0 -60 -60
-                    , orientation = Vector.vector 0 0 (turns 0.25)
+                    , orientation = Quaternion.fromAxisAngle (Vector.vector 0 0 1) (turns 0.25)
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }
@@ -125,7 +126,7 @@ data =
             , ( 10
               , { defaultBody
                     | position = Vector.vector 0 60 -60
-                    , orientation = Vector.vector 0 0 (turns 0.25)
+                    , orientation = Quaternion.fromAxisAngle (Vector.vector 0 0 1) (turns 0.25)
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }
@@ -133,7 +134,7 @@ data =
             , ( 11
               , { defaultBody
                     | position = Vector.vector 0 -60 60
-                    , orientation = Vector.vector 0 0 (turns -0.25)
+                    , orientation = Quaternion.fromAxisAngle (Vector.vector 0 0 1) (turns -0.25)
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }
@@ -141,7 +142,7 @@ data =
             , ( 12
               , { defaultBody
                     | position = Vector.vector 0 60 60
-                    , orientation = Vector.vector 0 0 (turns -0.25)
+                    , orientation = Quaternion.fromAxisAngle (Vector.vector 0 0 1) (turns -0.25)
                     , bounds = Just "Column"
                     , health = 1.0e10
                 }

@@ -7,14 +7,13 @@ import Dict exposing (Dict)
 import Color exposing (Color)
 import Random.Pcg as Random
 import Http
+import Collision exposing (Bounds)
 import WebGL exposing (Drawable)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 exposing (Mat4)
-import Math.Matrix exposing (Matrix)
 import Math.Vector exposing (Vector)
-import Math.Tree exposing (Tree)
-import Math.BoundingBox exposing (BoundingBox)
+import Math.Quaternion exposing (Quaternion)
 
 
 type alias Flags =
@@ -110,7 +109,7 @@ type PlayerAction
 type alias Body =
     { position : Vector
     , velocity : Vector
-    , orientation : Vector
+    , orientation : Quaternion
     , angVelocity : Vector
     , bounds : Maybe String
     , health : Float
@@ -196,7 +195,7 @@ type ShaderType
 
 type alias Camera =
     { perspective : Mat4
-    , orientation : Matrix
+    , orientation : Quaternion
     , position : Vector
     }
 
@@ -223,7 +222,7 @@ type Room
 
 type alias Library =
     { meshes : Dict String (Drawable Vertex)
-    , boxes : Dict String (Tree BoundingBox)
+    , boxes : Dict String Bounds
     }
 
 

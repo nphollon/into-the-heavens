@@ -3,11 +3,8 @@ module Flight.Mechanics exposing (evolve)
 import Dict exposing (Dict)
 import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
-import Math.Transform as Transform
+import Math.Quaternion as Quaternion exposing (Quaternion)
 import Flight.Ai as Ai
-
-
--- Evolving states
 
 
 evolve : Float -> Dict Id Body -> Dict Id Body
@@ -26,7 +23,7 @@ evolveObject dt universe object =
                 { state
                     | position = state.velocity
                     , velocity = accel.linear
-                    , orientation = state.angVelocity
+                    , orientation = Quaternion.fromVector state.angVelocity
                     , angVelocity = accel.angular
                 }
 
@@ -57,7 +54,7 @@ nudge dt dpdt p =
         , velocity =
             Vector.add p.velocity (Vector.scale dt dpdt.velocity)
         , orientation =
-            Transform.mulOrient p.orientation (Vector.scale dt dpdt.orientation)
+            Quaternion.compose (Quaternion.scale dt dpdt.orientation) p.orientation
         , angVelocity =
             Vector.add p.angVelocity (Vector.scale dt dpdt.angVelocity)
     }

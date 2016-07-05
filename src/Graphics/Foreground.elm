@@ -6,8 +6,8 @@ import Math.Vector3 as Vec3 exposing (Vec3)
 import Color exposing (Color)
 import WebGL exposing (Drawable, Renderable, Shader)
 import Types exposing (ShaderType(..), Camera, Vertex)
-import Math.Matrix as Matrix exposing (Matrix)
 import Math.Vector as Vector
+import Math.Quaternion as Quaternion
 
 
 type alias Uniform a =
@@ -46,23 +46,23 @@ vectorColor c =
             rgb.alpha
 
 
-entity : ShaderType -> Matrix -> Camera -> Drawable Vertex -> Renderable
+entity : ShaderType -> Mat4 -> Camera -> Drawable Vertex -> Renderable
 entity objectType placement camera world =
     let
         uniform =
             { perspective = camera.perspective
-            , cameraOrientation = Matrix.toMat4 camera.orientation
+            , cameraOrientation = Quaternion.toMat4 camera.orientation
             , cameraPosition = Vector.toVec3 camera.position
-            , placement = Matrix.toMat4 placement
-            , inversePlacement = Matrix.toMat4 (Matrix.inverse placement)
+            , placement = placement
+            , inversePlacement = Mat4.inverseOrthonormal placement
             }
 
         matteUniform c =
             { perspective = camera.perspective
-            , cameraOrientation = Matrix.toMat4 camera.orientation
+            , cameraOrientation = Quaternion.toMat4 camera.orientation
             , cameraPosition = Vector.toVec3 camera.position
-            , placement = Matrix.toMat4 placement
-            , inversePlacement = Matrix.toMat4 (Matrix.inverse placement)
+            , placement = placement
+            , inversePlacement = Mat4.inverseOrthonormal placement
             , color = vectorColor c
             }
     in

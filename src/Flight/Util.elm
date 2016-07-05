@@ -23,7 +23,7 @@ faces : Id -> Body -> Dict Id Body -> Bool
 faces targetId viewer universe =
     let
         inRange t =
-            Transform.degreesFromForward t.position viewer < degrees 15
+            Transform.degreesFromForward viewer t.position < degrees 15
     in
         Dict.get targetId universe
             |> MaybeX.mapDefault False inRange
@@ -78,7 +78,7 @@ setPlayerTarget model =
             if isVisitor body then
                 let
                     distance =
-                        Transform.degreesFromForward body.position player
+                        Transform.degreesFromForward player body.position
                 in
                     if distance < winningDistance then
                         ( id, distance )

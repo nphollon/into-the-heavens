@@ -2,10 +2,8 @@ module EngineTest exposing (testSuite)
 
 import ElmTest exposing (..)
 import Dict exposing (Dict)
+import Collision exposing (Bounds)
 import Types exposing (..)
-import Math.Vector as Vec
-import Math.BoundingBox as BoundingBox exposing (BoundingBox)
-import Math.Tree as Tree exposing (Tree(..))
 import Flight.Spawn exposing (defaultBody, defaultCockpit)
 import Flight.Engine exposing (..)
 
@@ -160,43 +158,45 @@ checkpoint =
     { defaultBody | bounds = Nothing }
 
 
-boxLibrary : Dict String (Tree BoundingBox)
+boxLibrary : Dict String Bounds
 boxLibrary =
     Dict.fromList
         [ ( "hitHull"
-          , Leaf
-                { a = 2
-                , b = 2
-                , c = 2
-                , position = Vec.vector 0 0 1
-                , orientation = Vec.vector 0 0 0
-                }
+          , Collision.create
+                [ Collision.face (Collision.vector 2 1 0)
+                    (Collision.vector -2 1 0)
+                    (Collision.vector -2 -2 0)
+                ]
           )
         , ( "outHull"
-          , Leaf
-                { a = 2
-                , b = 2
-                , c = 2
-                , position = Vec.vector 0 0 3
-                , orientation = Vec.vector 0 0 0
-                }
+          , Collision.create
+                [ Collision.face (Collision.vector 1 2 1)
+                    (Collision.vector 1 2 -1)
+                    (Collision.vector 1 -2 -1)
+                ]
           )
         , ( "farHull"
-          , Leaf
-                { a = 2
-                , b = 2
-                , c = 2
-                , position = Vec.vector 0 0 10
-                , orientation = Vec.vector 0 0 0
-                }
+          , Collision.create
+                [ Collision.face (Collision.vector 2 1 100)
+                    (Collision.vector -2 1 100)
+                    (Collision.vector -2 -2 100)
+                ]
           )
         , ( "Missile"
-          , Leaf
-                { a = 0
-                , b = 0
-                , c = 0
-                , position = Vec.vector 0 0 0
-                , orientation = Vec.vector 0 0 0
-                }
+          , Collision.create
+                [ Collision.face (Collision.vector 0 1 1)
+                    (Collision.vector 0 1 -1)
+                    (Collision.vector 0 -1 -1)
+                ]
           )
         ]
+        |> Dict.foldl
+            (\name value kept ->
+                case value of
+                    Nothing ->
+                        kept
+
+                    Just v ->
+                        Dict.insert name v kept
+            )
+            Dict.empty

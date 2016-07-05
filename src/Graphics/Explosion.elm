@@ -3,8 +3,8 @@ module Graphics.Explosion exposing (entity)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Vector3 as Vec3 exposing (Vec3)
-import Math.Matrix as Matrix exposing (Matrix)
 import Math.Vector as Vector
+import Math.Quaternion as Quaternion
 import WebGL exposing (Drawable, Renderable, Shader)
 import Types exposing (Vertex, Camera)
 
@@ -32,7 +32,7 @@ type alias FragmentShader =
     Shader {} Uniform Varying
 
 
-entity : Float -> Matrix -> Camera -> Drawable Vertex -> Renderable
+entity : Float -> Mat4 -> Camera -> Drawable Vertex -> Renderable
 entity percentCountdown placement camera mesh =
     let
         radius =
@@ -40,10 +40,10 @@ entity percentCountdown placement camera mesh =
 
         uniform =
             { perspective = camera.perspective
-            , cameraOrientation = Matrix.toMat4 camera.orientation
+            , cameraOrientation = Quaternion.toMat4 camera.orientation
             , cameraPosition = Vector.toVec3 camera.position
-            , placement = Matrix.toMat4 (Matrix.scale radius placement)
-            , inversePlacement = Matrix.toMat4 (Matrix.inverse placement)
+            , placement = Mat4.scale3 radius radius radius placement
+            , inversePlacement = Mat4.inverseOrthonormal placement
             , lightness = percentCountdown
             }
     in

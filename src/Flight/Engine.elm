@@ -3,9 +3,8 @@ module Flight.Engine exposing (update, shouldCrash)
 import Set
 import Dict exposing (Dict)
 import List.Extra as ListX
+import Collision exposing (Bounds)
 import Types exposing (..)
-import Math.BoundingBox as BoundingBox exposing (BoundingBox)
-import Math.Tree as Tree exposing (Tree)
 import Flight.Ai as Ai
 import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
@@ -165,59 +164,28 @@ thrust delta model =
     { model | universe = Mech.evolve delta model.universe }
 
 
-shouldCrash : Dict String (Tree BoundingBox) -> Dict Id Body -> List EngineEffect
+shouldCrash : Dict String Bounds -> Dict Id Body -> List EngineEffect
 shouldCrash boxLibrary universe =
     let
         lookup boxName =
             Maybe.andThen boxName (flip Dict.get boxLibrary)
 
         collide bodyA bodyB =
-            Maybe.map2 (\boxA boxB -> BoundingBox.collide bodyA boxA bodyB boxB)
-                (lookup bodyA.bounds)
-                (lookup bodyB.bounds)
-                |> Maybe.withDefault False
+            Collision.collide
+                { position = bodyA.position
+                , orientation = bodyA.orientation
+                , bounds = lookup bodyA.bounds
+                }
+                { position = bodyB.position
+                , orientation = bodyB.orientation
+                , bounds = lookup bodyB.bounds
+                }
 
         checkPair a b effects =
             if collide (snd a) (snd b) then
                 addEffects a b effects
             else
                 effects
-
-        addEffects ( idA, bodyA ) ( idB, bodyB ) effects =
-            case ( objectType bodyA, objectType bodyB ) of
-                ( Missile, Missile ) ->
-                    effects
-
-                ( Missile, Unshielded ) ->
-                    Destroy idA
-                        :: DeductHealth bodyA.health idB
-                        :: effects
-
-                ( Unshielded, Missile ) ->
-                    DeductHealth bodyB.health idA
-                        :: Destroy idB
-                        :: effects
-
-                ( Missile, Shielded ) ->
-                    Destroy idA
-                        :: effects
-
-                ( Shielded, Missile ) ->
-                    Destroy idB
-                        :: effects
-
-                _ ->
-                    DeductHealth bodyB.health idA
-                        :: DeductHealth bodyA.health idB
-                        :: effects
-
-        objectType body =
-            if Util.isMissile body then
-                Missile
-            else if Util.isShielded body then
-                Shielded
-            else
-                Unshielded
     in
         Dict.toList universe
             |> ListX.selectSplit
@@ -232,6 +200,46 @@ type ObjectType
     = Missile
     | Shielded
     | Unshielded
+
+
+objectType : Body -> ObjectType
+objectType body =
+    if Util.isMissile body then
+        Missile
+    else if Util.isShielded body then
+        Shielded
+    else
+        Unshielded
+
+
+addEffects : ( Id, Body ) -> ( Id, Body ) -> List EngineEffect -> List EngineEffect
+addEffects ( idA, bodyA ) ( idB, bodyB ) effects =
+    case ( objectType bodyA, objectType bodyB ) of
+        ( Missile, Missile ) ->
+            effects
+
+        ( Missile, Unshielded ) ->
+            Destroy idA
+                :: DeductHealth bodyA.health idB
+                :: effects
+
+        ( Unshielded, Missile ) ->
+            DeductHealth bodyB.health idA
+                :: Destroy idB
+                :: effects
+
+        ( Missile, Shielded ) ->
+            Destroy idA
+                :: effects
+
+        ( Shielded, Missile ) ->
+            Destroy idB
+                :: effects
+
+        _ ->
+            DeductHealth bodyB.health idA
+                :: DeductHealth bodyA.health idB
+                :: effects
 
 
 shouldFire : Dict Id Body -> List EngineEffect

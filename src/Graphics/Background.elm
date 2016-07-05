@@ -4,7 +4,7 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL exposing (Renderable, Drawable, Shader)
 import Types exposing (Camera, Vertex)
-import Math.Matrix as Matrix
+import Math.Quaternion as Quaternion
 
 
 type alias Varying =
@@ -23,7 +23,7 @@ entity camera bkg =
     let
         uniform =
             { perspective = camera.perspective
-            , cameraOrientation = Matrix.toMat4 camera.orientation
+            , cameraOrientation = Quaternion.toMat4 camera.orientation
             }
     in
         WebGL.render vertexShader fragmentShader bkg uniform

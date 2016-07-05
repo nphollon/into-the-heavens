@@ -7,11 +7,9 @@ import Task exposing (Task)
 import Json.Decode as Decode exposing (Decoder, Value, (:=))
 import Random.Pcg as Random
 import WebGL exposing (Drawable(..))
+import Collision
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
-import Math.Vector as Vector exposing (Vector)
-import Math.BoundingBox as BoundingBox exposing (BoundingBox)
-import Math.Tree as Tree exposing (Tree(..))
 import Graphics.Guides as Guides
 
 
@@ -48,8 +46,10 @@ library =
             , ( "Cage", "cage.box" )
             , ( "OrthoVertex", "ortho-vertex.box" )
             , ( "Column", "column.box" )
+            , ( "Missile", "missile.box" )
+            , ( "Player", "player.box" )
             ]
-                |> List.map (get (Tree.decode BoundingBox.decode))
+                |> List.map (get Collision.decode)
                 |> Task.sequence
 
         library =
@@ -63,26 +63,7 @@ library =
                     , ( "EnergyBar", Guides.bar )
                     ]
             , boxes =
-                Dict.fromList
-                    [ ( "Missile"
-                      , Leaf
-                            { a = 0
-                            , b = 0
-                            , c = 0
-                            , position = Vector.vector 0 0 0
-                            , orientation = Vector.vector 0 0 0
-                            }
-                      )
-                    , ( "Player"
-                      , Leaf
-                            { a = 0.5
-                            , b = 0.3
-                            , c = 0.5
-                            , position = Vector.vector 0 0 0
-                            , orientation = Vector.vector 0 0 0
-                            }
-                      )
-                    ]
+                Dict.empty
             }
 
         get decoder ( id, file ) =
@@ -96,9 +77,8 @@ library =
             }
     in
         Task.map2 (addTo library) remoteMeshes remoteBoxes
-            |> Task.perform
-               (Err >> LoadingUpdate)
-               (Ok >> LoadingUpdate)
+            |> Task.perform (Err >> LoadingUpdate)
+                (Ok >> LoadingUpdate)
 
 
 decodeMesh : Decoder (Drawable Vertex)

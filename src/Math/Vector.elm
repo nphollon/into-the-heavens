@@ -1,7 +1,9 @@
-module Math.Vector exposing (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, toVec3, fromVec3, equal, fromRecord, toRecord, fromTuple, toTuple, unique)
+module Math.Vector exposing (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, equal, fromTuple, toTuple, unique, encode, decode, toVec3)
 
-import Math.Vector3 as Vec3 exposing (Vec3)
 import Set
+import Json.Encode as Encode exposing (Value)
+import Json.Decode as Decode exposing (Decoder)
+import Math.Vector3 as Vec3 exposing (Vec3)
 
 
 type alias Vector =
@@ -99,16 +101,6 @@ distanceSquared u v =
     lengthSquared (u `sub` v)
 
 
-toVec3 : Vector -> Vec3
-toVec3 =
-    Vec3.fromRecord
-
-
-fromVec3 : Vec3 -> Vector
-fromVec3 =
-    Vec3.toRecord
-
-
 equal : Vector -> Vector -> Bool
 equal u v =
     let
@@ -118,19 +110,6 @@ equal u v =
         (equalFloat (getX u) (getX v))
             && (equalFloat (getY u) (getY v))
             && (equalFloat (getZ u) (getZ v))
-
-
-fromRecord : { x : Float, y : Float, z : Float } -> Vector
-fromRecord record =
-    vector record.x record.y record.z
-
-
-toRecord : Vector -> { x : Float, y : Float, z : Float }
-toRecord v =
-    { x = getX v
-    , y = getY v
-    , z = getZ v
-    }
 
 
 fromTuple : ( Float, Float, Float ) -> Vector
@@ -149,3 +128,22 @@ unique points =
         |> Set.fromList
         |> Set.toList
         |> List.map fromTuple
+
+
+encode : Vector -> Value
+encode v =
+    Encode.list
+        [ Encode.float (getX v)
+        , Encode.float (getY v)
+        , Encode.float (getZ v)
+        ]
+
+
+decode : Decoder Vector
+decode =
+    Decode.tuple3 vector Decode.float Decode.float Decode.float
+
+
+toVec3 : Vector -> Vec3
+toVec3 =
+    Vec3.fromRecord

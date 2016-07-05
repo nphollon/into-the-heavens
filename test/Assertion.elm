@@ -2,6 +2,7 @@ module Assertion exposing (..)
 
 import ElmTest exposing (..)
 import Math.Vector as Vec exposing (Vector)
+import Math.Quaternion exposing (Quaternion)
 
 
 equalFloat : Float -> Float -> Bool
@@ -17,6 +18,11 @@ equalVector a b =
 equalPair : ( Float, Float ) -> ( Float, Float ) -> Bool
 equalPair a b =
     equalFloat (fst a) (fst b) && equalFloat (snd a) (snd b)
+
+
+equalQuaternion : Quaternion -> Quaternion -> Bool
+equalQuaternion a b =
+    (equalVector a.vector b.vector) && (equalFloat a.scalar b.scalar)
 
 
 assertEqualFloat : Float -> Float -> Assertion
@@ -38,6 +44,14 @@ assertEqualVector a b =
 assertEqualPair : ( Float, Float ) -> ( Float, Float ) -> Assertion
 assertEqualPair a b =
     if equalPair a b then
+        pass
+    else
+        assertEqual a b
+
+
+assertEqualQuaternion : Quaternion -> Quaternion -> Assertion
+assertEqualQuaternion a b =
+    if equalQuaternion a b then
         pass
     else
         assertEqual a b

@@ -3,6 +3,7 @@ module Flight.Ai exposing (aiUpdate, steerAi, acceleration, angleSpring)
 import Dict exposing (Dict)
 import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
+import Math.Quaternion as Quaternion
 import Math.Transform as Transform
 import Flight.Switch as Switch
 import Flight.Util as Util
@@ -131,9 +132,9 @@ angleSpring damping targetPosition body =
     let
         rotation =
             Transform.rotationFor (Vector.vector 0 0 -1)
-                (Transform.toBodyFrame targetPosition body)
+                (Transform.toBodyFrame body targetPosition)
     in
-        Vector.sub (Vector.scale (0.25 / damping) rotation)
+        Vector.sub (Vector.scale (0.25 / damping) (Quaternion.toVector rotation))
             body.angVelocity
 
 
@@ -160,7 +161,7 @@ accelFromAction action object =
 
         targetVelocity =
             Vector.vector 0 0 -targetSpeed
-                |> Transform.rotate object.orientation
+                |> Quaternion.rotateVector object.orientation
     in
         { linear =
             Vector.scale accel (Vector.sub targetVelocity object.velocity)

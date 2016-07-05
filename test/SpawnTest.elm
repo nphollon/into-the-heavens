@@ -5,6 +5,7 @@ import Assertion exposing (..)
 import Random.Pcg as Random
 import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
+import Math.Quaternion as Quaternion exposing (Quaternion)
 import Flight.Spawn as Spawn
 
 
@@ -25,13 +26,13 @@ testSuite =
                 <| assertEqualVector up
                     (.position (spawnAt up))
             , test "Faces down when spawning from up"
-                <| assertEqualVector (Vector.vector 0 0 0)
+                <| assertEqualQuaternion Quaternion.identity
                     (.orientation (spawnAt up))
             , test "Faces east when spawning from west"
-                <| assertEqualVector (Vector.vector 0 (turns -0.25) 0)
+                <| assertEqualQuaternion (Quaternion.fromVector (Vector.vector 0 (turns -0.25) 0))
                     (.orientation (spawnAt west))
             , test "Faces south when spawning from north"
-                <| assertEqualVector (Vector.vector (turns -0.25) 0 0)
+                <| assertEqualQuaternion (Quaternion.fromVector (Vector.vector (turns -0.25) 0 0))
                     (.orientation (spawnAt north))
             , test "Going down when spawning from up"
                 <| assertEqualVector (Vector.vector 0 0 -1)
