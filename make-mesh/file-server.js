@@ -33,7 +33,8 @@ var writeFile = function (request, response) {
                 response.writeHead(500, { "Access-Control-Allow-Origin": "*" });
                 response.end();
             } else {
-                response.writeHead(204, { "Access-Control-Allow-Origin": "*" });
+                response.writeHead(200, { "Access-Control-Allow-Origin": "*" });
+                response.write("{}");
                 response.end();
             }
         });

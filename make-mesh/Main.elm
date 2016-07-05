@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Json.Decode as Decode
 import Task exposing (Task)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -62,11 +63,11 @@ view model =
         , p []
             [ input
                 [ type' "checkbox"
-                , checked model.generateModel
-                , onCheck ModelChecked
+                , checked model.generateMesh
+                , onCheck MeshChecked
                 ]
                 []
-            , text "Model (.json)"
+            , text "Mesh"
             ]
         , p []
             [ input
@@ -75,7 +76,7 @@ view model =
                 , onCheck BoundsChecked
                 ]
                 []
-            , text "OBBTree (.box)"
+            , text "OBBTree"
             ]
         , button [ onClick Submit ] [ text "Generate outputs" ]
         , logView model.log
@@ -97,42 +98,90 @@ update action model =
         RenameOutput newName ->
             { model | outputPrefix = newName } ! []
 
-        ModelChecked isChecked ->
-            { model | generateModel = isChecked } ! []
+        MeshChecked isChecked ->
+            { model | generateMesh = isChecked } ! []
 
         BoundsChecked isChecked ->
             { model | generateBounds = isChecked } ! []
 
         Submit ->
-            runGenerator model
+            loadFile { model | log = "..." :: model.log }
 
-        ReadError e ->
-            logError e model ! []
+        HttpError e ->
+            logError e model
 
-        ReadSuccess e ->
-            log "We got a response." model ! []
+        ReadSuccess obj ->
+            if model.generateMesh then
+                generateMesh model
+            else
+                do MeshSuccess model
+
+        MeshSuccess ->
+            if model.generateBounds then
+                generateBounds model
+            else
+                do BoundsSuccess model
+
+        BoundsSuccess ->
+            log "All finished." model
 
 
-runGenerator : Model -> ( Model, Cmd Action )
-runGenerator model =
+do : Action -> Model -> ( Model, Cmd Action )
+do action model =
+    ( model, Task.perform never identity (Task.succeed action) )
+
+
+never : Never -> a
+never _ =
+    Debug.crash "unreachable"
+
+
+loadFile : Model -> ( Model, Cmd Action )
+loadFile model =
     if model.inputName == "" || model.outputPrefix == "" then
-        ( log "You need to fill out the form." model, Cmd.none )
-    else if not (model.generateModel || model.generateBounds) then
-        ( log "You need to check at least one of the boxes." model, Cmd.none )
+        log "You need to fill out the form." model
+    else if not (model.generateMesh || model.generateBounds) then
+        log "You need to check at least one of the boxes." model
     else
-        ( log ("Loading " ++ model.inputName) model
-        , loadFile model.inputName
-        )
+        logCmd ("Loading " ++ model.inputName)
+            ((host ++ model.inputName)
+                |> Http.getString
+                |> Task.perform HttpError ReadSuccess
+            )
+            model
 
 
-loadFile : String -> Cmd Action
-loadFile =
-    (++) "http://localhost:8090/"
-        >> Http.getString
-        >> Task.perform ReadError ReadSuccess
+generateMesh : Model -> ( Model, Cmd Action )
+generateMesh model =
+    let
+        outputName =
+            model.outputPrefix ++ ".json"
+    in
+        logCmd ("Writing " ++ outputName)
+            ("dummy text"
+                |> Http.string
+                |> Http.post (Decode.succeed ()) (host ++ outputName)
+                |> Task.perform HttpError (always MeshSuccess)
+            )
+            model
 
 
-logError : Http.Error -> Model -> Model
+generateBounds : Model -> ( Model, Cmd Action )
+generateBounds model =
+    let
+        outputName =
+            model.outputPrefix ++ ".box"
+    in
+        logCmd ("Writing " ++ outputName)
+            ("dummy text"
+                |> Http.string
+                |> Http.post (Decode.succeed ()) (host ++ outputName)
+                |> Task.perform HttpError (always BoundsSuccess)
+            )
+            model
+
+
+logError : Http.Error -> Model -> ( Model, Cmd a )
 logError error =
     case error of
         Http.Timeout ->
@@ -146,37 +195,47 @@ logError error =
                 _ =
                     Debug.log "Unexpected Payload" payload
             in
-                log "I couldn't decode the server response. Check the console to see the payload."
+                log "I couldn't decode the server response. See console."
 
         Http.BadResponse code message ->
             if code == 404 then
                 log "The file you are trying to read doesn't exist."
             else if code == 500 then
-                log "The file you are trying to save already exists. I won't overwrite it."
+                log "The file you are trying to write already exists. I won't overwrite it."
             else
                 log (toString code ++ ": " ++ message)
 
 
-log : String -> Model -> Model
+log : String -> Model -> ( Model, Cmd a )
 log msg model =
-    { model | log = msg :: model.log }
+    logCmd msg Cmd.none model
+
+
+logCmd : String -> Cmd a -> Model -> ( Model, Cmd a )
+logCmd msg cmd model =
+    ( { model | log = msg :: model.log }, cmd )
 
 
 init : ( Model, Cmd a )
 init =
     { inputName = "cage.mtl"
     , outputPrefix = ""
-    , generateModel = False
+    , generateMesh = False
     , generateBounds = False
     , log = [ "Everything is fine." ]
     }
         ! []
 
 
+host : String
+host =
+    "http://localhost:8090/"
+
+
 type alias Model =
     { inputName : String
     , outputPrefix : String
-    , generateModel : Bool
+    , generateMesh : Bool
     , generateBounds : Bool
     , log : List String
     }
@@ -185,8 +244,10 @@ type alias Model =
 type Action
     = RenameInput String
     | RenameOutput String
-    | ModelChecked Bool
+    | MeshChecked Bool
     | BoundsChecked Bool
     | Submit
-    | ReadError Http.Error
+    | HttpError Http.Error
     | ReadSuccess String
+    | BoundsSuccess
+    | MeshSuccess
