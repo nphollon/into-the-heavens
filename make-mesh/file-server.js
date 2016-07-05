@@ -30,10 +30,10 @@ var writeFile = function (request, response) {
             if (error) {
                 console.log("Failed to write file " + filename);
                 console.log(error);
-                response.writeHead(500);
+                response.writeHead(500, { "Access-Control-Allow-Origin": "*" });
                 response.end();
             } else {
-                response.writeHead(204);
+                response.writeHead(204, { "Access-Control-Allow-Origin": "*" });
                 response.end();
             }
         });
@@ -46,10 +46,10 @@ var readFile = function (request, response) {
         if (error) {
             console.log("Failed to read file " + filename);
             console.log(error);
-            response.writeHead(404);
+            response.writeHead(404, { "Access-Control-Allow-Origin": "*" });
             response.end();
         } else {
-            response.writeHead(200);
+            response.writeHead(200, { "Access-Control-Allow-Origin": "*" });
             response.write(text);
             response.end();
         }

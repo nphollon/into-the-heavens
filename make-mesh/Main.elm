@@ -5,6 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.App
+import Http
 
 
 {-
@@ -87,7 +88,7 @@ logView =
         >> div []
 
 
-update : Action -> Model -> ( Model, Cmd a )
+update : Action -> Model -> ( Model, Cmd Action )
 update action model =
     case action of
         RenameInput newName ->
@@ -103,13 +104,60 @@ update action model =
             { model | generateBounds = isChecked } ! []
 
         Submit ->
-            { model | log = "What were you expecting to happen?" :: model.log } ! []
+            ( log ("Loading " ++ model.inputName) model
+            , loadFile model.inputName
+            )
+
+        ReadError e ->
+            logError e model ! []
+
+        ReadSuccess e ->
+            log "We got a response." model ! []
+
+
+loadFile : String -> Cmd Action
+loadFile filename =
+    let
+        url =
+            "http://localhost:8090/" ++ filename
+    in
+        Task.perform ReadError ReadSuccess (Http.getString url)
+
+
+logError : Http.Error -> Model -> Model
+logError error =
+    case error of
+        Http.Timeout ->
+            log "The response took too long."
+
+        Http.NetworkError ->
+            log "There was no response."
+
+        Http.UnexpectedPayload payload ->
+            let
+                _ =
+                    Debug.log "Unexpected Payload" payload
+            in
+                log "I couldn't decode the server response. Check the console to see the payload."
+
+        Http.BadResponse code message ->
+            if code == 404 then
+                log "The file you are trying to read doesn't exist."
+            else if code == 500 then
+                log "The file you are trying to save already exists. I won't overwrite it."
+            else
+                log (toString code ++ ": " ++ message)
+
+
+log : String -> Model -> Model
+log msg model =
+    { model | log = msg :: model.log }
 
 
 init : ( Model, Cmd a )
 init =
-    { inputName = "daffodil.obj"
-    , outputPrefix = "officer_tiger"
+    { inputName = "cage.mtl"
+    , outputPrefix = ""
     , generateModel = False
     , generateBounds = False
     , log = [ "Everything is fine." ]
@@ -132,3 +180,5 @@ type Action
     | ModelChecked Bool
     | BoundsChecked Bool
     | Submit
+    | ReadError Http.Error
+    | ReadSuccess String
