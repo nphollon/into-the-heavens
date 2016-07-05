@@ -1,215 +1,148 @@
-module Generate.Json (encodeMesh, encodeModel, encodeBoundingBox, Vertex, ModelData) where
+module Generate.Json exposing (encodeMesh, encodeModel, encodeBoundingBox, Vertex, ModelData)
 
 import Array exposing (Array)
 import String
 import Json.Encode as Json
 import Maybe.Extra as MaybeX
+import Collision exposing (Bounds)
 import Math.Vector as Vector exposing (Vector)
 import Math.Vector4 as Vec4 exposing (Vec4)
-import Math.Hull as Hull
 import Math.Face as Face exposing (Face)
-import Math.BoundingBox as BoundingBox exposing (BoundingBox)
 import Math.Transform as Transform
-import Math.Tree as Tree exposing (Tree(..))
 import WebGL exposing (Drawable(..))
 
 
-encodeBoundingBox : Int -> ModelData -> String
-encodeBoundingBox level data =
-  boxFromData level data
-    |> Tree.encode BoundingBox.encode
-    |> Json.encode 0
+encodeBoundingBox : ModelData -> String
+encodeBoundingBox data =
+    boxFromData data
+        |> Maybe.map (Collision.encode >> Json.encode 0)
+        |> Maybe.withDefault ""
 
 
 encodeModel : ModelData -> String
 encodeModel data =
-  toFaces data
-    |> List.map toVertexTriangle
-    |> Triangle
-    |> encodeMesh
+    toFaces data
+        |> List.map toVertexTriangle
+        |> Triangle
+        |> encodeMesh
 
 
 encodeMesh : Drawable Vertex -> String
 encodeMesh mesh =
-  let
-    json =
-      case mesh of
-        Triangle triangles ->
-          Json.object
-            [ ( "primitive", Json.string "Triangle" )
-            , ( "attributes", encodeList encodeTriple triangles )
-            ]
+    let
+        json =
+            case mesh of
+                Triangle triangles ->
+                    Json.object
+                        [ ( "primitive", Json.string "Triangle" )
+                        , ( "attributes", encodeList encodeTriple triangles )
+                        ]
 
-        Points points ->
-          Json.object
-            [ ( "primitive", Json.string "Points" )
-            , ( "attributes", encodeList encodeAttribute points )
-            ]
+                Points points ->
+                    Json.object
+                        [ ( "primitive", Json.string "Points" )
+                        , ( "attributes", encodeList encodeAttribute points )
+                        ]
 
-        _ ->
-          Json.null
-  in
-    Json.encode 0 json
+                _ ->
+                    Json.null
+    in
+        Json.encode 0 json
 
 
 encodeTriple : ( Vertex, Vertex, Vertex ) -> Json.Value
 encodeTriple ( a, b, c ) =
-  encodeList encodeAttribute [ a, b, c ]
+    encodeList encodeAttribute [ a, b, c ]
 
 
 encodeVector : Vector -> Json.Value
 encodeVector a =
-  encodeFloatList a [ Vector.getX, Vector.getY, Vector.getZ ]
+    encodeFloatList a [ Vector.getX, Vector.getY, Vector.getZ ]
 
 
 encodeVec4 : Vec4 -> Json.Value
 encodeVec4 a =
-  encodeFloatList a [ Vec4.getX, Vec4.getY, Vec4.getZ, Vec4.getW ]
+    encodeFloatList a [ Vec4.getX, Vec4.getY, Vec4.getZ, Vec4.getW ]
 
 
 encodeFloatList : a -> List (a -> Float) -> Json.Value
 encodeFloatList a =
-  encodeList (\i -> Json.float (i a))
+    encodeList (\i -> Json.float (i a))
 
 
 encodeList : (a -> Json.Value) -> List a -> Json.Value
 encodeList f =
-  List.map f >> Json.list
+    List.map f >> Json.list
 
 
 encodeAttribute : Vertex -> Json.Value
 encodeAttribute att =
-  Json.object
-    [ ( "position", encodeVector att.position )
-    , ( "color", encodeVec4 att.color )
-    , ( "normal", encodeVector att.normal )
-    ]
+    Json.object
+        [ ( "position", encodeVector att.position )
+        , ( "color", encodeVec4 att.color )
+        , ( "normal", encodeVector att.normal )
+        ]
 
 
 type alias Vertex =
-  { position : Vector
-  , color : Vec4
-  , normal : Vector
-  }
+    { position : Vector
+    , color : Vec4
+    , normal : Vector
+    }
 
 
 type alias ModelData =
-  { vertexPositions : Array Vector
-  , vertexIndexes : List (List Int)
-  }
+    { vertexPositions : Array Vector
+    , vertexIndexes : List (List Int)
+    }
 
 
 flatFace : ModelData -> Drawable Vertex
 flatFace data =
-  toFaces data
-    |> List.map toVertexTriangle
-    |> Triangle
+    toFaces data
+        |> List.map toVertexTriangle
+        |> Triangle
 
 
-convexHull : ModelData -> Drawable Vertex
-convexHull data =
-  Array.toList data.vertexPositions
-    |> Hull.hull
-    |> List.map toVertexTriangle
-    |> Triangle
-
-
-drawBoundingBoxes : Int -> ModelData -> Drawable Vertex
-drawBoundingBoxes level data =
-  boxFromData level data
-    |> Tree.leaves
-    |> List.concatMap boundingBox
-    |> List.map toVertexTriangle
-    |> Triangle
-
-
-boxFromData : Int -> ModelData -> Tree BoundingBox
-boxFromData level data =
-  BoundingBox.create level (toFaces data)
-
-
-boundingBox : BoundingBox -> List Face
-boundingBox box =
-  let
-    corner x y z =
-      Vector.vector (x * box.a) (y * box.b) (z * box.c)
-        |> flip Transform.fromBodyFrame box
-
-    une =
-      corner 1 1 1
-
-    unw =
-      corner -1 1 1
-
-    use =
-      corner 1 -1 1
-
-    usw =
-      corner -1 -1 1
-
-    lne =
-      corner 1 1 -1
-
-    lnw =
-      corner -1 1 -1
-
-    lse =
-      corner 1 -1 -1
-
-    lsw =
-      corner -1 -1 -1
-  in
-    [ Face.face une unw usw
-    , Face.face usw use une
-    , Face.face lne lse lsw
-    , Face.face lsw lnw lne
-    , Face.face une lne lnw
-    , Face.face lnw unw une
-    , Face.face use usw lsw
-    , Face.face lsw lse use
-    , Face.face une use lse
-    , Face.face lse lne une
-    , Face.face unw lnw lsw
-    , Face.face lsw usw unw
-    ]
+boxFromData : ModelData -> Maybe Bounds
+boxFromData data =
+    Collision.create (toFaces data)
 
 
 toFaces : ModelData -> List Face
 toFaces { vertexPositions, vertexIndexes } =
-  let
-    lookup =
-      MaybeX.traverse (flip Array.get vertexPositions)
+    let
+        lookup =
+            MaybeX.traverse (flip Array.get vertexPositions)
 
-    decomposePolygon points =
-      case points of
-        i :: (j :: (k :: list)) ->
-          List.map2
-            (Face.face i)
-            (j :: k :: list)
-            (k :: list)
+        decomposePolygon points =
+            case points of
+                i :: (j :: (k :: list)) ->
+                    List.map2 (Face.face i)
+                        (j :: k :: list)
+                        (k :: list)
 
-        otherwise ->
-          []
-  in
-    List.filterMap lookup vertexIndexes
-      |> List.concatMap decomposePolygon
+                otherwise ->
+                    []
+    in
+        List.filterMap lookup vertexIndexes
+            |> List.concatMap decomposePolygon
 
 
 toVertexTriangle : Face -> ( Vertex, Vertex, Vertex )
 toVertexTriangle face =
-  let
-    normal =
-      Vector.normalize (Face.cross face)
-  in
-    (,,)
-      (toVertex face.p normal)
-      (toVertex face.q normal)
-      (toVertex face.r normal)
+    let
+        normal =
+            Vector.normalize (Face.cross face)
+    in
+        (,,) (toVertex face.p normal)
+            (toVertex face.q normal)
+            (toVertex face.r normal)
 
 
 toVertex : Vector -> Vector -> Vertex
 toVertex position normal =
-  { color = Vec4.vec4 1 1 1 1
-  , position = position
-  , normal = normal
-  }
+    { color = Vec4.vec4 1 1 1 1
+    , position = position
+    , normal = normal
+    }

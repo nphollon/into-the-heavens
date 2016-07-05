@@ -1,6 +1,8 @@
 var http = require('http');
 var fs = require('fs');
 
+var port = 8090;
+
 var server = http.createServer(function (request, response) {
     if (request.method === 'POST') {
         var body = [];
@@ -28,4 +30,10 @@ var server = http.createServer(function (request, response) {
         response.writeHead(404);
         response.end();
     }
-}).listen(8090);
+}).listen(port, function (error) {
+    if (error) {
+        console.log(error);
+    } else {
+        console.log("Listening on port " + port.toString());
+    }
+});

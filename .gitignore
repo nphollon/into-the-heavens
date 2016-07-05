@@ -11,3 +11,4 @@ temp/
 public_html/data/*
 *.mtl
 node_modules
+/make-mesh/make-mesh.html

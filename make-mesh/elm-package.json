@@ -8,12 +8,14 @@
     ],
     "exposed-modules": [],
     "dependencies": {
-        "circuithub/elm-maybe-extra": "1.6.0 <= v < 2.0.0",
-        "elm-community/elm-linear-algebra": "1.0.1 <= v < 2.0.0",
-        "elm-community/elm-webgl": "1.0.0 <= v < 2.0.0",
-        "elm-lang/core": "3.0.0 <= v < 4.0.0",
-        "mgold/elm-random-pcg": "1.1.0 <= v < 2.0.0"
+        "elm-community/elm-linear-algebra": "2.0.2 <= v < 3.0.0",
+        "elm-community/elm-webgl": "3.0.2 <= v < 4.0.0",
+        "elm-community/maybe-extra": "1.1.0 <= v < 2.0.0",
+        "elm-lang/core": "4.0.1 <= v < 5.0.0",
+        "elm-lang/html": "1.1.0 <= v < 2.0.0",
+        "evancz/elm-http": "3.0.1 <= v < 4.0.0",
+        "mgold/elm-random-pcg": "2.1.1 <= v < 3.0.0",
+        "nphollon/collision": "1.0.1 <= v < 2.0.0"
     },
-    "native-modules": true,
-    "elm-version": "0.16.0 <= v < 0.17.0"
+    "elm-version": "0.17.0 <= v < 0.18.0"
 }

@@ -1,7 +1,8 @@
-module Main (..) where
+module Main exposing (..)
 
 import Task exposing (Task)
-import Console exposing (IO, (>>>))
+import Html
+import Html.App
 import WebGL exposing (Drawable)
 import Generate.Json as Json exposing (..)
 import Generate.Sphere as Sphere
@@ -17,37 +18,33 @@ import Generate.Cage as Cage
 import Generate.OrthoVertex as OrthoVertex
 
 
-writeModels : IO ()
-writeModels =
-  List.foldl
-    (\x io -> io >>> (uncurry write x))
-    (Console.pure ())
-    [ ( encodeMesh Cluster.mesh, "background.json" )
-    , ( encodeMesh Explosion.mesh, "explosion.json" )
-    , ( encodeModel Sphere.model, "sphere.json" )
-    , ( encodeModel Ship.model, "ship.json" )
-    , ( encodeModel Missile.model, "missile.json" )
-    , ( encodeModel Column.model, "column.json" )
-    , ( encodeModel Donut.model, "donut.json" )
-    , ( encodeModel Cage.model, "cage.json" )
-    , ( encodeModel OrthoVertex.model, "ortho-vertex.json" )
-    , ( encodeBoundingBox 11 Donut.model, "donut.box" )
-    , ( encodeBoundingBox 1 Ship.model, "ship.box" )
-    , ( encodeBoundingBox 11 SimpleSphere.model, "sphere.box" )
-    , ( encodeBoundingBox 0 Cage.model, "cage.box" )
-    , ( encodeBoundingBox 7 SimpleColumn.model, "column.box" )
-    , ( encodeBoundingBox 2 OrthoVertex.model, "ortho-vertex.box" )
-    ]
+{-
+   models : List ( String, String )
+   models =
+       [ ( encodeMesh Cluster.mesh, "background.json" )
+       , ( encodeMesh Explosion.mesh, "explosion.json" )
+       , ( encodeModel Sphere.model, "sphere.json" )
+       , ( encodeModel Ship.model, "ship.json" )
+       , ( encodeModel Missile.model, "missile.json" )
+       , ( encodeModel Column.model, "column.json" )
+       , ( encodeModel Donut.model, "donut.json" )
+       , ( encodeModel Cage.model, "cage.json" )
+       , ( encodeModel OrthoVertex.model, "ortho-vertex.json" )
+       , ( encodeBoundingBox Donut.model, "donut.box" )
+       , ( encodeBoundingBox Ship.model, "ship.box" )
+       , ( encodeBoundingBox SimpleSphere.model, "sphere.box" )
+       , ( encodeBoundingBox Cage.model, "cage.box" )
+       , ( encodeBoundingBox SimpleColumn.model, "column.box" )
+       , ( encodeBoundingBox OrthoVertex.model, "ortho-vertex.box" )
+       ]
+-}
 
 
-write : String -> String -> IO ()
-write content filename =
-  Console.writeFile
-    { file = "../public_html/data/" ++ filename
-    , content = content
-    }
-
-
-port runner : Signal (Task x ())
-port runner =
-  Console.run writeModels
+main : Program Never
+main =
+    Html.App.program
+        { init = ( Nothing, Cmd.none )
+        , update = \_ _ -> Nothing ! []
+        , subscriptions = \_ -> Sub.none
+        , view = \_ -> Html.text "Hello"
+        }
