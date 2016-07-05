@@ -104,9 +104,7 @@ update action model =
             { model | generateBounds = isChecked } ! []
 
         Submit ->
-            ( log ("Loading " ++ model.inputName) model
-            , loadFile model.inputName
-            )
+            runGenerator model
 
         ReadError e ->
             logError e model ! []
@@ -115,13 +113,23 @@ update action model =
             log "We got a response." model ! []
 
 
+runGenerator : Model -> ( Model, Cmd Action )
+runGenerator model =
+    if model.inputName == "" || model.outputPrefix == "" then
+        ( log "You need to fill out the form." model, Cmd.none )
+    else if not (model.generateModel || model.generateBounds) then
+        ( log "You need to check at least one of the boxes." model, Cmd.none )
+    else
+        ( log ("Loading " ++ model.inputName) model
+        , loadFile model.inputName
+        )
+
+
 loadFile : String -> Cmd Action
-loadFile filename =
-    let
-        url =
-            "http://localhost:8090/" ++ filename
-    in
-        Task.perform ReadError ReadSuccess (Http.getString url)
+loadFile =
+    (++) "http://localhost:8090/"
+        >> Http.getString
+        >> Task.perform ReadError ReadSuccess
 
 
 logError : Http.Error -> Model -> Model
