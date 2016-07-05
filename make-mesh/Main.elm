@@ -1,21 +1,10 @@
 module Main exposing (..)
 
 import Task exposing (Task)
-import Html
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Html.App
-import WebGL exposing (Drawable)
-import Generate.Json as Json exposing (..)
-import Generate.Sphere as Sphere
-import Generate.SimpleSphere as SimpleSphere
-import Generate.Cluster as Cluster
-import Generate.Ship as Ship
-import Generate.Missile as Missile
-import Generate.Explosion as Explosion
-import Generate.Column as Column
-import Generate.SimpleColumn as SimpleColumn
-import Generate.Donut as Donut
-import Generate.Cage as Cage
-import Generate.OrthoVertex as OrthoVertex
 
 
 {-
@@ -43,8 +32,103 @@ import Generate.OrthoVertex as OrthoVertex
 main : Program Never
 main =
     Html.App.program
-        { init = ( Nothing, Cmd.none )
-        , update = \_ _ -> Nothing ! []
+        { init = init
+        , update = update
         , subscriptions = \_ -> Sub.none
-        , view = \_ -> Html.text "Hello"
+        , view = view
         }
+
+
+view : Model -> Html Action
+view model =
+    div []
+        [ p []
+            [ text "OBJ file: "
+            , input
+                [ value model.inputName
+                , onInput RenameInput
+                ]
+                []
+            ]
+        , p []
+            [ text "Output prefix: "
+            , input
+                [ value model.outputPrefix
+                , onInput RenameOutput
+                ]
+                []
+            ]
+        , p []
+            [ input
+                [ type' "checkbox"
+                , checked model.generateModel
+                , onCheck ModelChecked
+                ]
+                []
+            , text "Model (.json)"
+            ]
+        , p []
+            [ input
+                [ type' "checkbox"
+                , checked model.generateBounds
+                , onCheck BoundsChecked
+                ]
+                []
+            , text "OBBTree (.box)"
+            ]
+        , button [ onClick Submit ] [ text "Generate outputs" ]
+        , logView model.log
+        ]
+
+
+logView : List String -> Html a
+logView =
+    List.map (\msg -> p [] [ em [] [ text msg ] ])
+        >> div []
+
+
+update : Action -> Model -> ( Model, Cmd a )
+update action model =
+    case action of
+        RenameInput newName ->
+            { model | inputName = newName } ! []
+
+        RenameOutput newName ->
+            { model | outputPrefix = newName } ! []
+
+        ModelChecked isChecked ->
+            { model | generateModel = isChecked } ! []
+
+        BoundsChecked isChecked ->
+            { model | generateBounds = isChecked } ! []
+
+        Submit ->
+            { model | log = "What were you expecting to happen?" :: model.log } ! []
+
+
+init : ( Model, Cmd a )
+init =
+    { inputName = "daffodil.obj"
+    , outputPrefix = "officer_tiger"
+    , generateModel = False
+    , generateBounds = False
+    , log = [ "Everything is fine." ]
+    }
+        ! []
+
+
+type alias Model =
+    { inputName : String
+    , outputPrefix : String
+    , generateModel : Bool
+    , generateBounds : Bool
+    , log : List String
+    }
+
+
+type Action
+    = RenameInput String
+    | RenameOutput String
+    | ModelChecked Bool
+    | BoundsChecked Bool
+    | Submit
