@@ -221,7 +221,7 @@ logCmd msg cmd model =
 
 init : ( Model, Cmd a )
 init =
-    { inputName = "cage.mtl"
+    { inputName = "ortho-vertex.obj"
     , outputPrefix = ""
     , generateMesh = False
     , generateBounds = False
