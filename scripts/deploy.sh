@@ -8,10 +8,10 @@ main_elm="src/Main.elm"
 elm_make="elm-make"
 
 function compile {
-    test/run.sh;
+    scripts/test.sh;
     if [ $? -ne 0 ]; then exit 1; fi;
 
-    make-mesh/make-mesh.sh;
+    scripts/make-mesh.sh;
     if [ $? -ne 0 ]; then exit 1; fi;
 
     echo; echo;
@@ -31,12 +31,12 @@ function compile {
 
 if [ $# -lt 1 ];
 then
-    echo "Usage: $0 [test|prod]";
+    echo "Usage: $0 [local|prod]";
 elif [ $1 == "prod" ];
 then
     compile "https:\/\/intotheheavens\.net";
     scp -r public_html intotheh@intotheheavens.net:.
-elif [ $1 == "test" ];
+elif [ $1 == "local" ];
 then
     compile "http:\/\/localhost:8080\/~vagrant";
 else
