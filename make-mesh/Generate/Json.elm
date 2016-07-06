@@ -1,4 +1,4 @@
-module Generate.Json exposing (encodeMesh, encodeModel, encodeBoundingBox, Vertex, ModelData)
+module Generate.Json exposing (encodeMesh, encodeModel, encodeBounds, Vertex)
 
 import Array exposing (Array)
 import String
@@ -10,16 +10,24 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Face as Face exposing (Face)
 import Math.Transform as Transform
 import WebGL exposing (Drawable(..))
+import ObjParser exposing (MeshData)
 
 
-encodeBoundingBox : ModelData -> String
-encodeBoundingBox data =
+type alias Vertex =
+    { position : Vector
+    , color : Vec4
+    , normal : Vector
+    }
+
+
+encodeBounds : MeshData -> String
+encodeBounds data =
     boxFromData data
         |> Maybe.map (Collision.encode >> Json.encode 0)
         |> Maybe.withDefault ""
 
 
-encodeModel : ModelData -> String
+encodeModel : MeshData -> String
 encodeModel data =
     toFaces data
         |> List.map toVertexTriangle
@@ -84,32 +92,19 @@ encodeAttribute att =
         ]
 
 
-type alias Vertex =
-    { position : Vector
-    , color : Vec4
-    , normal : Vector
-    }
-
-
-type alias ModelData =
-    { vertexPositions : Array Vector
-    , vertexIndexes : List (List Int)
-    }
-
-
-flatFace : ModelData -> Drawable Vertex
+flatFace : MeshData -> Drawable Vertex
 flatFace data =
     toFaces data
         |> List.map toVertexTriangle
         |> Triangle
 
 
-boxFromData : ModelData -> Maybe Bounds
+boxFromData : MeshData -> Maybe Bounds
 boxFromData data =
     Collision.create (toFaces data)
 
 
-toFaces : ModelData -> List Face
+toFaces : MeshData -> List Face
 toFaces { vertexPositions, vertexIndexes } =
     let
         lookup =

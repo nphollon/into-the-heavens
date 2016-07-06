@@ -7,6 +7,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.App
 import Http
+import Generate.Json as Json
+import Generate.Explosion as Explosion
+import ObjParser exposing (MeshData)
 
 
 {-
@@ -111,16 +114,10 @@ update action model =
             logError e model
 
         ReadSuccess obj ->
-            if model.generateMesh then
-                generateMesh model
-            else
-                do MeshSuccess model
+            generateMesh { model | data = ObjParser.parse obj }
 
         MeshSuccess ->
-            if model.generateBounds then
-                generateBounds model
-            else
-                do BoundsSuccess model
+            generateBounds model
 
         BoundsSuccess ->
             log "All finished." model
@@ -153,32 +150,38 @@ loadFile model =
 
 generateMesh : Model -> ( Model, Cmd Action )
 generateMesh model =
-    let
-        outputName =
-            model.outputPrefix ++ ".json"
-    in
-        logCmd ("Writing " ++ outputName)
-            ("dummy text"
-                |> Http.string
-                |> Http.post (Decode.succeed ()) (host ++ outputName)
-                |> Task.perform HttpError (always MeshSuccess)
-            )
-            model
+    if model.generateMesh then
+        writeFile ".json" Json.encodeModel MeshSuccess model
+    else
+        do MeshSuccess model
 
 
 generateBounds : Model -> ( Model, Cmd Action )
 generateBounds model =
+    if model.generateBounds then
+        writeFile ".box" Json.encodeBounds BoundsSuccess model
+    else
+        do BoundsSuccess model
+
+
+writeFile : String -> (MeshData -> String) -> Action -> Model -> ( Model, Cmd Action )
+writeFile extension encode onSuccess model =
     let
         outputName =
-            model.outputPrefix ++ ".box"
+            model.outputPrefix ++ extension
     in
-        logCmd ("Writing " ++ outputName)
-            ("dummy text"
-                |> Http.string
-                |> Http.post (Decode.succeed ()) (host ++ outputName)
-                |> Task.perform HttpError (always BoundsSuccess)
-            )
-            model
+        case model.data of
+            Nothing ->
+                log "I can't parse the OBJ file." model
+
+            Just data ->
+                logCmd ("writing " ++ outputName)
+                    (encode data
+                        |> Http.string
+                        |> Http.post (Decode.succeed ()) (host ++ outputName)
+                        |> Task.perform HttpError (always onSuccess)
+                    )
+                    model
 
 
 logError : Http.Error -> Model -> ( Model, Cmd a )
@@ -223,6 +226,7 @@ init =
     , generateMesh = False
     , generateBounds = False
     , log = [ "Everything is fine." ]
+    , data = Nothing
     }
         ! []
 
@@ -238,6 +242,7 @@ type alias Model =
     , generateMesh : Bool
     , generateBounds : Bool
     , log : List String
+    , data : Maybe MeshData
     }
 
 
