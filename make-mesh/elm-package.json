@@ -1,10 +1,10 @@
 {
     "version": "1.0.0",
-    "summary": "tests for ITH",
+    "summary": "Mesh & bounding box builder for ITH",
     "repository": "https://github.com/nphollon/into-the-heavens.git",
     "license": "GPLv3",
     "source-directories": [
-        "."
+        "src"
     ],
     "exposed-modules": [],
     "dependencies": {

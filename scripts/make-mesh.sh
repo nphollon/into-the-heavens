@@ -1,4 +1,4 @@
 #/usr/bin/env bash
 
 cd make-mesh
-elm make Main.elm --yes --output "../public_html/make-mesh.html"
+elm make src/Main.elm --yes --output "../public_html/make-mesh.html"
