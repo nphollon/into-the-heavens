@@ -171,10 +171,10 @@ writeFile extension encode onSuccess model =
             model.outputPrefix ++ extension
     in
         case model.data of
-            Nothing ->
-                log "I can't parse the OBJ file." model
+            Err error ->
+                log ("I can't parse the OBJ file: " ++ error) model
 
-            Just data ->
+            Ok data ->
                 logCmd ("writing " ++ outputName)
                     (encode data
                         |> Http.string
@@ -222,11 +222,11 @@ logCmd msg cmd model =
 init : ( Model, Cmd a )
 init =
     { inputName = "ortho-vertex.obj"
-    , outputPrefix = ""
+    , outputPrefix = "a"
     , generateMesh = False
-    , generateBounds = False
+    , generateBounds = True
     , log = [ "Everything is fine." ]
-    , data = Nothing
+    , data = Err "No file loaded yet."
     }
         ! []
 
@@ -242,7 +242,7 @@ type alias Model =
     , generateMesh : Bool
     , generateBounds : Bool
     , log : List String
-    , data : Maybe MeshData
+    , data : Result String MeshData
     }
 
 

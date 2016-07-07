@@ -11,40 +11,83 @@ type alias MeshData =
     }
 
 
-parse : String -> Maybe MeshData
+parse : String -> Result String MeshData
 parse obj =
-    let
-        ( vertexLines, faceLines ) =
-            List.foldl
-                (\line ( vs, fs ) ->
-                    if String.startsWith "v" line then
-                        ( line :: vs, fs )
-                    else if String.startsWith "f" line then
-                        ( vs, line :: fs )
-                    else
-                        ( vs, fs )
-                )
-                ( [], [] )
-                (String.lines obj)
-    in
-        if vertexLines == [] || faceLines == [] then
-            Nothing
-        else
-            Just
+    case sortAllLines obj of
+        ( Err x, _ ) ->
+            Err x
+
+        ( _, Err x ) ->
+            Err x
+
+        ( Ok [], _ ) ->
+            Err "no lines that look like vertexes"
+
+        ( _, Ok [] ) ->
+            Err "no lines that look like faces"
+
+        ( Ok vertexPositions, Ok vertexIndexes ) ->
+            Ok
                 { vertexPositions =
-                    vertexLines
-                        |> List.map parseVertexLine
-                        |> (::) (Vector.vector 0 0 0)
-                        |> Array.fromList
-                , vertexIndexes = List.map parseFaceLine faceLines
+                    Array.fromList (Vector 0 0 0 :: vertexPositions)
+                , vertexIndexes =
+                    vertexIndexes
                 }
 
 
-parseVertexLine : String -> Vector
-parseVertexLine line =
-    Vector.vector 0 0 0
+type alias FoldResult =
+    ( Result String (List Vector), Result String (List (List Int)) )
 
 
-parseFaceLine : String -> List Int
-parseFaceLine line =
-    [ 1, 1, 1 ]
+sortAllLines : String -> FoldResult
+sortAllLines =
+    String.lines >> List.foldr sortLine ( Ok [], Ok [] )
+
+
+sortLine : String -> FoldResult -> FoldResult
+sortLine line ( vResult, fResult ) =
+    if String.startsWith "v" line then
+        ( pushResult parseVertex line vResult, fResult )
+    else if String.startsWith "f" line then
+        ( vResult, pushResult parseFace line fResult )
+    else
+        ( vResult, fResult )
+
+
+parseVertex : String -> Result String Vector
+parseVertex line =
+    case List.tail (String.split " " line) of
+        Nothing ->
+            Err "vertex line was empty!"
+
+        Just components ->
+            List.foldr (pushResult String.toFloat) (Ok []) components
+                `Result.andThen` vectorFromList
+
+
+vectorFromList : List Float -> Result String Vector
+vectorFromList components =
+    case components of
+        x :: y :: z :: [] ->
+            Ok (Vector x y z)
+
+        _ ->
+            [ "could not convert ", toString components, " to a vector" ]
+                |> String.concat
+                |> Err
+
+
+parseFace : String -> Result String (List Int)
+parseFace line =
+    case List.tail (String.split " " line) of
+        Nothing ->
+            Err "face line was empty!"
+
+        Just indexes ->
+            List.foldr (pushResult String.toInt) (Ok []) indexes
+
+
+pushResult : (a -> Result x b) -> a -> Result x (List b) -> Result x (List b)
+pushResult f x resultSoFar =
+    Result.andThen resultSoFar
+        (\ys -> Result.map (\y -> y :: ys) (f x))
