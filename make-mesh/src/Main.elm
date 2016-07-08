@@ -9,29 +9,8 @@ import Html.App
 import Http
 import Generate.Json as Json
 import Generate.Explosion as Explosion
+import Generate.Cluster as Cluster
 import ObjParser exposing (MeshData)
-
-
-{-
-   models : List ( String, String )
-   models =
-       [ ( encodeMesh Cluster.mesh, "background.json" )
-       , ( encodeMesh Explosion.mesh, "explosion.json" )
-       , ( encodeModel Sphere.model, "sphere.json" )
-       , ( encodeModel Ship.model, "ship.json" )
-       , ( encodeModel Missile.model, "missile.json" )
-       , ( encodeModel Column.model, "column.json" )
-       , ( encodeModel Donut.model, "donut.json" )
-       , ( encodeModel Cage.model, "cage.json" )
-       , ( encodeModel OrthoVertex.model, "ortho-vertex.json" )
-       , ( encodeBoundingBox Donut.model, "donut.box" )
-       , ( encodeBoundingBox Ship.model, "ship.box" )
-       , ( encodeBoundingBox SimpleSphere.model, "sphere.box" )
-       , ( encodeBoundingBox Cage.model, "cage.box" )
-       , ( encodeBoundingBox SimpleColumn.model, "column.box" )
-       , ( encodeBoundingBox OrthoVertex.model, "ortho-vertex.box" )
-       ]
--}
 
 
 main : Program Never
@@ -81,7 +60,9 @@ view model =
                 []
             , text "OBBTree"
             ]
-        , button [ onClick Submit ] [ text "Generate outputs" ]
+        , p [] [ button [ onClick Submit ] [ text "Generate outputs" ] ]
+        , p [] [ button [ onClick Presets ] [ text "Generate preset outputs" ] ]
+        , hr [] []
         , logView model.log
         ]
 
@@ -119,8 +100,11 @@ update action model =
         MeshSuccess ->
             generateBounds model
 
-        BoundsSuccess ->
+        FinalSuccess ->
             log "All finished." model
+
+        Presets ->
+            generatePresets { model | log = "..." :: model.log }
 
 
 do : Action -> Model -> ( Model, Cmd Action )
@@ -159,9 +143,9 @@ generateMesh model =
 generateBounds : Model -> ( Model, Cmd Action )
 generateBounds model =
     if model.generateBounds then
-        writeFile ".box" Json.encodeBounds BoundsSuccess model
+        writeFile ".box" Json.encodeBounds FinalSuccess model
     else
-        do BoundsSuccess model
+        do FinalSuccess model
 
 
 writeFile : String -> (MeshData -> String) -> Action -> Model -> ( Model, Cmd Action )
@@ -175,13 +159,30 @@ writeFile extension encode onSuccess model =
                 log ("I can't parse the OBJ file: " ++ error) model
 
             Ok data ->
-                logCmd ("writing " ++ outputName)
+                logCmd ("Writing " ++ outputName)
                     (encode data
-                        |> Http.string
-                        |> Http.post (Decode.succeed ()) (host ++ outputName)
+                        |> post outputName
                         |> Task.perform HttpError (always onSuccess)
                     )
                     model
+
+
+generatePresets : Model -> ( Model, Cmd Action )
+generatePresets model =
+    logCmd "Generating programmatically-defined models"
+        ([ post "background.json" (Json.encodeMesh Cluster.mesh)
+         , post "explosion.json" (Json.encodeMesh Explosion.mesh)
+         ]
+            |> Task.sequence
+            |> Task.perform HttpError (always FinalSuccess)
+        )
+        model
+
+
+post : String -> String -> Task Http.Error ()
+post outputName body =
+    Http.string body
+        |> Http.post (Decode.succeed ()) (host ++ outputName)
 
 
 logError : Http.Error -> Model -> ( Model, Cmd a )
@@ -221,9 +222,9 @@ logCmd msg cmd model =
 
 init : ( Model, Cmd a )
 init =
-    { inputName = "ortho-vertex.obj"
-    , outputPrefix = "a"
-    , generateMesh = False
+    { inputName = ""
+    , outputPrefix = ""
+    , generateMesh = True
     , generateBounds = True
     , log = [ "Everything is fine." ]
     , data = Err "No file loaded yet."
@@ -254,5 +255,6 @@ type Action
     | Submit
     | HttpError Http.Error
     | ReadSuccess String
-    | BoundsSuccess
+    | FinalSuccess
     | MeshSuccess
+    | Presets
