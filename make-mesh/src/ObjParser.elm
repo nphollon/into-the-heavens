@@ -60,6 +60,9 @@ parseVertex line =
         Nothing ->
             Err "vertex line was empty!"
 
+        Just [] ->
+            Err "vertex line was empty!"
+
         Just components ->
             List.foldr (pushResult String.toFloat) (Ok []) components
                 `Result.andThen` vectorFromList
@@ -81,6 +84,9 @@ parseFace : String -> Result String (List Int)
 parseFace line =
     case List.tail (String.split " " line) of
         Nothing ->
+            Err "face line was empty!"
+
+        Just [] ->
             Err "face line was empty!"
 
         Just indexes ->
