@@ -165,6 +165,7 @@ decorPlacement object camera =
     let
         direction =
             Vector.direction object.position camera.position
+                |> Maybe.withDefault (Vector.vector 0 0 0)
 
         position =
             Vector.scale 0.1 direction

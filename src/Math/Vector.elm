@@ -68,15 +68,15 @@ cross u v =
         ((getX u * getY v) - (getY u * getX v))
 
 
-normalize : Vector -> Vector
+normalize : Vector -> Maybe Vector
 normalize v =
     if length v == 0 then
-        v
+        Nothing
     else
-        scale (1 / length v) v
+        Just (scale (1 / length v) v)
 
 
-direction : Vector -> Vector -> Vector
+direction : Vector -> Vector -> Maybe Vector
 direction u v =
     normalize (u `sub` v)
 

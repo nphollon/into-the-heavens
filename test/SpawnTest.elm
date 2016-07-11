@@ -36,10 +36,10 @@ testSuite =
                     (.orientation (spawnAt north))
             , test "Going down when spawning from up"
                 <| assertEqualVector (Vector.vector 0 0 -1)
-                    (spawnAt up |> .velocity |> Vector.normalize)
+                    (velocityDirection (spawnAt up))
             , test "Going east when spawning from west"
                 <| assertEqualVector (Vector.vector 1 0 0)
-                    (spawnAt west |> .velocity |> Vector.normalize)
+                    (velocityDirection (spawnAt west))
             ]
 
 
@@ -53,3 +53,8 @@ spawnAt spawnPoint =
             Random.initialSeed 0
     in
         fst (Random.step generator seed)
+
+
+velocityDirection : Body -> Vector
+velocityDirection =
+    .velocity >> Vector.normalize >> Maybe.withDefault (Vector.vector 0 0 0)

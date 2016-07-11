@@ -50,8 +50,8 @@ degreesFromForward : Orientable a -> Vector -> Float
 degreesFromForward body point =
     toBodyFrame body point
         |> Vector.normalize
-        |> Vector.dot (Vector.vector 0 0 -1)
-        |> acos
+        |> Maybe.map (Vector.dot (Vector.vector 0 0 -1) >> acos)
+        |> Maybe.withDefault 0
 
 
 add : Orientable a -> Orientable b -> Orientable b

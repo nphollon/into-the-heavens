@@ -67,11 +67,13 @@ angle q =
 axis : Quaternion -> Vector
 axis q =
     Vector.normalize q.vector
+        |> Maybe.withDefault (Vector.vector 1 0 0)
 
 
 scale : Float -> Quaternion -> Quaternion
 scale n q =
     fromAxisAngle (axis q) (n * angle q)
+        |> Maybe.withDefault q
 
 
 rotateVector : Quaternion -> Vector -> Vector
@@ -100,19 +102,19 @@ fromVector v =
         angle =
             Vector.length v
     in
-        if angle == 0 then
-            { vector = v
-            , scalar = 1
-            }
-        else
-            fromAxisAngle v angle
+        fromAxisAngle v angle
+            |> Maybe.withDefault (quaternion 1 0 0 0)
 
 
-fromAxisAngle : Vector -> Float -> Quaternion
+fromAxisAngle : Vector -> Float -> Maybe Quaternion
 fromAxisAngle axis angle =
-    { vector = Vector.scale (sin (0.5 * angle)) (Vector.normalize axis)
-    , scalar = cos (0.5 * angle)
-    }
+    Vector.normalize axis
+        |> Maybe.map
+            (\vector ->
+                { scalar = cos (0.5 * angle)
+                , vector = Vector.scale (sin (0.5 * angle)) vector
+                }
+            )
 
 
 toVector : Quaternion -> Vector
@@ -129,7 +131,7 @@ toVector q =
 
 toMat4 : Quaternion -> Mat4
 toMat4 q =
-    Mat4.makeRotate (angle q) (Vector.toVec3 q.vector)
+    Mat4.makeRotate (angle q) (Vector.toVec3 (axis q))
 
 
 type alias Basis =
