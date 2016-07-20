@@ -29,7 +29,7 @@ library =
             [ ( "Sphere", "sphere.json" )
             , ( "Background", "background.json" )
             , ( "Ship", "ship.json" )
-            , ( "Missile", "missile.json" )
+            , ( "Missile", "sphere-eighth.json" )
             , ( "Explosion", "explosion.json" )
             , ( "Column", "column.json" )
             , ( "Donut", "donut.json" )
@@ -46,7 +46,7 @@ library =
             , ( "Cage", "cage.box" )
             , ( "OrthoVertex", "ortho-vertex.box" )
             , ( "Column", "column.box" )
-            , ( "Missile", "missile.box" )
+            , ( "Missile", "sphere-quarter.box" )
             , ( "Player", "player.box" )
             ]
                 |> List.map (get Collision.decode)

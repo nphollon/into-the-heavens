@@ -3,12 +3,13 @@ module Level.Outnumbered exposing (data)
 import Color
 import Dict exposing (Dict)
 import Types exposing (..)
+import Library
 import Math.Vector as Vector
 import Flight.Spawn as Spawn exposing (defaultBody)
 
 
-data : LevelData
-data =
+data : Library -> LevelData
+data library =
     { level = Outnumbered
     , events =
         [ ( Immediately
@@ -45,7 +46,7 @@ data =
               , { defaultBody
                     | position = Vector.vector 0 -20 0
                     , angVelocity = Vector.vector 0 3.0e-2 0
-                    , bounds = Just "Sphere"
+                    , bounds = Library.getBounds "Sphere" library
                     , health = 1.0e10
                 }
               )

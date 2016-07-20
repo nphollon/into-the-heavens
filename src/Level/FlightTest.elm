@@ -3,12 +3,13 @@ module Level.FlightTest exposing (data)
 import Dict
 import Color
 import Types exposing (..)
+import Library
 import Math.Vector as Vector
 import Flight.Spawn exposing (defaultBody)
 
 
-data : LevelData
-data =
+data : Library -> LevelData
+data library =
     { level = FlightTest
     , events =
         [ ( Immediately
@@ -44,7 +45,7 @@ data =
             [ ( 1
               , { defaultBody
                     | position = Vector.vector -35 5 -10
-                    , bounds = Just "Sphere"
+                    , bounds = Library.getBounds "Sphere" library
                     , health = 1.0e10
                 }
               )
@@ -52,7 +53,7 @@ data =
               , { defaultBody
                     | position = Vector.vector 0 0 5
                     , angVelocity = Vector.vector 0.5 0 0
-                    , bounds = Just "Donut"
+                    , bounds = Library.getBounds "Donut" library
                     , health = 1.0e10
                 }
               )

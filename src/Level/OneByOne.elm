@@ -3,12 +3,13 @@ module Level.OneByOne exposing (data)
 import Dict
 import Color
 import Types exposing (..)
+import Library
 import Math.Vector as Vector
 import Flight.Spawn exposing (defaultBody)
 
 
-data : LevelData
-data =
+data : Library -> LevelData
+data library =
     { level = OneByOne
     , events =
         [ ( Immediately
@@ -53,7 +54,7 @@ data =
               , { defaultBody
                     | position = Vector.vector -35 5 -10
                     , angVelocity = Vector.vector 3.0e-2 4.0e-2 0
-                    , bounds = Just "Cage"
+                    , bounds = Library.getBounds "Cage" library
                     , health = 1
                 }
               )

@@ -20,11 +20,17 @@ type alias Vertex =
     }
 
 
+boxFromData : MeshData -> Bounds
+boxFromData data =
+    Collision.create (toFaces data)
+
+
 encodeBounds : MeshData -> String
 encodeBounds data =
-    boxFromData data
-        |> Maybe.map (Collision.encode >> Json.encode 0)
-        |> Maybe.withDefault ""
+    toFaces data
+        |> Collision.create
+        |> Collision.encode
+        |> Json.encode 0
 
 
 encodeModel : MeshData -> String
@@ -97,11 +103,6 @@ flatFace data =
     toFaces data
         |> List.map toVertexTriangle
         |> Triangle
-
-
-boxFromData : MeshData -> Maybe Bounds
-boxFromData data =
-    Collision.create (toFaces data)
 
 
 toFaces : MeshData -> List Face

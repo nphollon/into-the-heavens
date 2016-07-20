@@ -1,4 +1,4 @@
-module Flight.Util exposing (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isEthereal, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, remove, explode, keyMap)
+module Flight.Util exposing (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, remove, explode, keyMap)
 
 import Dict exposing (Dict)
 import Char exposing (KeyCode)
@@ -106,13 +106,8 @@ isVisitor body =
 
 
 isMissile : Body -> Bool
-isMissile body =
-    body.bounds == Just "Missile"
-
-
-isEthereal : Body -> Bool
-isEthereal body =
-    Nothing == body.bounds
+isMissile =
+    .isMissile
 
 
 isHealthy : Body -> Bool

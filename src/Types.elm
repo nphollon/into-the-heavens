@@ -111,9 +111,10 @@ type alias Body =
     , velocity : Vector
     , orientation : Quaternion
     , angVelocity : Vector
-    , bounds : Maybe String
+    , bounds : Bounds
     , health : Float
     , ai : Ai
+    , isMissile : Bool
     }
 
 

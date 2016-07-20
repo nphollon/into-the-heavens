@@ -28,14 +28,14 @@ testSuite =
         suite "Crash rules"
             [ test "no collision, no effects"
                 <| assertEqual []
-                <| shouldCrash boxLibrary
+                <| shouldCrash
                 <| Dict.fromList
                     [ ( ids.missile, missile 1 )
                     , ( ids.visitor, object 1 "farHull" )
                     ]
             , test "missiles ignore each other"
                 <| assertEqual []
-                <| shouldCrash boxLibrary
+                <| shouldCrash
                 <| Dict.fromList
                     [ ( ids.missileA, missile 1 )
                     , ( ids.missileB, missile 1 )
@@ -45,7 +45,7 @@ testSuite =
                     [ Destroy ids.missile
                     , DeductHealth 1 ids.visitor
                     ]
-                <| shouldCrash boxLibrary
+                <| shouldCrash
                 <| Dict.fromList
                     [ ( ids.missile, missile 1 )
                     , ( ids.visitor, object 1 "hitHull" )
@@ -55,14 +55,14 @@ testSuite =
                     [ Destroy ids.missile
                     , DeductHealth 2 ids.visitor
                     ]
-                <| shouldCrash boxLibrary
+                <| shouldCrash
                 <| Dict.fromList
                     [ ( ids.missile, missile 2 )
                     , ( ids.visitor, object 1 "hitHull" )
                     ]
             , test "shielded ship is protected from missile"
                 <| assertEqual [ Destroy ids.missile ]
-                <| shouldCrash boxLibrary
+                <| shouldCrash
                 <| Dict.fromList
                     [ ( ids.missile, missile 1 )
                     , ( ids.visitor, shielded 1 "hitHull" )
@@ -72,7 +72,7 @@ testSuite =
                     [ DeductHealth 3 ids.smallShip
                     , DeductHealth 2 ids.bigShip
                     ]
-                <| shouldCrash boxLibrary
+                <| shouldCrash
                 <| Dict.fromList
                     [ ( ids.smallShip, object 2 "outHull" )
                     , ( ids.bigShip, object 3 "hitHull" )
@@ -82,7 +82,7 @@ testSuite =
                     [ DeductHealth 3 ids.unshielded
                     , DeductHealth 2 ids.shielded
                     ]
-                <| shouldCrash boxLibrary
+                <| shouldCrash
                 <| Dict.fromList
                     [ ( ids.unshielded, object 2 "outHull" )
                     , ( ids.shielded, shielded 3 "hitHull" )
@@ -92,7 +92,7 @@ testSuite =
                     [ DeductHealth 3 ids.first
                     , DeductHealth 3 ids.second
                     ]
-                <| shouldCrash boxLibrary
+                <| shouldCrash
                 <| Dict.fromList
                     [ ( ids.first, shielded 3 "outHull" )
                     , ( ids.second, object 3 "hitHull" )
@@ -102,18 +102,11 @@ testSuite =
                     [ Destroy ids.missileB
                     , Destroy ids.missileA
                     ]
-                <| shouldCrash boxLibrary
+                <| shouldCrash
                 <| Dict.fromList
                     [ ( ids.missileA, missile 1 )
                     , ( ids.missileB, missile 1 )
                     , ( ids.visitor, shielded 1 "hitHull" )
-                    ]
-            , test "ethereal objects do not collide"
-                <| assertEqual []
-                <| shouldCrash boxLibrary
-                <| Dict.fromList
-                    [ ( ids.checkpoint, checkpoint )
-                    , ( ids.visitor, object 1 "hitHull" )
                     ]
             ]
 
@@ -122,8 +115,8 @@ missile : Float -> Body
 missile x =
     { defaultBody
         | health = x
-        , bounds =
-            Just "Missile"
+        , bounds = getBounds "hitHull"
+        , isMissile = True
     }
 
 
@@ -131,7 +124,7 @@ object : Float -> String -> Body
 object x hull =
     { defaultBody
         | health = x
-        , bounds = Just hull
+        , bounds = getBounds hull
     }
 
 
@@ -139,7 +132,7 @@ shielded : Float -> String -> Body
 shielded x hull =
     { defaultBody
         | health = x
-        , bounds = Just hull
+        , bounds = getBounds hull
         , ai =
             PlayerControlled
                 { defaultCockpit
@@ -153,9 +146,9 @@ shielded x hull =
     }
 
 
-checkpoint : Body
-checkpoint =
-    { defaultBody | bounds = Nothing }
+getBounds : String -> Bounds
+getBounds name =
+    Dict.get name boxLibrary |> Maybe.withDefault Collision.empty
 
 
 boxLibrary : Dict String Bounds
@@ -190,13 +183,3 @@ boxLibrary =
                 ]
           )
         ]
-        |> Dict.foldl
-            (\name value kept ->
-                case value of
-                    Nothing ->
-                        kept
-
-                    Just v ->
-                        Dict.insert name v kept
-            )
-            Dict.empty

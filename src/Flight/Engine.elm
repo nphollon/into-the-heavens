@@ -18,7 +18,7 @@ update dt state =
         |> Ai.aiUpdate dt
         |> checkSchedule
         |> check shouldChangeTarget
-        |> check (shouldCrash state.library.boxes)
+        |> check shouldCrash
         |> check shouldFire
         |> thrust dt
 
@@ -164,25 +164,11 @@ thrust delta model =
     { model | universe = Mech.evolve delta model.universe }
 
 
-shouldCrash : Dict String Bounds -> Dict Id Body -> List EngineEffect
-shouldCrash boxLibrary universe =
+shouldCrash : Dict Id Body -> List EngineEffect
+shouldCrash universe =
     let
-        lookup boxName =
-            Maybe.andThen boxName (flip Dict.get boxLibrary)
-
-        collide bodyA bodyB =
-            Collision.collide
-                { position = bodyA.position
-                , orientation = bodyA.orientation
-                , bounds = lookup bodyA.bounds
-                }
-                { position = bodyB.position
-                , orientation = bodyB.orientation
-                , bounds = lookup bodyB.bounds
-                }
-
         checkPair a b effects =
-            if collide (snd a) (snd b) then
+            if Collision.collide (snd a) (snd b) then
                 addEffects a b effects
             else
                 effects

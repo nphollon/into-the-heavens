@@ -3,7 +3,6 @@ module SpawnTest exposing (testSuite)
 import ElmTest exposing (..)
 import Assertion exposing (..)
 import Random.Pcg as Random
-import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion exposing (Quaternion)
 import Flight.Spawn as Spawn
@@ -43,11 +42,11 @@ testSuite =
             ]
 
 
-spawnAt : Vector -> Body
+spawnAt : Vector -> Placement
 spawnAt spawnPoint =
     let
         generator =
-            Spawn.visitorBodyAt (Random.constant spawnPoint)
+            Spawn.placeAt (Random.constant spawnPoint)
 
         seed =
             Random.initialSeed 0
@@ -55,6 +54,14 @@ spawnAt spawnPoint =
         fst (Random.step generator seed)
 
 
-velocityDirection : Body -> Vector
+velocityDirection : Placement -> Vector
 velocityDirection =
     .velocity >> Vector.normalize >> Maybe.withDefault (Vector.vector 0 0 0)
+
+
+type alias Placement =
+    { position : Vector
+    , orientation : Quaternion
+    , velocity : Vector
+    , angVelocity : Vector
+    }

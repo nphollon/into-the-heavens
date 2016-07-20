@@ -41,7 +41,7 @@ actionUpdate input model =
 
 load : Level -> MenuState -> ( Mode, Cmd Update )
 load level model =
-    Flight.Init.game (dataFor level) model.seed model.library
+    Flight.Init.game (dataFor level model.library) model.seed model.library
 
 
 noCmd : MenuState -> ( Mode, Cmd Update )
@@ -100,17 +100,17 @@ menuButton action label =
         [ button [ action ] [ text label ] ]
 
 
-dataFor : Level -> LevelData
-dataFor level =
+dataFor : Level -> Library -> LevelData
+dataFor level library =
     case level of
         FlightTest ->
-            Level.FlightTest.data
+            Level.FlightTest.data library
 
         Outnumbered ->
-            Level.Outnumbered.data
+            Level.Outnumbered.data library
 
         Pavilion ->
-            Level.Pavilion.data
+            Level.Pavilion.data library
 
         OneByOne ->
-            Level.OneByOne.data
+            Level.OneByOne.data library
