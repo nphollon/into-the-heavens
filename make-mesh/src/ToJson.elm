@@ -1,4 +1,4 @@
-module Generate.Json exposing (encodeMesh, encodeModel, encodeBounds, Vertex)
+module ToJson exposing (encodeMesh, encodeModel, encodeBounds, Vertex)
 
 import Array exposing (Array)
 import String

@@ -7,9 +7,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.App
 import Http
-import Generate.Json as Json
-import Generate.Explosion as Explosion
-import Generate.Cluster as Cluster
+import ToJson
+import Explosion
+import Cluster
 import ObjParser exposing (MeshData)
 
 
@@ -135,7 +135,7 @@ loadFile model =
 generateMesh : Model -> ( Model, Cmd Action )
 generateMesh model =
     if model.generateMesh then
-        writeFile ".json" Json.encodeModel MeshSuccess model
+        writeFile ".json" ToJson.encodeModel MeshSuccess model
     else
         do MeshSuccess model
 
@@ -143,7 +143,7 @@ generateMesh model =
 generateBounds : Model -> ( Model, Cmd Action )
 generateBounds model =
     if model.generateBounds then
-        writeFile ".box" Json.encodeBounds FinalSuccess model
+        writeFile ".box" ToJson.encodeBounds FinalSuccess model
     else
         do FinalSuccess model
 
@@ -170,8 +170,8 @@ writeFile extension encode onSuccess model =
 generatePresets : Model -> ( Model, Cmd Action )
 generatePresets model =
     logCmd "Generating programmatically-defined models"
-        ([ post "background.json" (Json.encodeMesh Cluster.mesh)
-         , post "explosion.json" (Json.encodeMesh Explosion.mesh)
+        ([ post "background.json" (ToJson.encodeMesh Cluster.mesh)
+         , post "explosion.json" (ToJson.encodeMesh Explosion.mesh)
          ]
             |> Task.sequence
             |> Task.perform HttpError (always FinalSuccess)

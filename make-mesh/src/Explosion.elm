@@ -1,10 +1,10 @@
-module Generate.Explosion exposing (mesh)
+module Explosion exposing (mesh)
 
 import WebGL exposing (Drawable(..))
 import Math.Vector4 as Vec4
 import Math.Vector as Vector exposing (Vector)
 import Math.Spherical as Spherical
-import Generate.Json exposing (Vertex)
+import ToJson exposing (Vertex)
 
 
 mesh : Drawable Vertex

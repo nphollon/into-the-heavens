@@ -1,4 +1,4 @@
-module Generate.Cluster exposing (mesh)
+module Cluster exposing (mesh)
 
 import Random.Pcg as Random
 import Color exposing (Color)
@@ -6,7 +6,7 @@ import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Vector as Vector exposing (Vector)
 import Math.Transform as Transform
 import Math.Spherical as Spherical
-import Generate.Json exposing (Vertex)
+import ToJson exposing (Vertex)
 import WebGL exposing (Drawable(..))
 
 
