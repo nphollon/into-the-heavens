@@ -109,7 +109,7 @@ spawnMissile parent targetId model =
             Object
                 { bodyId = id
                 , meshName = "Missile"
-                , shader = NoLighting
+                , shader = Bright Color.red
                 }
     in
         spawn graphics body model
@@ -144,14 +144,14 @@ spawnCheckpoint name position model =
         body =
             { defaultBody
                 | position = position
-                , angVelocity = Vector.vector 0 1 0
+                , angVelocity = Vector.vector 0 0 1
             }
 
         graphics id =
             Object
                 { bodyId = id
                 , meshName = "Explosion"
-                , shader = NoLighting
+                , shader = Bright Color.yellow
                 }
     in
         spawnWithName name graphics body model

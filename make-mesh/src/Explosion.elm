@@ -1,5 +1,6 @@
 module Explosion exposing (mesh)
 
+import Array
 import WebGL exposing (Drawable(..))
 import Math.Vector4 as Vec4
 import Math.Vector as Vector exposing (Vector)
@@ -24,18 +25,15 @@ toVertex position =
 
 basePoints : List Vector
 basePoints =
-    [ ( 90, 0 )
-    , ( 26.56505117707802, 0 )
-    , ( 26.56505117707802, 72 )
-    , ( 26.56505117707802, 144 )
-    , ( 26.56505117707802, 216 )
-    , ( 26.56505117707802, 288 )
-    , ( -26.56505117707802, 36 )
-    , ( -26.56505117707802, 108 )
-    , ( -26.56505117707802, 180 )
-    , ( -26.56505117707802, 252 )
-    , ( -26.56505117707802, 324 )
-    , ( -90, 0 )
-    ]
-        |> List.map (\( a, b ) -> ( degrees a, degrees b ))
-        |> List.map (uncurry (Spherical.toRect 1))
+    Array.initialize 100
+        (\i ->
+            let
+                lon =
+                    degrees (17 * toFloat i)
+
+                lat =
+                    degrees ((1.8 * toFloat i) - 90)
+            in
+                Spherical.toRect 1 lat lon
+        )
+        |> Array.toList

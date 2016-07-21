@@ -3,6 +3,7 @@ module Graphics.View exposing (view)
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
 import List.Extra as ListX
+import Color
 import Html exposing (..)
 import Html.Attributes as Attributes exposing (class)
 import WebGL exposing (Drawable, Renderable)
@@ -13,7 +14,6 @@ import Math.Quaternion as Quaternion exposing (Quaternion)
 import Math.Transform as Transform
 import Flight.Util as Util
 import Graphics.AppFrame as AppFrame
-import Graphics.Background as Background
 import Graphics.Foreground as Foreground
 import Graphics.Flat as Flat
 import Graphics.Camera as Camera
@@ -67,19 +67,27 @@ scene width height model =
                         |> MaybeX.maybeToList
 
                 Target meshName ->
-                    Maybe.map2 (\b -> Foreground.entity NoLighting (decorPlacement b camera) camera)
+                    Maybe.map2
+                        (\b ->
+                            Foreground.entity (Bright Color.blue)
+                                (decorPlacement b camera)
+                                camera
+                        )
                         (body player.cockpit.target)
                         (mesh meshName)
                         |> MaybeX.maybeToList
 
-                Highlight { filter, meshName } ->
+                Highlight { filter, meshName, color } ->
                     Maybe.map
                         (\m ->
                             Dict.values model.universe
                                 |> List.filter filter
                                 |> List.map
                                     (\b ->
-                                        Foreground.entity NoLighting (decorPlacement b camera) camera m
+                                        Foreground.entity (Bright color)
+                                            (decorPlacement b camera)
+                                            camera
+                                            m
                                     )
                         )
                         (mesh meshName)
@@ -90,9 +98,6 @@ scene width height model =
                         (Camera.ortho aspect)
                         (mesh shieldMesh)
                         (mesh energyBarMesh)
-
-                Atmosphere _ ->
-                    []
     in
         WebGL.toHtmlWith [ WebGL.Enable WebGL.CullFace, WebGL.Enable WebGL.DepthTest ]
             [ Attributes.width width, Attributes.height height ]
@@ -116,8 +121,12 @@ drawShieldSystem switch camera shieldMesh barMesh =
 
 drawBackground : Camera -> Maybe (Drawable Vertex) -> List Renderable
 drawBackground camera mesh =
-    Maybe.map (Background.entity camera) mesh
-        |> MaybeX.maybeToList
+    let
+        p =
+            placement camera.position Quaternion.identity
+    in
+        Maybe.map (Foreground.entity (Bright Color.lightBlue) p camera) mesh
+            |> MaybeX.maybeToList
 
 
 drawObject : ShaderType -> Camera -> Maybe Body -> Maybe (Drawable Vertex) -> List Renderable

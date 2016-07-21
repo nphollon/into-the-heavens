@@ -183,15 +183,13 @@ type GraphicsObject
     | Highlight
         { filter : Body -> Bool
         , meshName : String
-        }
-    | Atmosphere
-        { bodyId : Id
+        , color : Color
         }
 
 
 type ShaderType
     = Matte Color
-    | NoLighting
+    | Bright Color
 
 
 type alias Camera =

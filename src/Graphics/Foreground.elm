@@ -10,13 +10,13 @@ import Math.Vector as Vector
 import Math.Quaternion as Quaternion
 
 
-type alias Uniform a =
-    { a
-        | perspective : Mat4
-        , cameraOrientation : Mat4
-        , cameraPosition : Vec3
-        , placement : Mat4
-        , inversePlacement : Mat4
+type alias Uniform =
+    { perspective : Mat4
+    , cameraOrientation : Mat4
+    , cameraPosition : Vec3
+    , placement : Mat4
+    , inversePlacement : Mat4
+    , color : Vec4
     }
 
 
@@ -26,12 +26,12 @@ type alias Varying a =
     }
 
 
-type alias VertexShader a b =
-    Shader Vertex (Uniform a) (Varying b)
+type alias VertexShader b =
+    Shader Vertex Uniform (Varying b)
 
 
-type alias FragmentShader a b =
-    Shader {} (Uniform a) (Varying b)
+type alias FragmentShader b =
+    Shader {} Uniform (Varying b)
 
 
 vectorColor : Color -> Vec4
@@ -49,15 +49,7 @@ vectorColor c =
 entity : ShaderType -> Mat4 -> Camera -> Drawable Vertex -> Renderable
 entity objectType placement camera world =
     let
-        uniform =
-            { perspective = camera.perspective
-            , cameraOrientation = Quaternion.toMat4 camera.orientation
-            , cameraPosition = Vector.toVec3 camera.position
-            , placement = placement
-            , inversePlacement = Mat4.inverseOrthonormal placement
-            }
-
-        matteUniform c =
+        uniform c =
             { perspective = camera.perspective
             , cameraOrientation = Quaternion.toMat4 camera.orientation
             , cameraPosition = Vector.toVec3 camera.position
@@ -68,14 +60,13 @@ entity objectType placement camera world =
     in
         case objectType of
             Matte color ->
-                matteUniform color
-                    |> WebGL.render matteVertex matteFragment world
+                WebGL.render matteVertex matteFragment world (uniform color)
 
-            NoLighting ->
-                WebGL.render decorVertex decorFragment world uniform
+            Bright color ->
+                WebGL.render decorVertex decorFragment world (uniform color)
 
 
-matteVertex : VertexShader { color : Vec4 } { cosAngleIncidence : Float, distance : Float }
+matteVertex : VertexShader { cosAngleIncidence : Float, distance : Float }
 matteVertex =
     [glsl|
   precision mediump float;
@@ -121,7 +112,7 @@ matteVertex =
   |]
 
 
-matteFragment : FragmentShader { color : Vec4 } { cosAngleIncidence : Float, distance : Float }
+matteFragment : FragmentShader { cosAngleIncidence : Float, distance : Float }
 matteFragment =
     [glsl|
   precision mediump float;
@@ -140,7 +131,7 @@ matteFragment =
   |]
 
 
-decorVertex : VertexShader {} {}
+decorVertex : VertexShader {}
 decorVertex =
     [glsl|
   precision mediump float;
@@ -150,6 +141,7 @@ decorVertex =
   attribute vec3 normal;
 
   uniform vec3 cameraPosition;
+  uniform vec4 color;
   uniform mat4 perspective;
   uniform mat4 cameraOrientation;
   uniform mat4 placement;
@@ -174,14 +166,14 @@ decorVertex =
 
     gl_Position = perspective * projection;
 
-    gl_PointSize = 4.0;
+    gl_PointSize = 1.1;
 
-    fragColor = vertColor;
+    fragColor = color;
   }
   |]
 
 
-decorFragment : FragmentShader {} {}
+decorFragment : FragmentShader {}
 decorFragment =
     [glsl|
   precision mediump float;

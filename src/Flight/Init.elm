@@ -2,6 +2,7 @@ module Flight.Init exposing (game)
 
 import Dict
 import Set
+import Color
 import Random.Pcg as Random exposing (Seed)
 import Types exposing (..)
 import Flight.Util as Util
@@ -39,10 +40,12 @@ hud =
     , Highlight
         { meshName = "IncomingDecor"
         , filter = Util.isSeekingPlayer
+        , color = Color.red
         }
     , Highlight
         { meshName = "VisitorDecor"
         , filter = Util.isVisitor
+        , color = Color.blue
         }
     , Shield "Shield" "EnergyBar"
     , Reticule "Reticule"
