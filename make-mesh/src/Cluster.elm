@@ -29,45 +29,9 @@ scatter n =
             |> fst
 
 
-vertex : Float -> Vector -> Vertex
-vertex hue position =
-    let
-        colorVector r g b =
-            Vec4.vec4 (r / 255) (g / 255) (b / 255) 1
-
-        starColor =
-            if hue < 1.5 then
-                colorVector 57 80 255
-            else if hue < 7 then
-                colorVector 70 91 255
-            else if hue < 32.5 then
-                colorVector 102 116 255
-            else if hue < 58 then
-                colorVector 251 248 255
-            else if hue < 77.3 then
-                colorVector 255 144 132
-            else if hue < 89.6 then
-                colorVector 255 121 80
-            else
-                colorVector 255 89 11
-    in
-        { position = position
-        , color = starColor
-        , normal = Vector.vector 1 0 0
-        }
-
-
 starPoint : Random.Generator Vertex
 starPoint =
-    let
-        toVertex vec color =
-            Vector.add vec (Vector.vector 0 0.5 0.5)
-                |> toCelestialSphere
-                |> vertex color
-    in
-        Random.map2 toVertex
-            (Spherical.random (\r -> r ^ 2))
-            (Random.float 0 100)
+    Random.map toVertex (Spherical.random (\r -> r ^ 2))
 
 
 toCelestialSphere : Vector -> Vector
@@ -82,3 +46,10 @@ toCelestialSphere v =
         Spherical.toRect flatR
             (asin (Vector.getZ v / r))
             (atan2 (Vector.getY v) (Vector.getX v))
+
+
+toVertex : Vector -> Vertex
+toVertex vec =
+    { position = toCelestialSphere (Vector.add vec (Vector.vector 0 0.5 0.5))
+    , normal = Vector.vector 1 0 0
+    }

@@ -15,7 +15,6 @@ import ObjParser exposing (MeshData)
 
 type alias Vertex =
     { position : Vector
-    , color : Vec4
     , normal : Vector
     }
 
@@ -93,7 +92,6 @@ encodeAttribute : Vertex -> Json.Value
 encodeAttribute att =
     Json.object
         [ ( "position", encodeVector att.position )
-        , ( "color", encodeVec4 att.color )
         , ( "normal", encodeVector att.normal )
         ]
 
@@ -138,7 +136,6 @@ toVertexTriangle face =
 
 toVertex : Vector -> Vector -> Vertex
 toVertex position normal =
-    { color = Vec4.vec4 1 1 1 1
-    , position = position
+    { position = position
     , normal = normal
     }

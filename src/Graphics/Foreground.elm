@@ -137,7 +137,6 @@ decorVertex =
   precision mediump float;
 
   attribute vec3 vertPosition;
-  attribute vec4 vertColor;
   attribute vec3 normal;
 
   uniform vec3 cameraPosition;

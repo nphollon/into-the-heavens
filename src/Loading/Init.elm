@@ -106,15 +106,14 @@ decodeTriangles =
 vertex : Decoder Vertex
 vertex =
     let
-        init a b c =
-            { vertPosition = a
-            , vertColor = b
-            , normal = c
+        init pos norm =
+            { vertPosition = pos
+            , vertColor = Vec4.vec4 0 0 0 0
+            , normal = norm
             }
     in
-        Decode.object3 init
+        Decode.object2 init
             ("position" := vec3)
-            ("color" := vec4)
             ("normal" := vec3)
 
 
