@@ -1,9 +1,9 @@
 module Graphics.View exposing (view)
 
 import Dict exposing (Dict)
+import Color
 import Maybe.Extra as MaybeX
 import List.Extra as ListX
-import Color
 import Html exposing (..)
 import Html.Attributes as Attributes exposing (class)
 import WebGL exposing (Drawable, Renderable)
@@ -11,14 +11,13 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion exposing (Quaternion)
-import Math.Transform as Transform
-import Flight.Util as Util
 import Graphics.AppFrame as AppFrame
 import Graphics.Foreground as Foreground
-import Graphics.Flat as Flat
 import Graphics.Camera as Camera
 import Graphics.Format as Format
 import Graphics.Explosion as Explosion
+import Graphics.Hud as Hud
+import Flight.Util as Util
 
 
 view : GameState -> Html a
@@ -61,62 +60,15 @@ scene width height model =
                 Explosion { bodyId, meshName } ->
                     drawExplosion camera (body bodyId) (mesh meshName)
 
-                Reticule meshName ->
-                    Maybe.map (Flat.entity (Camera.ortho aspect))
-                        (mesh meshName)
-                        |> MaybeX.maybeToList
+        functionCalls =
+            [ WebGL.Enable WebGL.CullFace, WebGL.Enable WebGL.DepthTest ]
 
-                Target meshName ->
-                    Maybe.map2
-                        (\b ->
-                            Foreground.entity (Bright Color.blue)
-                                (decorPlacement b camera)
-                                camera
-                        )
-                        (body player.cockpit.target)
-                        (mesh meshName)
-                        |> MaybeX.maybeToList
-
-                Highlight { filter, meshName, color } ->
-                    Maybe.map
-                        (\m ->
-                            Dict.values model.universe
-                                |> List.filter filter
-                                |> List.map
-                                    (\b ->
-                                        Foreground.entity (Bright color)
-                                            (decorPlacement b camera)
-                                            camera
-                                            m
-                                    )
-                        )
-                        (mesh meshName)
-                        |> Maybe.withDefault []
-
-                Shield shieldMesh energyBarMesh ->
-                    drawShieldSystem player.cockpit.shields
-                        (Camera.ortho aspect)
-                        (mesh shieldMesh)
-                        (mesh energyBarMesh)
-    in
-        WebGL.toHtmlWith [ WebGL.Enable WebGL.CullFace, WebGL.Enable WebGL.DepthTest ]
+        attributes =
             [ Attributes.width width, Attributes.height height ]
-            (List.concatMap draw model.graphics)
-
-
-drawShieldSystem : DrainSwitch -> Camera -> Maybe (Drawable Vertex) -> Maybe (Drawable Vertex) -> List Renderable
-drawShieldSystem switch camera shieldMesh barMesh =
-    case ( switch.on, shieldMesh, barMesh ) of
-        ( True, Just shield, Just bar ) ->
-            [ Flat.entity camera shield
-            , Flat.bar switch.value camera bar
-            ]
-
-        ( _, _, Just bar ) ->
-            [ Flat.bar switch.value camera bar ]
-
-        _ ->
-            []
+    in
+        List.concatMap draw model.graphics
+            ++ Hud.draw width height model
+            |> WebGL.toHtmlWith functionCalls attributes
 
 
 drawBackground : Camera -> Maybe (Drawable Vertex) -> List Renderable
@@ -167,22 +119,6 @@ percentCountdown object =
 
         _ ->
             0.5
-
-
-decorPlacement : Body -> Camera -> Mat4
-decorPlacement object camera =
-    let
-        direction =
-            Vector.direction object.position camera.position
-                |> Maybe.withDefault (Vector.vector 0 0 0)
-
-        position =
-            Vector.scale 0.1 direction
-                |> Vector.add camera.position
-    in
-        Transform.rotationFor (Vector.vector 0 0 1) direction
-            |> placement position
-            |> Mat4.scale3 1.0e-2 1.0e-2 1.0e-2
 
 
 log : GameState -> Html a

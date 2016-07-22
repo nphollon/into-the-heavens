@@ -10,7 +10,6 @@ import WebGL exposing (Drawable(..))
 import Collision
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
-import Graphics.Guides as Guides
 
 
 menu : Flags -> Mode
@@ -52,33 +51,18 @@ library =
                 |> List.map (get Collision.decode)
                 |> Task.sequence
 
-        library =
-            { meshes =
-                Dict.fromList
-                    [ ( "Reticule", Guides.crosshair )
-                    , ( "TargetDecor", Guides.target )
-                    , ( "IncomingDecor", Guides.incoming )
-                    , ( "VisitorDecor", Guides.targetable )
-                    , ( "Shield", Guides.shield )
-                    , ( "EnergyBar", Guides.bar )
-                    ]
-            , boxes =
-                Dict.empty
+        library meshes boxes =
+            { meshes = Dict.fromList meshes
+            , boxes = Dict.fromList boxes
             }
 
         get decoder ( id, file ) =
             ("$DOMAIN/data/" ++ file)
                 |> Http.get decoder
                 |> Task.map ((,) id)
-
-        addTo library meshes boxes =
-            { meshes = Dict.fromList meshes |> Dict.union library.meshes
-            , boxes = Dict.fromList boxes |> Dict.union library.boxes
-            }
     in
-        Task.map2 (addTo library) remoteMeshes remoteBoxes
-            |> Task.perform (Err >> LoadingUpdate)
-                (Ok >> LoadingUpdate)
+        Task.map2 library remoteMeshes remoteBoxes
+            |> Task.perform (Err >> LoadingUpdate) (Ok >> LoadingUpdate)
 
 
 decodeMesh : Decoder (Drawable Vertex)

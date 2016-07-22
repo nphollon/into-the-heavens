@@ -168,8 +168,6 @@ type alias Action =
 
 type GraphicsObject
     = Background String
-    | Reticule String
-    | Shield String String
     | Object
         { bodyId : Id
         , meshName : String
@@ -178,12 +176,6 @@ type GraphicsObject
     | Explosion
         { bodyId : Id
         , meshName : String
-        }
-    | Target String
-    | Highlight
-        { filter : Body -> Bool
-        , meshName : String
-        , color : Color
         }
 
 

@@ -2,10 +2,8 @@ module Flight.Init exposing (game)
 
 import Dict
 import Set
-import Color
 import Random.Pcg as Random exposing (Seed)
 import Types exposing (..)
-import Flight.Util as Util
 import Flight.Spawn as Spawn
 
 
@@ -28,25 +26,7 @@ game data seed library =
             , level = data.level
             , events = data.events
             , universe = data.universe
-            , graphics = data.graphics ++ hud
+            , graphics = data.graphics
             }
         )
         ! []
-
-
-hud : List GraphicsObject
-hud =
-    [ Target "TargetDecor"
-    , Highlight
-        { meshName = "IncomingDecor"
-        , filter = Util.isSeekingPlayer
-        , color = Color.red
-        }
-    , Highlight
-        { meshName = "VisitorDecor"
-        , filter = Util.isVisitor
-        , color = Color.blue
-        }
-    , Shield "Shield" "EnergyBar"
-    , Reticule "Reticule"
-    ]
