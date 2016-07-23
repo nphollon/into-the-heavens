@@ -80,42 +80,56 @@ placement position orientation =
 
 reticule : Camera -> List Renderable
 reticule camera =
-    [ renderStatic camera (LineLoop (ngon 4 1 (Vec4.vec4 0.9 0.9 0.9 1)))
-    , renderStatic camera (LineLoop (ngon 4 1.1 (Vec4.vec4 0 0 0 1)))
-    ]
+    let
+        square radius color =
+            [ 0, turns 0.25, turns 0.5, turns 0.75 ]
+                |> List.map (toFlatVertex color radius)
+                |> LineLoop
+                |> renderStatic camera
+    in
+        [ square 1 (Vec4.vec4 0.9 0.9 0.9 1)
+        , square 1.1 (Vec4.vec4 0 0 0 1)
+        ]
 
 
 targetMesh : Drawable Vertex
 targetMesh =
-    LineLoop (ngon 30 1 (Vec4.vec4 0.2 0.2 1 1))
+    LineLoop (ngon 30 1)
 
 
 targetableMesh : Drawable Vertex
 targetableMesh =
-    Lines (dashedNgon 15 1 (Vec4.vec4 0.2 0.2 1 1))
+    Lines (dashedNgon 15 1)
 
 
 incomingMesh : Drawable Vertex
 incomingMesh =
-    LineLoop (ngon 30 0.4 (Vec4.vec4 1 0 0 1))
+    LineLoop (ngon 30 0.4)
 
 
-ngon : Int -> Float -> Vec4 -> List Vertex
-ngon sides radius color =
+ngon : Int -> Float -> List Vertex
+ngon sides radius =
     [0..sides]
         |> List.map (\i -> turns (toFloat i / toFloat sides))
-        |> List.map (toVertex color radius)
+        |> List.map (toVertex radius)
 
 
-dashedNgon : Int -> Float -> Vec4 -> List ( Vertex, Vertex )
-dashedNgon sides radius color =
+dashedNgon : Int -> Float -> List ( Vertex, Vertex )
+dashedNgon sides radius =
     let
         vertex i =
-            toVertex color radius (turns (i / toFloat sides))
+            toVertex radius (turns (i / toFloat sides))
     in
         [0..sides]
             |> List.map toFloat
             |> List.map (\i -> ( vertex i, vertex (i + 0.4) ))
+
+
+toVertex : Float -> Float -> Vertex
+toVertex radius angle =
+    { vertPosition = toPosition radius angle
+    , normal = Vec3.vec3 0 0 0
+    }
 
 
 shieldSystem : DrainSwitch -> Camera -> List Renderable
@@ -128,7 +142,7 @@ shieldSystem switch camera =
            )
 
 
-shieldMesh : Drawable Vertex
+shieldMesh : Drawable FlatVertex
 shieldMesh =
     let
         tip =
@@ -142,25 +156,30 @@ shieldMesh =
             |> Lines
 
 
-skewStroke : Int -> ( Float, Vec4 ) -> ( Float, Vec4 ) -> List ( Vertex, Vertex )
+skewStroke : Int -> ( Float, Vec4 ) -> ( Float, Vec4 ) -> List ( FlatVertex, FlatVertex )
 skewStroke strokes ( innerRadius, innerColor ) ( outerRadius, outerColor ) =
     let
         angleOf i =
             turns (toFloat i / toFloat strokes)
 
         toStroke i =
-            ( toVertex innerColor innerRadius (angleOf i)
-            , toVertex outerColor outerRadius (angleOf (i + 1))
+            ( toFlatVertex innerColor innerRadius (angleOf i)
+            , toFlatVertex outerColor outerRadius (angleOf (i + 1))
             )
     in
         List.map toStroke [0..strokes]
 
 
-toVertex : Vec4 -> Float -> Float -> Vertex
-toVertex color radius angle =
+type alias FlatVertex =
+    { vertPosition : Vec3
+    , vertColor : Vec4
+    }
+
+
+toFlatVertex : Vec4 -> Float -> Float -> FlatVertex
+toFlatVertex color radius angle =
     { vertPosition = toPosition radius angle
     , vertColor = color
-    , normal = Vec3.vec3 0 0 0
     }
 
 
@@ -173,7 +192,7 @@ toPosition radius angle =
         Vec3.vec3 x y 0
 
 
-renderStatic : Camera -> Drawable Vertex -> Renderable
+renderStatic : Camera -> Drawable FlatVertex -> Renderable
 renderStatic camera mesh =
     let
         uniform =
@@ -223,7 +242,7 @@ renderBar fraction camera =
         WebGL.render barVertex barFragment barMesh uniform
 
 
-barMesh : Drawable Vertex
+barMesh : Drawable FlatVertex
 barMesh =
     let
         full =
@@ -247,25 +266,21 @@ barMesh =
         upperRight =
             { vertPosition = Vec3.vec3 (topLeftX + width) topLeftY 0
             , vertColor = full
-            , normal = Vec3.vec3 0 0 0
             }
 
         upperLeft =
             { vertPosition = Vec3.vec3 topLeftX topLeftY 0
             , vertColor = full
-            , normal = Vec3.vec3 0 0 0
             }
 
         lowerRight =
             { vertPosition = Vec3.vec3 (topLeftX + width) (topLeftY - height) 0
             , vertColor = empty
-            , normal = Vec3.vec3 0 0 0
             }
 
         lowerLeft =
             { vertPosition = Vec3.vec3 topLeftX (topLeftY - height) 0
             , vertColor = empty
-            , normal = Vec3.vec3 0 0 0
             }
     in
         Triangle
@@ -319,7 +334,7 @@ type alias Uniform a =
 
 
 type alias VertexShader a =
-    Shader Vertex (Uniform a) Varying
+    Shader FlatVertex (Uniform a) Varying
 
 
 type alias FragmentShader a =

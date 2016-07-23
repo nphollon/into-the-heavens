@@ -92,7 +92,6 @@ vertex =
     let
         init pos norm =
             { vertPosition = pos
-            , vertColor = Vec4.vec4 0 0 0 0
             , normal = norm
             }
     in

@@ -10,7 +10,6 @@ import Http
 import Collision exposing (Bounds)
 import WebGL exposing (Drawable)
 import Math.Vector3 as Vec3 exposing (Vec3)
-import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Matrix4 exposing (Mat4)
 import Math.Vector exposing (Vector)
 import Math.Quaternion exposing (Quaternion)
@@ -223,7 +222,6 @@ type alias Response =
 
 type alias Vertex =
     { vertPosition : Vec3
-    , vertColor : Vec4
     , normal : Vec3
     }
 
