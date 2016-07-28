@@ -3,7 +3,6 @@ module AiTest exposing (testSuite)
 import ElmTest exposing (..)
 import Assertion exposing (..)
 import Dict
-import Types exposing (..)
 import Math.Vector as Vec exposing (Vector)
 import Math.Quaternion as Quaternion
 import Flight.Spawn exposing (defaultBody)
@@ -14,24 +13,9 @@ import Flight.Util as Util
 testSuite : Test
 testSuite =
     suite "AI tests"
-        [ noAi
-        , hostileFiring
+        [ hostileFiring
         , hostileSteering
         ]
-
-
-noAi : Test
-noAi =
-    let
-        body =
-            { defaultBody | ai = Dumb }
-
-        universe =
-            Dict.singleton 1 body
-    in
-        test "Steering object without AI returns nothing"
-            <| assertEqual Dumb
-                (Ai.steerAi 0 body universe)
 
 
 hostileFiring : Test

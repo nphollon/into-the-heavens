@@ -117,6 +117,16 @@ type alias Body =
     }
 
 
+
+{-
+   type CollisionClass
+       = Scenery
+       | Solid
+       | Blockable
+       | Friendly
+-}
+
+
 type alias Acceleration =
     { linear : Vector
     , angular : Vector
@@ -131,7 +141,6 @@ type Ai
         { target : Id
         , trigger : RepeatSwitch
         }
-    | SelfDestruct
     | Waiting Float
 
 

@@ -6,7 +6,6 @@ import FormatTest
 import SwitchTest
 import SphericalTest
 import SpawnTest
-import EngineTest
 import FinanceTest
 
 
@@ -18,7 +17,6 @@ testSuite =
         , SwitchTest.testSuite
         , SphericalTest.testSuite
         , SpawnTest.testSuite
-        , EngineTest.testSuite
         , FinanceTest.testSuite
         ]
 

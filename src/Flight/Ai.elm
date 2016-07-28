@@ -1,62 +1,10 @@
-module Flight.Ai exposing (aiUpdate, steerAi, acceleration, angleSpring)
+module Flight.Ai exposing (acceleration, angleSpring)
 
 import Dict exposing (Dict)
 import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion
 import Math.Transform as Transform
-import Flight.Switch as Switch
-import Flight.Util as Util
-
-
-aiUpdate : Float -> GameState -> GameState
-aiUpdate delta model =
-    { model
-        | universe =
-            model.universe
-                |> Dict.map
-                    (\_ object ->
-                        { object
-                            | ai =
-                                steerAi delta object model.universe
-                        }
-                    )
-                |> Dict.filter (\_ object -> object.ai /= SelfDestruct)
-    }
-
-
-steerAi : Float -> Body -> Dict Id Body -> Ai
-steerAi delta object universe =
-    case object.ai of
-        Dumb ->
-            Dumb
-
-        Hostile ai ->
-            Hostile
-                { ai
-                    | trigger =
-                        Switch.repeat delta
-                            (Util.faces ai.target object universe)
-                            ai.trigger
-                }
-
-        Seeking lifespan target ->
-            if lifespan > 0 then
-                Seeking (lifespan - delta) target
-            else
-                SelfDestruct
-
-        PlayerControlled _ ->
-            object.ai
-
-        SelfDestruct ->
-            object.ai
-
-        Waiting lifespan ->
-            if lifespan > 0 then
-                Waiting (lifespan - delta)
-            else
-                SelfDestruct
 
 
 acceleration : Dict Id Body -> Body -> Acceleration
@@ -83,9 +31,6 @@ acceleration universe object =
 
                 Nothing ->
                     noAcceleration
-
-        SelfDestruct ->
-            noAcceleration
 
         Waiting _ ->
             noAcceleration

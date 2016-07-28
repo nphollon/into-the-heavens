@@ -1,11 +1,10 @@
-module Flight.Engine exposing (update, shouldCrash)
+module Flight.Engine exposing (update)
 
 import Set
 import Dict exposing (Dict)
 import List.Extra as ListX
 import Collision exposing (Bounds)
 import Types exposing (..)
-import Flight.Ai as Ai
 import Flight.Mechanics as Mech
 import Flight.Spawn as Spawn
 import Flight.Switch as Switch
@@ -14,101 +13,74 @@ import Flight.Util as Util
 
 update : Float -> GameState -> GameState
 update dt state =
-    processActions dt state
-        |> Ai.aiUpdate dt
-        |> checkSchedule
-        |> check shouldChangeTarget
-        |> check shouldCrash
-        |> check shouldFire
+    state
         |> thrust dt
+        |> checkCollisions
+        |> processActions dt
+        |> aiUpdate dt
+        |> checkSchedule
 
 
-processActions : Float -> GameState -> GameState
-processActions dt model =
+aiUpdate : Float -> GameState -> GameState
+aiUpdate dt model =
     let
-        toggle action =
-            Set.member (Util.keyMap action) model.playerActions
+        updateAll =
+            Dict.map (act dt model.universe) model.universe
 
-        twoWayToggle neg pos =
-            case ( toggle neg, toggle pos ) of
-                ( True, False ) ->
-                    -1
+        allEffects =
+            Dict.foldl (\_ ( _, effects ) -> (::) effects) [] updateAll
+                |> List.concat
 
-                ( False, True ) ->
-                    1
-
-                _ ->
-                    0
-
-        action =
-            { yaw = twoWayToggle RightTurn LeftTurn
-            , pitch = twoWayToggle DownTurn UpTurn
-            , roll = twoWayToggle CounterclockwiseRoll ClockwiseRoll
-            , thrust = twoWayToggle Brake Thrust
-            }
-
-        shields cockpit =
-            Switch.drain dt
-                (toggle ShieldsUp)
-                cockpit.shields
-
-        trigger cockpit =
-            Switch.repeat dt
-                (toggle Firing && not cockpit.shields.on)
-                cockpit.trigger
-
-        newCockpit cockpit =
-            { cockpit
-                | action = action
-                , shields = shields cockpit
-                , trigger = trigger cockpit
-            }
+        newUniverse =
+            Dict.map (\_ ( body, _ ) -> body) updateAll
     in
-        if toggle TargetFacing then
-            Util.updatePlayerCockpit newCockpit model
-                |> Util.setPlayerTarget
-        else
-            Util.updatePlayerCockpit newCockpit model
+        applyEffects allEffects { model | universe = newUniverse }
 
 
-checkSchedule : GameState -> GameState
-checkSchedule model =
-    case model.events of
-        [] ->
-            model
-
-        ( condition, event ) :: events ->
-            if isSatisfied condition model then
-                { model
-                    | events = events
-                    , lastEventTime = model.gameTime
-                }
-                    |> applyEffects event
+act : Float -> Dict Id Body -> Id -> Body -> ( Body, List EngineEffect )
+act dt universe id actor =
+    case actor.ai of
+        PlayerControlled cockpit ->
+            if cockpit.trigger.value == 1 then
+                ( actor, [ SpawnMissile id cockpit.target ] )
+            else if Dict.get cockpit.target universe == Nothing then
+                ( actor, [ ChangeTarget ] )
             else
-                model
+                ( actor, [] )
 
+        Hostile cockpit ->
+            let
+                newAi =
+                    Hostile
+                        { cockpit
+                            | trigger =
+                                Switch.repeat dt
+                                    (Util.faces cockpit.target actor universe)
+                                    cockpit.trigger
+                        }
 
-isSatisfied : EventCondition -> GameState -> Bool
-isSatisfied condition model =
-    case condition of
-        Immediately ->
-            True
+                effects =
+                    if cockpit.trigger.value == 1 then
+                        [ SpawnMissile id cockpit.target ]
+                    else
+                        []
+            in
+                ( { actor | ai = newAi }, effects )
 
-        NoMoreVisitors ->
-            Util.visitorCount model.universe == 0
+        Seeking lifespan target ->
+            if lifespan > 0 then
+                ( { actor | ai = Seeking (lifespan - dt) target }, [] )
+            else
+                ( actor, [ Destroy id ] )
 
-        SecondsLater wait ->
-            model.lastEventTime + wait < model.gameTime
+        Waiting lifespan ->
+            if lifespan > 0 then
+                ( { actor | ai = Waiting (lifespan - dt) }, [] )
+            else
+                ( actor, [ Destroy id ] )
 
-        ReachedCheckpoint bodyName ->
-            Util.distanceTo bodyName model
-                |> Maybe.map (\r -> r < 1)
-                |> Maybe.withDefault False
-
-
-check : (Dict Id Body -> List EngineEffect) -> GameState -> GameState
-check up model =
-    applyEffects (up model.universe) model
+        Dumb ->
+            ( actor, [] )
 
 
 applyEffects : List EngineEffect -> GameState -> GameState
@@ -164,22 +136,25 @@ thrust delta model =
     { model | universe = Mech.evolve delta model.universe }
 
 
-shouldCrash : Dict Id Body -> List EngineEffect
-shouldCrash universe =
+checkCollisions : GameState -> GameState
+checkCollisions model =
     let
         checkPair a b effects =
             if Collision.collide (snd a) (snd b) then
                 addEffects a b effects
             else
                 effects
+
+        allEffects =
+            Dict.toList model.universe
+                |> ListX.selectSplit
+                |> List.foldl
+                    (\( _, object, others ) effects ->
+                        List.foldl (checkPair object) effects others
+                    )
+                    []
     in
-        Dict.toList universe
-            |> ListX.selectSplit
-            |> List.foldl
-                (\( _, object, others ) effects ->
-                    List.foldl (checkPair object) effects others
-                )
-                []
+        applyEffects allEffects model
 
 
 type ObjectType
@@ -228,43 +203,6 @@ addEffects ( idA, bodyA ) ( idB, bodyB ) effects =
                 :: effects
 
 
-shouldFire : Dict Id Body -> List EngineEffect
-shouldFire universe =
-    let
-        checkTrigger id cockpit effects =
-            if cockpit.trigger.value == 1 then
-                SpawnMissile id cockpit.target :: effects
-            else
-                effects
-
-        checkCockpit id body effects =
-            case body.ai of
-                PlayerControlled cockpit ->
-                    checkTrigger id cockpit effects
-
-                Hostile cockpit ->
-                    checkTrigger id cockpit effects
-
-                _ ->
-                    effects
-    in
-        Dict.foldl checkCockpit [] universe
-
-
-shouldChangeTarget : Dict Id Body -> List EngineEffect
-shouldChangeTarget universe =
-    let
-        currentTarget =
-            Util.getPlayer universe |> .cockpit |> .target
-    in
-        case Dict.get currentTarget universe of
-            Nothing ->
-                [ ChangeTarget ]
-
-            _ ->
-                []
-
-
 hit : Float -> Id -> GameState -> GameState
 hit damage id model =
     let
@@ -281,3 +219,86 @@ hit damage id model =
             }
         else
             applyEffect (Explode id) model
+
+
+checkSchedule : GameState -> GameState
+checkSchedule model =
+    case model.events of
+        [] ->
+            model
+
+        ( condition, event ) :: events ->
+            if isSatisfied condition model then
+                { model
+                    | events = events
+                    , lastEventTime = model.gameTime
+                }
+                    |> applyEffects event
+            else
+                model
+
+
+isSatisfied : EventCondition -> GameState -> Bool
+isSatisfied condition model =
+    case condition of
+        Immediately ->
+            True
+
+        NoMoreVisitors ->
+            Util.visitorCount model.universe == 0
+
+        SecondsLater wait ->
+            model.lastEventTime + wait < model.gameTime
+
+        ReachedCheckpoint bodyName ->
+            Util.distanceTo bodyName model
+                |> Maybe.map (\r -> r < 1)
+                |> Maybe.withDefault False
+
+
+processActions : Float -> GameState -> GameState
+processActions dt model =
+    let
+        toggle action =
+            Set.member (Util.keyMap action) model.playerActions
+
+        twoWayToggle neg pos =
+            case ( toggle neg, toggle pos ) of
+                ( True, False ) ->
+                    -1
+
+                ( False, True ) ->
+                    1
+
+                _ ->
+                    0
+
+        action =
+            { yaw = twoWayToggle RightTurn LeftTurn
+            , pitch = twoWayToggle DownTurn UpTurn
+            , roll = twoWayToggle CounterclockwiseRoll ClockwiseRoll
+            , thrust = twoWayToggle Brake Thrust
+            }
+
+        shields cockpit =
+            Switch.drain dt
+                (toggle ShieldsUp)
+                cockpit.shields
+
+        trigger cockpit =
+            Switch.repeat dt
+                (toggle Firing && not cockpit.shields.on)
+                cockpit.trigger
+
+        newCockpit cockpit =
+            { cockpit
+                | action = action
+                , shields = shields cockpit
+                , trigger = trigger cockpit
+            }
+    in
+        if toggle TargetFacing then
+            Util.updatePlayerCockpit newCockpit model
+                |> Util.setPlayerTarget
+        else
+            Util.updatePlayerCockpit newCockpit model
