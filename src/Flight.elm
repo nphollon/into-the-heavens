@@ -16,6 +16,7 @@ keyDown key model =
     GameMode { model | playerActions = Set.insert key model.playerActions }
         ! []
 
+
 keyUp : KeyCode -> GameState -> ( Mode, Cmd Update )
 keyUp key model =
     GameMode { model | playerActions = Set.remove key model.playerActions }
@@ -61,16 +62,12 @@ engineUpdate clockTime model =
 
 reduceLag : GameState -> GameState
 reduceLag model =
-    let
-        updateDelta =
-            1.0 / 60
-    in
-        if model.lag < updateDelta then
-            model
-        else
-            { model | lag = model.lag - updateDelta }
-                |> Engine.update updateDelta
-                |> reduceLag
+    if model.lag < Util.delta then
+        model
+    else
+        { model | lag = model.lag - Util.delta }
+            |> Engine.update
+            |> reduceLag
 
 
 view : GameState -> Html a

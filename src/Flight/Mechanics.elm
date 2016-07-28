@@ -5,16 +5,20 @@ import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion exposing (Quaternion)
 import Flight.Ai as Ai
+import Flight.Util as Util
 
 
-evolve : Float -> Dict Id Body -> Dict Id Body
-evolve dt universe =
-    Dict.map (\k v -> evolveObject dt universe v) universe
+evolve : Dict Id Body -> Dict Id Body
+evolve universe =
+    Dict.map (\k v -> evolveObject universe v) universe
 
 
-evolveObject : Float -> Dict Id Body -> Body -> Body
-evolveObject dt universe object =
+evolveObject : Dict Id Body -> Body -> Body
+evolveObject universe object =
     let
+        dt =
+            Util.delta
+
         stateDerivative state =
             let
                 accel =

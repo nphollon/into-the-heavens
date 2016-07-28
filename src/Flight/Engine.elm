@@ -11,21 +11,21 @@ import Flight.Switch as Switch
 import Flight.Util as Util
 
 
-update : Float -> GameState -> GameState
-update dt state =
+update : GameState -> GameState
+update state =
     state
-        |> thrust dt
+        |> thrust Util.delta
         |> checkCollisions
-        |> processActions dt
-        |> aiUpdate dt
+        |> processActions
+        |> aiUpdate
         |> checkSchedule
 
 
-aiUpdate : Float -> GameState -> GameState
-aiUpdate dt model =
+aiUpdate : GameState -> GameState
+aiUpdate model =
     let
         updateAll =
-            Dict.map (act dt model.universe) model.universe
+            Dict.map (act model.universe) model.universe
 
         allEffects =
             Dict.foldl (\_ ( _, effects ) -> (::) effects) [] updateAll
@@ -37,8 +37,8 @@ aiUpdate dt model =
         applyEffects allEffects { model | universe = newUniverse }
 
 
-act : Float -> Dict Id Body -> Id -> Body -> ( Body, List EngineEffect )
-act dt universe id actor =
+act : Dict Id Body -> Id -> Body -> ( Body, List EngineEffect )
+act universe id actor =
     case actor.ai of
         PlayerControlled cockpit ->
             if cockpit.trigger.value == 1 then
@@ -54,7 +54,7 @@ act dt universe id actor =
                     Hostile
                         { cockpit
                             | trigger =
-                                Switch.repeat dt
+                                Switch.repeat Util.delta
                                     (Util.faces cockpit.target actor universe)
                                     cockpit.trigger
                         }
@@ -69,13 +69,13 @@ act dt universe id actor =
 
         Seeking lifespan target ->
             if lifespan > 0 then
-                ( { actor | ai = Seeking (lifespan - dt) target }, [] )
+                ( { actor | ai = Seeking (lifespan - Util.delta) target }, [] )
             else
                 ( actor, [ Destroy id ] )
 
         Waiting lifespan ->
             if lifespan > 0 then
-                ( { actor | ai = Waiting (lifespan - dt) }, [] )
+                ( { actor | ai = Waiting (lifespan - Util.delta) }, [] )
             else
                 ( actor, [ Destroy id ] )
 
@@ -133,7 +133,7 @@ applyEffect effect model =
 
 thrust : Float -> GameState -> GameState
 thrust delta model =
-    { model | universe = Mech.evolve delta model.universe }
+    { model | universe = Mech.evolve model.universe }
 
 
 checkCollisions : GameState -> GameState
@@ -256,8 +256,8 @@ isSatisfied condition model =
                 |> Maybe.withDefault False
 
 
-processActions : Float -> GameState -> GameState
-processActions dt model =
+processActions : GameState -> GameState
+processActions model =
     let
         toggle action =
             Set.member (Util.keyMap action) model.playerActions
@@ -281,12 +281,12 @@ processActions dt model =
             }
 
         shields cockpit =
-            Switch.drain dt
+            Switch.drain Util.delta
                 (toggle ShieldsUp)
                 cockpit.shields
 
         trigger cockpit =
-            Switch.repeat dt
+            Switch.repeat Util.delta
                 (toggle Firing && not cockpit.shields.on)
                 cockpit.trigger
 

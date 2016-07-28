@@ -1,4 +1,4 @@
-module Flight.Util exposing (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, remove, explode, keyMap)
+module Flight.Util exposing (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, remove, explode, keyMap, delta)
 
 import Dict exposing (Dict)
 import Char exposing (KeyCode)
@@ -227,3 +227,8 @@ keyMap action =
 
         _ ->
             -1
+
+
+delta : Float
+delta =
+    1.0 / 60
