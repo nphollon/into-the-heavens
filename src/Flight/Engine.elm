@@ -1,6 +1,7 @@
 module Flight.Engine exposing (update, angleSpring)
 
 import Set
+import Char exposing (KeyCode)
 import Dict exposing (Dict)
 import List.Extra as ListX
 import Collision exposing (Bounds)
@@ -228,7 +229,7 @@ playerUpdate : GameState -> Id -> Body -> PlayerCockpit -> ( Body, List EngineEf
 playerUpdate model id actor cockpit =
     let
         toggle a =
-            Set.member (Util.keyMap a) model.playerActions
+            Set.member (keyMap a) model.playerActions
 
         twoWayToggle neg pos =
             case ( toggle neg, toggle pos ) of
@@ -273,6 +274,40 @@ playerUpdate model id actor cockpit =
             ( moved, [ ChangeTarget ] )
         else
             ( moved, [] )
+
+
+keyMap : PlayerAction -> KeyCode
+keyMap action =
+    case action of
+        RightTurn ->
+            Char.toCode 'D'
+
+        LeftTurn ->
+            Char.toCode 'A'
+
+        DownTurn ->
+            Char.toCode 'S'
+
+        UpTurn ->
+            Char.toCode 'W'
+
+        Thrust ->
+            Char.toCode 'I'
+
+        Brake ->
+            Char.toCode 'K'
+
+        ShieldsUp ->
+            Char.toCode 'H'
+
+        Firing ->
+            Char.toCode 'J'
+
+        TargetFacing ->
+            Char.toCode 'L'
+
+        _ ->
+            -1
 
 
 accelFromAction : Action -> Body -> Acceleration

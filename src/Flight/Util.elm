@@ -1,7 +1,6 @@
-module Flight.Util exposing (hasCrashed, hasWon, faces, getPlayer, updatePlayerCockpit, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, remove, explode, keyMap, delta)
+module Flight.Util exposing (hasCrashed, hasWon, faces, getPlayer, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, remove, explode, delta)
 
 import Dict exposing (Dict)
-import Char exposing (KeyCode)
 import Maybe.Extra as MaybeX
 import Types exposing (..)
 import Math.Transform as Transform
@@ -45,19 +44,6 @@ getPlayer universe =
         }
 
 
-updatePlayerCockpit : (PlayerCockpit -> PlayerCockpit) -> GameState -> GameState
-updatePlayerCockpit aiUpdate model =
-    let
-        bodyUpdate body =
-            Maybe.map (\c -> { body | ai = PlayerControlled (aiUpdate c) })
-                (extractCockpit body.ai)
-    in
-        { model
-            | universe =
-                Dict.update Spawn.playerId (flip Maybe.andThen bodyUpdate) model.universe
-        }
-
-
 extractCockpit : Ai -> Maybe PlayerCockpit
 extractCockpit ai =
     case ai of
@@ -71,8 +57,14 @@ extractCockpit ai =
 setPlayerTarget : GameState -> GameState
 setPlayerTarget model =
     let
+        playerAndCockpit =
+            getPlayer model.universe
+
         player =
-            .body (getPlayer model.universe)
+            playerAndCockpit.body
+
+        cockpit =
+            playerAndCockpit.cockpit
 
         closestVisitor id body ( winningId, winningDistance ) =
             if isVisitor body then
@@ -90,9 +82,19 @@ setPlayerTarget model =
         newTarget =
             Dict.foldl closestVisitor ( Spawn.emptyId, 1 / 0 ) model.universe
                 |> fst
+
+        newPlayer =
+            { player
+                | ai =
+                    PlayerControlled { cockpit | target = newTarget }
+            }
     in
-        updatePlayerCockpit (\c -> { c | target = newTarget })
-            model
+        { model
+            | universe =
+                Dict.insert Spawn.playerId
+                    newPlayer
+                    model.universe
+        }
 
 
 isVisitor : Body -> Bool
@@ -193,40 +195,6 @@ explode id model =
 remove : Id -> GameState -> GameState
 remove id model =
     { model | universe = Dict.remove id model.universe }
-
-
-keyMap : PlayerAction -> KeyCode
-keyMap action =
-    case action of
-        RightTurn ->
-            Char.toCode 'D'
-
-        LeftTurn ->
-            Char.toCode 'A'
-
-        DownTurn ->
-            Char.toCode 'S'
-
-        UpTurn ->
-            Char.toCode 'W'
-
-        Thrust ->
-            Char.toCode 'I'
-
-        Brake ->
-            Char.toCode 'K'
-
-        ShieldsUp ->
-            Char.toCode 'H'
-
-        Firing ->
-            Char.toCode 'J'
-
-        TargetFacing ->
-            Char.toCode 'L'
-
-        _ ->
-            -1
 
 
 delta : Float
