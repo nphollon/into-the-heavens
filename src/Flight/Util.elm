@@ -29,7 +29,7 @@ faces targetId viewer universe =
             |> MaybeX.mapDefault False inRange
 
 
-getPlayer : Dict Id Body -> { body : Body, cockpit : Cockpit }
+getPlayer : Dict Id Body -> { body : Body, cockpit : PlayerCockpit }
 getPlayer universe =
     let
         body =
@@ -45,7 +45,7 @@ getPlayer universe =
         }
 
 
-updatePlayerCockpit : (Cockpit -> Cockpit) -> GameState -> GameState
+updatePlayerCockpit : (PlayerCockpit -> PlayerCockpit) -> GameState -> GameState
 updatePlayerCockpit aiUpdate model =
     let
         bodyUpdate body =
@@ -58,7 +58,7 @@ updatePlayerCockpit aiUpdate model =
         }
 
 
-extractCockpit : Ai -> Maybe Cockpit
+extractCockpit : Ai -> Maybe PlayerCockpit
 extractCockpit ai =
     case ai of
         PlayerControlled cockpit ->
@@ -135,8 +135,8 @@ visitorCount universe =
 isSeekingPlayer : Body -> Bool
 isSeekingPlayer body =
     case body.ai of
-        Seeking _ x ->
-            x == Spawn.playerId
+        Seeking cockpit ->
+            cockpit.target == Spawn.playerId
 
         _ ->
             False

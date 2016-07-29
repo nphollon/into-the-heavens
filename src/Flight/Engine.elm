@@ -17,7 +17,6 @@ update : GameState -> GameState
 update state =
     state
         |> checkCollisions
-        |> processActions
         |> aiUpdate
         |> checkSchedule
 
@@ -142,140 +141,6 @@ isSatisfied condition model =
                 |> Maybe.withDefault False
 
 
-processActions : GameState -> GameState
-processActions model =
-    let
-        toggle action =
-            Set.member (Util.keyMap action) model.playerActions
-
-        twoWayToggle neg pos =
-            case ( toggle neg, toggle pos ) of
-                ( True, False ) ->
-                    -1
-
-                ( False, True ) ->
-                    1
-
-                _ ->
-                    0
-
-        action =
-            { yaw = twoWayToggle RightTurn LeftTurn
-            , pitch = twoWayToggle DownTurn UpTurn
-            , roll = twoWayToggle CounterclockwiseRoll ClockwiseRoll
-            , thrust = twoWayToggle Brake Thrust
-            }
-
-        shields cockpit =
-            Switch.drain Util.delta
-                (toggle ShieldsUp)
-                cockpit.shields
-
-        trigger cockpit =
-            Switch.repeat Util.delta
-                (toggle Firing && not cockpit.shields.on)
-                cockpit.trigger
-
-        newCockpit cockpit =
-            { cockpit
-                | action = action
-                , shields = shields cockpit
-                , trigger = trigger cockpit
-            }
-    in
-        if toggle TargetFacing then
-            Util.updatePlayerCockpit newCockpit model
-                |> Util.setPlayerTarget
-        else
-            Util.updatePlayerCockpit newCockpit model
-
-
-aiUpdate : GameState -> GameState
-aiUpdate model =
-    let
-        updateAll =
-            Dict.map (act model.universe) model.universe
-
-        allEffects =
-            Dict.foldl (\_ ( _, effects ) -> (::) effects) [] updateAll
-                |> List.concat
-
-        newUniverse =
-            Dict.map (\_ ( body, _ ) -> body) updateAll
-    in
-        applyEffects allEffects { model | universe = newUniverse }
-
-
-act : Dict Id Body -> Id -> Body -> ( Body, List EngineEffect )
-act universe id actor =
-    case actor.ai of
-        PlayerControlled cockpit ->
-            let
-                moved =
-                    evolveObject (accelFromAction cockpit.action) actor
-            in
-                if cockpit.trigger.value == 1 then
-                    ( moved, [ SpawnMissile id cockpit.target ] )
-                else if Dict.get cockpit.target universe == Nothing then
-                    ( moved, [ ChangeTarget ] )
-                else
-                    ( moved, [] )
-
-        Hostile cockpit ->
-            let
-                newAi =
-                    Hostile
-                        { cockpit
-                            | trigger =
-                                Switch.repeat Util.delta
-                                    (Util.faces cockpit.target actor universe)
-                                    cockpit.trigger
-                        }
-
-                moved =
-                    case Dict.get cockpit.target universe of
-                        Nothing ->
-                            glide actor
-
-                        Just target ->
-                            evolveObject (smartAccel target) actor
-
-                effects =
-                    if cockpit.trigger.value == 1 then
-                        [ SpawnMissile id cockpit.target ]
-                    else
-                        []
-            in
-                ( { moved | ai = newAi }, effects )
-
-        Seeking lifespan targetName ->
-            if lifespan > 0 then
-                let
-                    moved =
-                        case Dict.get targetName universe of
-                            Nothing ->
-                                glide actor
-
-                            Just target ->
-                                evolveObject (accelTowards 0.7 target)
-                                    actor
-                in
-                    ( { moved | ai = Seeking (lifespan - Util.delta) targetName }
-                    , []
-                    )
-            else
-                ( actor, [ Destroy id ] )
-
-        Waiting lifespan ->
-            if lifespan > 0 then
-                ( glide { actor | ai = Waiting (lifespan - Util.delta) }, [] )
-            else
-                ( actor, [ Destroy id ] )
-
-        Dumb ->
-            ( glide actor, [] )
-
-
 applyEffects : List EngineEffect -> GameState -> GameState
 applyEffects effects model =
     List.foldl applyEffect model effects
@@ -322,6 +187,155 @@ applyEffect effect model =
 
         Victory ->
             { model | victory = True }
+
+
+aiUpdate : GameState -> GameState
+aiUpdate model =
+    let
+        updateAll =
+            Dict.map (act model) model.universe
+
+        allEffects =
+            Dict.foldl (\_ ( _, effects ) -> (::) effects) [] updateAll
+                |> List.concat
+
+        newUniverse =
+            Dict.map (\_ ( body, _ ) -> body) updateAll
+    in
+        applyEffects allEffects { model | universe = newUniverse }
+
+
+act : GameState -> Id -> Body -> ( Body, List EngineEffect )
+act model id actor =
+    case actor.ai of
+        PlayerControlled cockpit ->
+            playerUpdate model id actor cockpit
+
+        Hostile cockpit ->
+            hostileUpdate model.universe id actor cockpit
+
+        Seeking cockpit ->
+            seekingUpdate model.universe id actor cockpit
+
+        Waiting lifespan ->
+            waitingUpdate id actor lifespan
+
+        Dumb ->
+            ( glide actor, [] )
+
+
+playerUpdate : GameState -> Id -> Body -> PlayerCockpit -> ( Body, List EngineEffect )
+playerUpdate model id actor cockpit =
+    let
+        toggle a =
+            Set.member (Util.keyMap a) model.playerActions
+
+        twoWayToggle neg pos =
+            case ( toggle neg, toggle pos ) of
+                ( True, False ) ->
+                    -1
+
+                ( False, True ) ->
+                    1
+
+                _ ->
+                    0
+
+        newCockpit =
+            { cockpit
+                | action =
+                    { yaw = twoWayToggle RightTurn LeftTurn
+                    , pitch = twoWayToggle DownTurn UpTurn
+                    , roll = twoWayToggle CounterclockwiseRoll ClockwiseRoll
+                    , thrust = twoWayToggle Brake Thrust
+                    }
+                , shields =
+                    Switch.drain Util.delta
+                        (toggle ShieldsUp)
+                        cockpit.shields
+                , trigger =
+                    Switch.repeat Util.delta
+                        (toggle Firing && not cockpit.shields.on)
+                        cockpit.trigger
+            }
+
+        moved =
+            { actor | ai = PlayerControlled newCockpit }
+                |> evolveObject (accelFromAction cockpit.action)
+
+        shouldChangeTarget =
+            (Dict.get newCockpit.target model.universe == Nothing)
+                || toggle TargetFacing
+    in
+        if newCockpit.trigger.value == 1 then
+            ( moved, [ SpawnMissile id cockpit.target ] )
+        else if shouldChangeTarget then
+            ( moved, [ ChangeTarget ] )
+        else
+            ( moved, [] )
+
+
+accelFromAction : Action -> Body -> Acceleration
+accelFromAction action object =
+    let
+        turningSpeed =
+            2.0
+
+        turningAccel =
+            5.0
+
+        speed =
+            5.0
+
+        accel =
+            5.0
+
+        goOrStop dir vel =
+            turningAccel * (turningSpeed * toFloat dir - vel)
+
+        targetSpeed =
+            speed * (1 + toFloat action.thrust)
+
+        targetVelocity =
+            Vector.vector 0 0 -targetSpeed
+                |> Quaternion.rotateVector object.orientation
+    in
+        { linear =
+            Vector.scale accel (Vector.sub targetVelocity object.velocity)
+        , angular =
+            Vector.vector (goOrStop action.pitch (Vector.getX object.angVelocity))
+                (goOrStop action.yaw (Vector.getY object.angVelocity))
+                (goOrStop action.roll (Vector.getZ object.angVelocity))
+        }
+
+
+hostileUpdate : Dict Id Body -> Id -> Body -> HostileCockpit -> ( Body, List EngineEffect )
+hostileUpdate universe id actor cockpit =
+    let
+        newAi =
+            Hostile
+                { cockpit
+                    | trigger =
+                        Switch.repeat Util.delta
+                            (Util.faces cockpit.target actor universe)
+                            cockpit.trigger
+                }
+
+        moved =
+            case Dict.get cockpit.target universe of
+                Nothing ->
+                    glide actor
+
+                Just target ->
+                    evolveObject (smartAccel target) actor
+
+        effects =
+            if cockpit.trigger.value == 1 then
+                [ SpawnMissile id cockpit.target ]
+            else
+                []
+    in
+        ( { moved | ai = newAi }, effects )
 
 
 smartAccel : Body -> Body -> Acceleration
@@ -371,38 +385,25 @@ angleSpring damping targetPosition body =
             body.angVelocity
 
 
-accelFromAction : Action -> Body -> Acceleration
-accelFromAction action object =
-    let
-        turningSpeed =
-            2.0
+seekingUpdate : Dict Id Body -> Id -> Body -> MissileCockpit -> ( Body, List EngineEffect )
+seekingUpdate universe id actor cockpit =
+    if cockpit.lifespan > 0 then
+        let
+            moved =
+                case Dict.get cockpit.target universe of
+                    Nothing ->
+                        glide actor
 
-        turningAccel =
-            5.0
+                    Just target ->
+                        evolveObject (accelTowards 0.7 target)
+                            actor
 
-        speed =
-            5.0
-
-        accel =
-            5.0
-
-        goOrStop dir vel =
-            turningAccel * (turningSpeed * toFloat dir - vel)
-
-        targetSpeed =
-            speed * (1 + toFloat action.thrust)
-
-        targetVelocity =
-            Vector.vector 0 0 -targetSpeed
-                |> Quaternion.rotateVector object.orientation
-    in
-        { linear =
-            Vector.scale accel (Vector.sub targetVelocity object.velocity)
-        , angular =
-            Vector.vector (goOrStop action.pitch (Vector.getX object.angVelocity))
-                (goOrStop action.yaw (Vector.getY object.angVelocity))
-                (goOrStop action.roll (Vector.getZ object.angVelocity))
-        }
+            agedCockpit =
+                { cockpit | lifespan = cockpit.lifespan - Util.delta }
+        in
+            ( { moved | ai = Seeking agedCockpit }, [] )
+    else
+        ( actor, [ Destroy id ] )
 
 
 accelTowards : Float -> Body -> Body -> Acceleration
@@ -423,6 +424,14 @@ accelTowards scale target missile =
         { linear = Vector.cross velocity lineOfSightRotation
         , angular = Vector.vector 0 0 0
         }
+
+
+waitingUpdate : Id -> Body -> Float -> ( Body, List EngineEffect )
+waitingUpdate id actor lifespan =
+    if lifespan > 0 then
+        ( glide { actor | ai = Waiting (lifespan - Util.delta) }, [] )
+    else
+        ( actor, [ Destroy id ] )
 
 
 evolveObject : (Body -> Acceleration) -> Body -> Body

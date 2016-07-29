@@ -101,7 +101,7 @@ spawnMissile parent targetId model =
             , angVelocity = Vector.vector 0 0 0
             , bounds = getBounds "Missile" model.library
             , health = 1
-            , ai = Seeking 4 targetId
+            , ai = Seeking { lifespan = 4, target = targetId }
             , isMissile = True
             }
 
@@ -182,7 +182,7 @@ getBounds name library =
         |> Maybe.withDefault Collision.empty
 
 
-defaultCockpit : Cockpit
+defaultCockpit : PlayerCockpit
 defaultCockpit =
     { action = inaction
     , target = emptyId

@@ -135,16 +135,25 @@ type alias Acceleration =
 
 type Ai
     = Dumb
-    | PlayerControlled Cockpit
-    | Seeking Float Id
-    | Hostile
-        { target : Id
-        , trigger : RepeatSwitch
-        }
+    | PlayerControlled PlayerCockpit
+    | Seeking MissileCockpit
+    | Hostile HostileCockpit
     | Waiting Float
 
 
-type alias Cockpit =
+type alias MissileCockpit =
+    { target : Id
+    , lifespan : Float
+    }
+
+
+type alias HostileCockpit =
+    { target : Id
+    , trigger : RepeatSwitch
+    }
+
+
+type alias PlayerCockpit =
     { action : Action
     , target : Id
     , trigger : RepeatSwitch
