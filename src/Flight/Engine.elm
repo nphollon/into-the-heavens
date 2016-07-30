@@ -1,7 +1,5 @@
 module Flight.Engine exposing (update, angleSpring)
 
-import Set
-import Char exposing (KeyCode)
 import Dict exposing (Dict)
 import List.Extra as ListX
 import Collision exposing (Bounds)
@@ -12,6 +10,8 @@ import Math.Transform as Transform
 import Flight.Spawn as Spawn
 import Flight.Switch as Switch
 import Flight.Util as Util
+import Flight.Player as Player
+import Flight.Mechanics as Mechanics
 
 
 update : GameState -> GameState
@@ -164,9 +164,6 @@ applyEffect effect model =
         SpawnCheckpoint id position ->
             Spawn.spawnCheckpoint id position model
 
-        ChangeTarget ->
-            Util.setPlayerTarget model
-
         Destroy id ->
             Util.remove id model
 
@@ -226,122 +223,8 @@ act model id actor =
 
 
 playerUpdate : GameState -> Id -> Body -> PlayerCockpit -> ( Body, List EngineEffect )
-playerUpdate model id actor cockpit =
-    let
-        toggle a =
-            Set.member (keyMap a) model.playerActions
-
-        twoWayToggle neg pos =
-            case ( toggle neg, toggle pos ) of
-                ( True, False ) ->
-                    -1
-
-                ( False, True ) ->
-                    1
-
-                _ ->
-                    0
-
-        newCockpit =
-            { cockpit
-                | action =
-                    { yaw = twoWayToggle RightTurn LeftTurn
-                    , pitch = twoWayToggle DownTurn UpTurn
-                    , roll = twoWayToggle CounterclockwiseRoll ClockwiseRoll
-                    , thrust = twoWayToggle Brake Thrust
-                    }
-                , shields =
-                    Switch.drain Util.delta
-                        (toggle ShieldsUp)
-                        cockpit.shields
-                , trigger =
-                    Switch.repeat Util.delta
-                        (toggle Firing && not cockpit.shields.on)
-                        cockpit.trigger
-            }
-
-        moved =
-            { actor | ai = PlayerControlled newCockpit }
-                |> evolveObject (accelFromAction cockpit.action)
-
-        shouldChangeTarget =
-            (Dict.get newCockpit.target model.universe == Nothing)
-                || toggle TargetFacing
-    in
-        if newCockpit.trigger.value == 1 then
-            ( moved, [ SpawnMissile id cockpit.target ] )
-        else if shouldChangeTarget then
-            ( moved, [ ChangeTarget ] )
-        else
-            ( moved, [] )
-
-
-keyMap : PlayerAction -> KeyCode
-keyMap action =
-    case action of
-        RightTurn ->
-            Char.toCode 'D'
-
-        LeftTurn ->
-            Char.toCode 'A'
-
-        DownTurn ->
-            Char.toCode 'S'
-
-        UpTurn ->
-            Char.toCode 'W'
-
-        Thrust ->
-            Char.toCode 'I'
-
-        Brake ->
-            Char.toCode 'K'
-
-        ShieldsUp ->
-            Char.toCode 'H'
-
-        Firing ->
-            Char.toCode 'J'
-
-        TargetFacing ->
-            Char.toCode 'L'
-
-        _ ->
-            -1
-
-
-accelFromAction : Action -> Body -> Acceleration
-accelFromAction action object =
-    let
-        turningSpeed =
-            2.0
-
-        turningAccel =
-            5.0
-
-        speed =
-            5.0
-
-        accel =
-            5.0
-
-        goOrStop dir vel =
-            turningAccel * (turningSpeed * toFloat dir - vel)
-
-        targetSpeed =
-            speed * (1 + toFloat action.thrust)
-
-        targetVelocity =
-            Vector.vector 0 0 -targetSpeed
-                |> Quaternion.rotateVector object.orientation
-    in
-        { linear =
-            Vector.scale accel (Vector.sub targetVelocity object.velocity)
-        , angular =
-            Vector.vector (goOrStop action.pitch (Vector.getX object.angVelocity))
-                (goOrStop action.yaw (Vector.getY object.angVelocity))
-                (goOrStop action.roll (Vector.getZ object.angVelocity))
-        }
+playerUpdate =
+    Player.update
 
 
 hostileUpdate : Dict Id Body -> Id -> Body -> HostileCockpit -> ( Body, List EngineEffect )
@@ -362,7 +245,7 @@ hostileUpdate universe id actor cockpit =
                     glide actor
 
                 Just target ->
-                    evolveObject (smartAccel target) actor
+                    Mechanics.evolveObject (smartAccel target) actor
 
         effects =
             if cockpit.trigger.value == 1 then
@@ -430,7 +313,7 @@ seekingUpdate universe id actor cockpit =
                         glide actor
 
                     Just target ->
-                        evolveObject (accelTowards 0.7 target)
+                        Mechanics.evolveObject (accelTowards 0.7 target)
                             actor
 
             agedCockpit =
@@ -467,57 +350,6 @@ waitingUpdate id actor lifespan =
         ( glide { actor | ai = Waiting (lifespan - Util.delta) }, [] )
     else
         ( actor, [ Destroy id ] )
-
-
-evolveObject : (Body -> Acceleration) -> Body -> Body
-evolveObject acceleration object =
-    let
-        dt =
-            Util.delta
-
-        stateDerivative state =
-            let
-                accel =
-                    acceleration state
-            in
-                { state
-                    | position = state.velocity
-                    , velocity = accel.linear
-                    , orientation = Quaternion.fromVector state.angVelocity
-                    , angVelocity = accel.angular
-                }
-
-        a =
-            stateDerivative object
-
-        b =
-            stateDerivative (nudge (dt / 2) a object)
-
-        c =
-            stateDerivative (nudge (dt / 2) b object)
-
-        d =
-            stateDerivative (nudge dt c object)
-    in
-        object
-            |> nudge (dt / 6) a
-            |> nudge (dt / 3) b
-            |> nudge (dt / 3) c
-            |> nudge (dt / 6) d
-
-
-nudge : Float -> Body -> Body -> Body
-nudge dt dpdt p =
-    { p
-        | position =
-            Vector.add p.position (Vector.scale dt dpdt.position)
-        , velocity =
-            Vector.add p.velocity (Vector.scale dt dpdt.velocity)
-        , orientation =
-            Quaternion.compose (Quaternion.scale dt dpdt.orientation) p.orientation
-        , angVelocity =
-            Vector.add p.angVelocity (Vector.scale dt dpdt.angVelocity)
-    }
 
 
 glide : Body -> Body

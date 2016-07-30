@@ -22,24 +22,42 @@ import Flight.Util as Util
 
 view : GameState -> Html a
 view model =
-    AppFrame.view
-        [ scene 900 600 model
-        , log model
-        ]
-        [ dashboard model
-        , instructions
-        ]
+    case Util.getPlayer model.universe of
+        Just player ->
+            AppFrame.view
+                [ scene 900 600 model player
+                , log model
+                ]
+                [ dashboard model player
+                , instructions
+                ]
+
+        Nothing ->
+            AppFrame.view [] []
 
 
-scene : Int -> Int -> GameState -> Html a
-scene width height model =
+scene : Int -> Int -> GameState -> PlayerData -> Html a
+scene width height model player =
     let
+        functionCalls =
+            [ WebGL.Enable WebGL.CullFace, WebGL.Enable WebGL.DepthTest ]
+
+        attributes =
+            [ Attributes.width width, Attributes.height height ]
+
         aspect =
             toFloat width / toFloat height
 
-        player =
-            Util.getPlayer model.universe
+        renderables =
+            (drawWorld aspect model player)
+                ++ (Hud.draw aspect model player)
+    in
+        WebGL.toHtmlWith functionCalls attributes renderables
 
+
+drawWorld : Float -> GameState -> PlayerData -> List Renderable
+drawWorld aspect model player =
+    let
         camera =
             Camera.at aspect player.body
 
@@ -59,16 +77,8 @@ scene width height model =
 
                 Explosion { bodyId, meshName } ->
                     drawExplosion camera (body bodyId) (mesh meshName)
-
-        functionCalls =
-            [ WebGL.Enable WebGL.CullFace, WebGL.Enable WebGL.DepthTest ]
-
-        attributes =
-            [ Attributes.width width, Attributes.height height ]
     in
         List.concatMap draw model.graphics
-            ++ Hud.draw width height model
-            |> WebGL.toHtmlWith functionCalls attributes
 
 
 drawBackground : Camera -> Maybe (Drawable Vertex) -> List Renderable
@@ -137,8 +147,8 @@ log model =
             |> div [ class "log" ]
 
 
-dashboard : GameState -> Html a
-dashboard model =
+dashboard : GameState -> PlayerData -> Html a
+dashboard model player =
     let
         printNumber label value =
             Format.float value
@@ -149,9 +159,6 @@ dashboard model =
             toString value
                 |> Format.tag label
                 |> text
-
-        player =
-            Util.getPlayer model.universe
 
         shipPosition =
             player.body.position

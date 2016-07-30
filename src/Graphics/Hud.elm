@@ -16,15 +16,9 @@ import Graphics.Camera as Camera
 import Graphics.Foreground as Foreground
 
 
-draw : Int -> Int -> GameState -> List Renderable
-draw width height model =
+draw : Float -> GameState -> PlayerData -> List Renderable
+draw aspect model player =
     let
-        aspect =
-            toFloat width / toFloat height
-
-        player =
-            Util.getPlayer model.universe
-
         perspectiveCamera =
             Camera.at aspect player.body
 

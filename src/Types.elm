@@ -67,6 +67,12 @@ type alias LevelData =
     }
 
 
+type alias PlayerData =
+    { body : Body
+    , cockpit : PlayerCockpit
+    }
+
+
 type alias Id =
     Int
 
@@ -78,7 +84,6 @@ type EngineEffect
     | Destroy Id
     | DestroyByName String
     | Explode Id
-    | ChangeTarget
     | DeductHealth Float Id
     | Notify String
     | Victory
@@ -113,18 +118,15 @@ type alias Body =
     , bounds : Bounds
     , health : Float
     , ai : Ai
-    , isMissile : Bool
+    , collisionClass : CollisionClass
     }
 
 
-
-{-
-   type CollisionClass
-       = Scenery
-       | Solid
-       | Blockable
-       | Friendly
--}
+type CollisionClass
+    = Scenery
+    | Solid
+    | Blockable
+    | Friendly
 
 
 type alias Acceleration =

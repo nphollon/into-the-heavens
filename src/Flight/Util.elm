@@ -1,4 +1,4 @@
-module Flight.Util exposing (hasCrashed, hasWon, faces, getPlayer, setPlayerTarget, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, remove, explode, delta)
+module Flight.Util exposing (hasCrashed, hasWon, faces, isMissile, isVisitor, isHealthy, isShielded, visitorCount, isSeekingPlayer, distanceTo, fromId, fromName, getId, remove, explode, delta, getPlayer)
 
 import Dict exposing (Dict)
 import Maybe.Extra as MaybeX
@@ -28,88 +28,14 @@ faces targetId viewer universe =
             |> MaybeX.mapDefault False inRange
 
 
-getPlayer : Dict Id Body -> { body : Body, cockpit : PlayerCockpit }
-getPlayer universe =
-    let
-        body =
-            Dict.get Spawn.playerId universe
-                |> Maybe.withDefault Spawn.defaultBody
-
-        cockpit =
-            extractCockpit body.ai
-                |> Maybe.withDefault Spawn.defaultCockpit
-    in
-        { body = body
-        , cockpit = cockpit
-        }
-
-
-extractCockpit : Ai -> Maybe PlayerCockpit
-extractCockpit ai =
-    case ai of
-        PlayerControlled cockpit ->
-            Just cockpit
-
-        _ ->
-            Nothing
-
-
-setPlayerTarget : GameState -> GameState
-setPlayerTarget model =
-    let
-        playerAndCockpit =
-            getPlayer model.universe
-
-        player =
-            playerAndCockpit.body
-
-        cockpit =
-            playerAndCockpit.cockpit
-
-        closestVisitor id body ( winningId, winningDistance ) =
-            if isVisitor body then
-                let
-                    distance =
-                        Transform.degreesFromForward player body.position
-                in
-                    if distance < winningDistance then
-                        ( id, distance )
-                    else
-                        ( winningId, winningDistance )
-            else
-                ( winningId, winningDistance )
-
-        newTarget =
-            Dict.foldl closestVisitor ( Spawn.emptyId, 1 / 0 ) model.universe
-                |> fst
-
-        newPlayer =
-            { player
-                | ai =
-                    PlayerControlled { cockpit | target = newTarget }
-            }
-    in
-        { model
-            | universe =
-                Dict.insert Spawn.playerId
-                    newPlayer
-                    model.universe
-        }
-
-
 isVisitor : Body -> Bool
 isVisitor body =
-    case body.ai of
-        Hostile _ ->
-            True
-
-        _ ->
-            False
+    body.collisionClass == Solid
 
 
 isMissile : Body -> Bool
-isMissile =
-    .isMissile
+isMissile body =
+    body.collisionClass == Blockable
 
 
 isHealthy : Body -> Bool
@@ -200,3 +126,17 @@ remove id model =
 delta : Float
 delta =
     1.0 / 60
+
+
+getPlayer : Dict Id Body -> Maybe PlayerData
+getPlayer universe =
+    Dict.get Spawn.playerId universe
+        |> flip Maybe.andThen
+            (\body ->
+                case body.ai of
+                    PlayerControlled cockpit ->
+                        Just { body = body, cockpit = cockpit }
+
+                    _ ->
+                        Nothing
+            )
