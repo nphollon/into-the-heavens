@@ -1,7 +1,7 @@
 module SwitchTest exposing (testSuite)
 
 import ElmTest exposing (..)
-import Flight.Switch as Switch
+import Flight.Mechanics as Switch
 
 
 testSuite : Test

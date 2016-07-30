@@ -18,6 +18,7 @@ import Graphics.Format as Format
 import Graphics.Explosion as Explosion
 import Graphics.Hud as Hud
 import Flight.Util as Util
+import Flight.Hostile as Hostile
 
 
 view : GameState -> Html a
@@ -77,8 +78,17 @@ drawWorld aspect model player =
 
                 Explosion { bodyId, meshName } ->
                     drawExplosion camera (body bodyId) (mesh meshName)
+
+        drawFromAi body =
+            case body.ai of
+                Hostile cockpit ->
+                    Hostile.draw camera model.library body
+
+                _ ->
+                    []
     in
-        List.concatMap draw model.graphics
+        (List.concatMap draw model.graphics)
+            ++ (List.concatMap drawFromAi (Dict.values model.universe))
 
 
 drawBackground : Camera -> Maybe (Drawable Vertex) -> List Renderable

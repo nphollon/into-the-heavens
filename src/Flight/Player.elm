@@ -8,9 +8,9 @@ import Library
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion
 import Math.Transform as Transform
-import Flight.Switch as Switch
 import Flight.Util as Util
 import Flight.Mechanics as Mechanics
+import Flight.Spawn as Spawn
 
 
 init : Library -> Body
@@ -37,8 +37,8 @@ init library =
     }
 
 
-update : GameState -> Id -> Body -> PlayerCockpit -> ( Body, List EngineEffect )
-update model id actor cockpit =
+update : GameState -> Body -> PlayerCockpit -> ( Body, List EngineEffect )
+update model actor cockpit =
     let
         toggle a =
             Set.member (keyMap a) model.playerActions
@@ -66,11 +66,11 @@ update model id actor cockpit =
                 , thrust = twoWayToggle Brake Thrust
                 }
             , shields =
-                Switch.drain Util.delta
+                Mechanics.drain Util.delta
                     (toggle ShieldsUp)
                     cockpit.shields
             , trigger =
-                Switch.repeat Util.delta
+                Mechanics.repeat Util.delta
                     (toggle Firing && not cockpit.shields.on)
                     cockpit.trigger
             , target =
@@ -85,7 +85,7 @@ update model id actor cockpit =
                 |> Mechanics.evolveObject (accelFromAction cockpit.action)
     in
         if newCockpit.trigger.value == 1 then
-            ( moved, [ SpawnMissile id cockpit.target ] )
+            ( moved, [ SpawnMissile Spawn.playerId cockpit.target ] )
         else
             ( moved, [] )
 

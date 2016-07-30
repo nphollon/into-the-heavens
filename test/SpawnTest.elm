@@ -5,7 +5,7 @@ import Assertion exposing (..)
 import Random.Pcg as Random
 import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion exposing (Quaternion)
-import Flight.Spawn as Spawn
+import Flight.Engine as Spawn
 
 
 testSuite : Test

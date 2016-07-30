@@ -6,7 +6,7 @@ import Dict
 import Math.Vector as Vec exposing (Vector)
 import Math.Quaternion as Quaternion
 import Flight.Spawn exposing (defaultBody)
-import Flight.Engine as Ai
+import Flight.Hostile as Ai
 import Flight.Util as Util
 
 

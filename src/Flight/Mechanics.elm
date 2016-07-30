@@ -1,4 +1,4 @@
-module Flight.Mechanics exposing (evolveObject)
+module Flight.Mechanics exposing (evolveObject, glide, repeat, drain)
 
 import Types exposing (..)
 import Math.Vector as Vector
@@ -55,3 +55,47 @@ nudge dt dpdt p =
         , angVelocity =
             Vector.add p.angVelocity (Vector.scale dt dpdt.angVelocity)
     }
+
+
+glide : Body -> Body
+glide body =
+    let
+        positionChange =
+            Vector.scale Util.delta body.velocity
+
+        orientationChange =
+            Quaternion.fromVector body.angVelocity
+                |> Quaternion.scale Util.delta
+    in
+        { body
+            | position = Vector.add positionChange body.position
+            , orientation = Quaternion.compose orientationChange body.orientation
+        }
+
+
+repeat : Float -> Bool -> RepeatSwitch -> RepeatSwitch
+repeat dt isOn switch =
+    let
+        dv =
+            dt / switch.decay
+    in
+        if switch.value > dv then
+            { switch | value = switch.value - dv }
+        else if isOn then
+            { switch | value = 1 }
+        else
+            { switch | value = 0 }
+
+
+drain : Float -> Bool -> DrainSwitch -> DrainSwitch
+drain dt isOn switch =
+    if isOn then
+        { switch
+            | value = max 0 (switch.value - dt / switch.decay)
+            , on = dt < switch.value * switch.decay
+        }
+    else
+        { switch
+            | value = min 1 (switch.value + dt / switch.recover)
+            , on = False
+        }

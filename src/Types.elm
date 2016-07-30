@@ -122,6 +122,14 @@ type alias Body =
     }
 
 
+type alias Placement =
+    { position : Vector
+    , orientation : Quaternion
+    , velocity : Vector
+    , angVelocity : Vector
+    }
+
+
 type CollisionClass
     = Scenery
     | Solid

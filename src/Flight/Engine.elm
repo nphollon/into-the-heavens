@@ -1,16 +1,17 @@
-module Flight.Engine exposing (update, angleSpring)
+module Flight.Engine exposing (update, placeAt)
 
 import Dict exposing (Dict)
 import List.Extra as ListX
+import Random.Pcg as Random
 import Collision exposing (Bounds)
 import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
-import Math.Quaternion as Quaternion
+import Math.Spherical as Spherical
 import Math.Transform as Transform
 import Flight.Spawn as Spawn
-import Flight.Switch as Switch
 import Flight.Util as Util
 import Flight.Player as Player
+import Flight.Hostile as Hostile
 import Flight.Mechanics as Mechanics
 
 
@@ -151,7 +152,25 @@ applyEffect : EngineEffect -> GameState -> GameState
 applyEffect effect model =
     case effect of
         SpawnShips n ->
-            Spawn.spawnShip n model
+            let
+                ( placements, newSeed ) =
+                    Spherical.random (always 300)
+                        |> placeAt
+                        |> Random.list n
+                        |> flip Random.step model.seed
+            in
+                List.foldl
+                    (\placement m ->
+                        { m
+                            | universe =
+                                Dict.insert m.nextId
+                                    (Hostile.init model.library placement)
+                                    m.universe
+                            , nextId = m.nextId + 1
+                        }
+                    )
+                    { model | seed = newSeed }
+                    placements
 
         SpawnMissile sourceId targetId ->
             case Dict.get sourceId model.universe of
@@ -187,6 +206,22 @@ applyEffect effect model =
             { model | victory = True }
 
 
+placeAt : Random.Generator Vector -> Random.Generator Placement
+placeAt positionGenerator =
+    let
+        orientationFor position =
+            Transform.rotationFor (Vector.vector 0 0 1) position
+
+        place position =
+            { position = position
+            , velocity = Vector.scale -0.1 position
+            , orientation = orientationFor position
+            , angVelocity = Vector.vector 0 0 0
+            }
+    in
+        Random.map place positionGenerator
+
+
 aiUpdate : GameState -> GameState
 aiUpdate model =
     let
@@ -207,10 +242,10 @@ act : GameState -> Id -> Body -> ( Body, List EngineEffect )
 act model id actor =
     case actor.ai of
         PlayerControlled cockpit ->
-            playerUpdate model id actor cockpit
+            Player.update model actor cockpit
 
         Hostile cockpit ->
-            hostileUpdate model.universe id actor cockpit
+            Hostile.update model.universe id actor cockpit
 
         Seeking cockpit ->
             seekingUpdate model.universe id actor cockpit
@@ -219,88 +254,7 @@ act model id actor =
             waitingUpdate id actor lifespan
 
         Dumb ->
-            ( glide actor, [] )
-
-
-playerUpdate : GameState -> Id -> Body -> PlayerCockpit -> ( Body, List EngineEffect )
-playerUpdate =
-    Player.update
-
-
-hostileUpdate : Dict Id Body -> Id -> Body -> HostileCockpit -> ( Body, List EngineEffect )
-hostileUpdate universe id actor cockpit =
-    let
-        newAi =
-            Hostile
-                { cockpit
-                    | trigger =
-                        Switch.repeat Util.delta
-                            (Util.faces cockpit.target actor universe)
-                            cockpit.trigger
-                }
-
-        moved =
-            case Dict.get cockpit.target universe of
-                Nothing ->
-                    glide actor
-
-                Just target ->
-                    Mechanics.evolveObject (smartAccel target) actor
-
-        effects =
-            if cockpit.trigger.value == 1 then
-                [ SpawnMissile id cockpit.target ]
-            else
-                []
-    in
-        ( { moved | ai = newAi }, effects )
-
-
-smartAccel : Body -> Body -> Acceleration
-smartAccel target object =
-    let
-        relativePosition =
-            Vector.sub target.position object.position
-
-        relativeVelocity =
-            Vector.sub target.velocity object.velocity
-
-        scale =
-            1.0
-
-        damping =
-            0.3
-
-        max m v =
-            let
-                mag =
-                    Vector.length v
-            in
-                if mag > m then
-                    Vector.scale (m / mag) v
-                else
-                    v
-    in
-        { linear =
-            Vector.scale (0.25 / damping) relativePosition
-                |> Vector.add relativeVelocity
-                |> Vector.scale scale
-                |> max 10
-        , angular =
-            angleSpring 0.5 target.position object
-                |> Vector.scale 3
-        }
-
-
-angleSpring : Float -> Vector -> Body -> Vector
-angleSpring damping targetPosition body =
-    let
-        rotation =
-            Transform.rotationFor (Vector.vector 0 0 -1)
-                (Transform.toBodyFrame body targetPosition)
-    in
-        Vector.sub (Vector.scale (0.25 / damping) (Quaternion.toVector rotation))
-            body.angVelocity
+            ( Mechanics.glide actor, [] )
 
 
 seekingUpdate : Dict Id Body -> Id -> Body -> MissileCockpit -> ( Body, List EngineEffect )
@@ -310,7 +264,7 @@ seekingUpdate universe id actor cockpit =
             moved =
                 case Dict.get cockpit.target universe of
                     Nothing ->
-                        glide actor
+                        Mechanics.glide actor
 
                     Just target ->
                         Mechanics.evolveObject (accelTowards 0.7 target)
@@ -347,22 +301,6 @@ accelTowards scale target missile =
 waitingUpdate : Id -> Body -> Float -> ( Body, List EngineEffect )
 waitingUpdate id actor lifespan =
     if lifespan > 0 then
-        ( glide { actor | ai = Waiting (lifespan - Util.delta) }, [] )
+        ( Mechanics.glide { actor | ai = Waiting (lifespan - Util.delta) }, [] )
     else
         ( actor, [ Destroy id ] )
-
-
-glide : Body -> Body
-glide body =
-    let
-        positionChange =
-            Vector.scale Util.delta body.velocity
-
-        orientationChange =
-            Quaternion.fromVector body.angVelocity
-                |> Quaternion.scale Util.delta
-    in
-        { body
-            | position = Vector.add positionChange body.position
-            , orientation = Quaternion.compose orientationChange body.orientation
-        }
