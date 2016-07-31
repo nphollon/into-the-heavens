@@ -1,17 +1,13 @@
-module Flight.Mechanics exposing (evolveObject, glide, repeat, drain)
+module Flight.Mechanics exposing (evolveObject, glide, repeat, drain, delta)
 
 import Types exposing (..)
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion
-import Flight.Util as Util
 
 
 evolveObject : (Body -> Acceleration) -> Body -> Body
 evolveObject acceleration object =
     let
-        dt =
-            Util.delta
-
         stateDerivative state =
             let
                 accel =
@@ -28,32 +24,32 @@ evolveObject acceleration object =
             stateDerivative object
 
         b =
-            stateDerivative (nudge (dt / 2) a object)
+            stateDerivative (nudge (delta / 2) a object)
 
         c =
-            stateDerivative (nudge (dt / 2) b object)
+            stateDerivative (nudge (delta / 2) b object)
 
         d =
-            stateDerivative (nudge dt c object)
+            stateDerivative (nudge delta c object)
     in
         object
-            |> nudge (dt / 6) a
-            |> nudge (dt / 3) b
-            |> nudge (dt / 3) c
-            |> nudge (dt / 6) d
+            |> nudge (delta / 6) a
+            |> nudge (delta / 3) b
+            |> nudge (delta / 3) c
+            |> nudge (delta / 6) d
 
 
 nudge : Float -> Body -> Body -> Body
-nudge dt dpdt p =
+nudge delta dpdelta p =
     { p
         | position =
-            Vector.add p.position (Vector.scale dt dpdt.position)
+            Vector.add p.position (Vector.scale delta dpdelta.position)
         , velocity =
-            Vector.add p.velocity (Vector.scale dt dpdt.velocity)
+            Vector.add p.velocity (Vector.scale delta dpdelta.velocity)
         , orientation =
-            Quaternion.compose (Quaternion.scale dt dpdt.orientation) p.orientation
+            Quaternion.compose (Quaternion.scale delta dpdelta.orientation) p.orientation
         , angVelocity =
-            Vector.add p.angVelocity (Vector.scale dt dpdt.angVelocity)
+            Vector.add p.angVelocity (Vector.scale delta dpdelta.angVelocity)
     }
 
 
@@ -61,11 +57,11 @@ glide : Body -> Body
 glide body =
     let
         positionChange =
-            Vector.scale Util.delta body.velocity
+            Vector.scale delta body.velocity
 
         orientationChange =
             Quaternion.fromVector body.angVelocity
-                |> Quaternion.scale Util.delta
+                |> Quaternion.scale delta
     in
         { body
             | position = Vector.add positionChange body.position
@@ -99,3 +95,8 @@ drain dt isOn switch =
             | value = min 1 (switch.value + dt / switch.recover)
             , on = False
         }
+
+
+delta : Float
+delta =
+    1 / 60

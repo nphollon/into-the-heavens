@@ -8,7 +8,6 @@ import Library
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion
 import Math.Transform as Transform
-import Flight.Util as Util
 import Flight.Mechanics as Mechanics
 import Flight.Spawn as Spawn
 
@@ -66,11 +65,11 @@ update model actor cockpit =
                 , thrust = twoWayToggle Brake Thrust
                 }
             , shields =
-                Mechanics.drain Util.delta
+                Mechanics.drain Mechanics.delta
                     (toggle ShieldsUp)
                     cockpit.shields
             , trigger =
-                Mechanics.repeat Util.delta
+                Mechanics.repeat Mechanics.delta
                     (toggle Firing && not cockpit.shields.on)
                     cockpit.trigger
             , target =
@@ -98,7 +97,7 @@ newTarget universe player =
                 distance =
                     Transform.degreesFromForward player other.position
             in
-                if Util.isVisitor other && distance < winningDistance then
+                if other.collisionClass == Solid && distance < winningDistance then
                     ( id, distance )
                 else
                     ( winningId, winningDistance )

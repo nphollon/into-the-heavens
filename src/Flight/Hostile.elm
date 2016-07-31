@@ -1,7 +1,8 @@
-module Flight.Hostile exposing (init, update, angleSpring, draw)
+module Flight.Hostile exposing (init, update, faces, angleSpring, draw)
 
 import Dict exposing (Dict)
 import Color
+import Maybe.Extra as MaybeX
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL exposing (Renderable)
 import Types exposing (..)
@@ -9,7 +10,6 @@ import Library
 import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion
 import Math.Transform as Transform
-import Flight.Util as Util
 import Flight.Mechanics as Mechanics
 import Flight.Spawn as Spawn
 import Graphics.Foreground as Foreground
@@ -39,8 +39,8 @@ update universe id actor cockpit =
             Hostile
                 { cockpit
                     | trigger =
-                        Mechanics.repeat Util.delta
-                            (Util.faces cockpit.target actor universe)
+                        Mechanics.repeat Mechanics.delta
+                            (faces cockpit.target actor universe)
                             cockpit.trigger
                 }
 
@@ -106,6 +106,16 @@ angleSpring damping targetPosition body =
     in
         Vector.sub (Vector.scale (0.25 / damping) (Quaternion.toVector rotation))
             body.angVelocity
+
+
+faces : Id -> Body -> Dict Id Body -> Bool
+faces targetId viewer universe =
+    let
+        inRange t =
+            Transform.degreesFromForward viewer t.position < degrees 15
+    in
+        Dict.get targetId universe
+            |> MaybeX.mapDefault False inRange
 
 
 draw : Camera -> Library -> Body -> List Renderable

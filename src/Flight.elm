@@ -1,12 +1,14 @@
 module Flight exposing (timeUpdate, keyDown, keyUp, view)
 
 import Set exposing (Set)
+import Dict exposing (Dict)
 import Char exposing (KeyCode)
 import Time exposing (Time)
 import Html exposing (Html)
 import Types exposing (..)
 import Flight.Engine as Engine
-import Flight.Util as Util
+import Flight.Spawn as Spawn
+import Flight.Mechanics as Mechanics
 import Menu.Init
 import Graphics.View as View
 
@@ -28,12 +30,15 @@ timeUpdate clockTime model =
     let
         newModel =
             engineUpdate clockTime model
+
+        hasCrashed =
+            not (Dict.member Spawn.playerId newModel.universe)
     in
-        if Util.hasWon newModel then
+        if newModel.victory then
             Menu.Init.victory newModel.level
                 newModel.seed
                 newModel.library
-        else if Util.hasCrashed newModel then
+        else if hasCrashed then
             Menu.Init.crash newModel.level
                 newModel.seed
                 newModel.library
@@ -62,10 +67,10 @@ engineUpdate clockTime model =
 
 reduceLag : GameState -> GameState
 reduceLag model =
-    if model.lag < Util.delta then
+    if model.lag < Mechanics.delta then
         model
     else
-        { model | lag = model.lag - Util.delta }
+        { model | lag = model.lag - Mechanics.delta }
             |> Engine.update
             |> reduceLag
 

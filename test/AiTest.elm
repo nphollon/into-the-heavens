@@ -7,7 +7,6 @@ import Math.Vector as Vec exposing (Vector)
 import Math.Quaternion as Quaternion
 import Flight.Spawn exposing (defaultBody)
 import Flight.Hostile as Ai
-import Flight.Util as Util
 
 
 testSuite : Test
@@ -174,4 +173,4 @@ assertTriggerChange shouldFire position orientation targetPosition =
                 ]
     in
         assertEqual shouldFire
-            (Util.faces 2 body universe)
+            (Ai.faces 2 body universe)

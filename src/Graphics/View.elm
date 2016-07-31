@@ -17,13 +17,13 @@ import Graphics.Camera as Camera
 import Graphics.Format as Format
 import Graphics.Explosion as Explosion
 import Graphics.Hud as Hud
-import Flight.Util as Util
 import Flight.Hostile as Hostile
+import Flight.Spawn as Spawn
 
 
 view : GameState -> Html a
 view model =
-    case Util.getPlayer model.universe of
+    case getPlayer model.universe of
         Just player ->
             AppFrame.view
                 [ scene 900 600 model player
@@ -35,6 +35,20 @@ view model =
 
         Nothing ->
             AppFrame.view [] []
+
+
+getPlayer : Dict Id Body -> Maybe PlayerData
+getPlayer universe =
+    Dict.get Spawn.playerId universe
+        |> flip Maybe.andThen
+            (\body ->
+                case body.ai of
+                    PlayerControlled cockpit ->
+                        Just { body = body, cockpit = cockpit }
+
+                    _ ->
+                        Nothing
+            )
 
 
 scene : Int -> Int -> GameState -> PlayerData -> Html a
@@ -63,7 +77,7 @@ drawWorld aspect model player =
             Camera.at aspect player.body
 
         body =
-            flip Util.fromId model
+            flip Dict.get model.universe
 
         mesh =
             flip Dict.get model.library.meshes

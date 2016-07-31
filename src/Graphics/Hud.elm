@@ -11,7 +11,6 @@ import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
 import Math.Transform as Transform
 import Math.Quaternion as Quaternion exposing (Quaternion)
-import Flight.Util as Util
 import Graphics.Camera as Camera
 import Graphics.Foreground as Foreground
 
@@ -32,7 +31,7 @@ draw aspect model player =
                 mesh
 
         target =
-            Util.fromId player.cockpit.target model
+            Dict.get player.cockpit.target model.universe
                 |> MaybeX.maybeToList
                 |> List.map (highlight targetMesh Color.blue)
 
@@ -45,8 +44,12 @@ draw aspect model player =
             [ reticule orthoCamera
             , shieldSystem player.cockpit.shields orthoCamera
             , target
-            , decorateGroup incomingMesh Color.red Util.isSeekingPlayer
-            , decorateGroup targetableMesh Color.blue Util.isVisitor
+            , decorateGroup incomingMesh
+                Color.red
+                (\b -> b.collisionClass == Blockable)
+            , decorateGroup targetableMesh
+                Color.blue
+                (\b -> b.collisionClass == Solid)
             ]
 
 

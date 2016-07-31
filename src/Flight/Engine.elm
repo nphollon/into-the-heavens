@@ -9,10 +9,11 @@ import Math.Vector as Vector exposing (Vector)
 import Math.Spherical as Spherical
 import Math.Transform as Transform
 import Flight.Spawn as Spawn
-import Flight.Util as Util
 import Flight.Player as Player
 import Flight.Hostile as Hostile
-import Flight.Mechanics as Mechanics
+import Flight.Seeking as Seeking
+import Flight.Explosion as Explosion
+import Flight.Dumb as Dumb
 
 
 update : GameState -> GameState
@@ -52,12 +53,22 @@ type ObjectType
 
 objectType : Body -> ObjectType
 objectType body =
-    if Util.isMissile body then
+    if body.collisionClass == Blockable then
         Missile
-    else if Util.isShielded body then
+    else if isShielded body then
         Shielded
     else
         Unshielded
+
+
+isShielded : Body -> Bool
+isShielded body =
+    case body.ai of
+        PlayerControlled cockpit ->
+            cockpit.shields.on
+
+        _ ->
+            False
 
 
 addEffects : ( Id, Body ) -> ( Id, Body ) -> List EngineEffect -> List EngineEffect
@@ -132,13 +143,15 @@ isSatisfied condition model =
             True
 
         NoMoreVisitors ->
-            Util.visitorCount model.universe == 0
+            Dict.values model.universe
+                |> List.filter (.collisionClass >> (==) Solid)
+                |> List.isEmpty
 
         SecondsLater wait ->
             model.lastEventTime + wait < model.gameTime
 
         ReachedCheckpoint bodyName ->
-            Util.distanceTo bodyName model
+            distanceTo bodyName model
                 |> Maybe.map (\r -> r < 1)
                 |> Maybe.withDefault False
 
@@ -184,15 +197,24 @@ applyEffect effect model =
             Spawn.spawnCheckpoint id position model
 
         Destroy id ->
-            Util.remove id model
+            { model | universe = Dict.remove id model.universe }
 
         DestroyByName name ->
-            Util.getId name model
-                |> Maybe.map (flip Util.remove model)
+            Dict.get name model.names
+                |> Maybe.map (Destroy >> flip applyEffect model)
                 |> Maybe.withDefault model
 
         Explode id ->
-            Util.explode id model
+            case Dict.get id model.universe of
+                Just object ->
+                    Spawn.spawnExplosion object
+                        { model
+                            | universe = Dict.remove id model.universe
+                            , score = model.score + 1
+                        }
+
+                Nothing ->
+                    model
 
         DeductHealth n id ->
             hit n id model
@@ -204,6 +226,22 @@ applyEffect effect model =
 
         Victory ->
             { model | victory = True }
+
+
+distanceTo : String -> GameState -> Maybe Float
+distanceTo name model =
+    let
+        player =
+            Dict.get Spawn.playerId model.universe
+
+        object =
+            Dict.get name model.names
+                |> flip Maybe.andThen (flip Dict.get model.universe)
+
+        bodyDistance a b =
+            Vector.distance a.position b.position
+    in
+        Maybe.map2 bodyDistance player object
 
 
 placeAt : Random.Generator Vector -> Random.Generator Placement
@@ -248,59 +286,10 @@ act model id actor =
             Hostile.update model.universe id actor cockpit
 
         Seeking cockpit ->
-            seekingUpdate model.universe id actor cockpit
+            Seeking.update model.universe id actor cockpit
 
         Waiting lifespan ->
-            waitingUpdate id actor lifespan
+            Explosion.update id actor lifespan
 
         Dumb ->
-            ( Mechanics.glide actor, [] )
-
-
-seekingUpdate : Dict Id Body -> Id -> Body -> MissileCockpit -> ( Body, List EngineEffect )
-seekingUpdate universe id actor cockpit =
-    if cockpit.lifespan > 0 then
-        let
-            moved =
-                case Dict.get cockpit.target universe of
-                    Nothing ->
-                        Mechanics.glide actor
-
-                    Just target ->
-                        Mechanics.evolveObject (accelTowards 0.7 target)
-                            actor
-
-            agedCockpit =
-                { cockpit | lifespan = cockpit.lifespan - Util.delta }
-        in
-            ( { moved | ai = Seeking agedCockpit }, [] )
-    else
-        ( actor, [ Destroy id ] )
-
-
-accelTowards : Float -> Body -> Body -> Acceleration
-accelTowards scale target missile =
-    let
-        range =
-            Vector.sub target.position missile.position
-
-        velocity =
-            Vector.sub target.velocity missile.velocity
-
-        rSquared =
-            Vector.distanceSquared target.position missile.position
-
-        lineOfSightRotation =
-            Vector.scale (scale / rSquared) (Vector.cross range velocity)
-    in
-        { linear = Vector.cross velocity lineOfSightRotation
-        , angular = Vector.vector 0 0 0
-        }
-
-
-waitingUpdate : Id -> Body -> Float -> ( Body, List EngineEffect )
-waitingUpdate id actor lifespan =
-    if lifespan > 0 then
-        ( Mechanics.glide { actor | ai = Waiting (lifespan - Util.delta) }, [] )
-    else
-        ( actor, [ Destroy id ] )
+            Dumb.update actor
