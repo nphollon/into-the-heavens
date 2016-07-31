@@ -15,9 +15,9 @@ import Graphics.AppFrame as AppFrame
 import Graphics.Foreground as Foreground
 import Graphics.Camera as Camera
 import Graphics.Format as Format
-import Graphics.Explosion as Explosion
 import Graphics.Hud as Hud
 import Flight.Hostile as Hostile
+import Flight.Explosion as Explosion
 import Flight.Spawn as Spawn
 
 
@@ -90,13 +90,13 @@ drawWorld aspect model player =
                 Object { bodyId, meshName, shader } ->
                     drawObject shader camera (body bodyId) (mesh meshName)
 
-                Explosion { bodyId, meshName } ->
-                    drawExplosion camera (body bodyId) (mesh meshName)
-
         drawFromAi body =
             case body.ai of
                 Hostile cockpit ->
                     Hostile.draw camera model.library body
+
+                Explosion lifespan ->
+                    Explosion.draw camera model.library body lifespan
 
                 _ ->
                     []
@@ -123,17 +123,6 @@ drawObject shader camera body mesh =
         |> MaybeX.maybeToList
 
 
-drawExplosion : Camera -> Maybe Body -> Maybe (Drawable Vertex) -> List Renderable
-drawExplosion camera body mesh =
-    Maybe.map2
-        (\b m ->
-            Explosion.entity (percentCountdown b) (objectPlacement b) camera m
-        )
-        body
-        mesh
-        |> MaybeX.maybeToList
-
-
 objectPlacement : Body -> Mat4
 objectPlacement object =
     placement object.position object.orientation
@@ -143,16 +132,6 @@ placement : Vector -> Quaternion -> Mat4
 placement position orientation =
     Mat4.mul (Mat4.makeTranslate (Vector.toVec3 position))
         (Quaternion.toMat4 orientation)
-
-
-percentCountdown : Body -> Float
-percentCountdown object =
-    case object.ai of
-        Waiting x ->
-            x / 3.0
-
-        _ ->
-            0.5
 
 
 log : GameState -> Html a

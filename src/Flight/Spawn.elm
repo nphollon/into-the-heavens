@@ -47,17 +47,14 @@ spawnExplosion parent model =
             , angVelocity = Vector.vector 0 0 0
             , bounds = Collision.empty
             , health = 1
-            , ai = Waiting 3
+            , ai = Explosion 3
             , collisionClass = Scenery
             }
-
-        graphics id =
-            Explosion
-                { bodyId = id
-                , meshName = "Explosion"
-                }
     in
-        spawn graphics body model
+        { model
+            | universe = Dict.insert model.nextId body model.universe
+            , nextId = model.nextId + 1
+        }
 
 
 spawnCheckpoint : String -> Vector -> GameState -> GameState

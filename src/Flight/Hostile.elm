@@ -3,7 +3,6 @@ module Flight.Hostile exposing (init, update, faces, angleSpring, draw)
 import Dict exposing (Dict)
 import Color
 import Maybe.Extra as MaybeX
-import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL exposing (Renderable)
 import Types exposing (..)
 import Library
@@ -121,13 +120,7 @@ faces targetId viewer universe =
 draw : Camera -> Library -> Body -> List Renderable
 draw camera library body =
     [ Foreground.entity (Matte Color.purple)
-        (placement body)
+        (Transform.toMat4 body)
         camera
         (Library.getMesh "Ship" library)
     ]
-
-
-placement : Body -> Mat4
-placement body =
-    Mat4.mul (Mat4.makeTranslate (Vector.toVec3 body.position))
-        (Quaternion.toMat4 body.orientation)

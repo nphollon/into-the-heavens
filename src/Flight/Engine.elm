@@ -288,7 +288,7 @@ act model id actor =
         Seeking cockpit ->
             Seeking.update model.universe id actor cockpit
 
-        Waiting lifespan ->
+        Explosion lifespan ->
             Explosion.update id actor lifespan
 
         Dumb ->

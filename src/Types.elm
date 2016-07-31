@@ -148,7 +148,7 @@ type Ai
     | PlayerControlled PlayerCockpit
     | Seeking MissileCockpit
     | Hostile HostileCockpit
-    | Waiting Float
+    | Explosion Float
 
 
 type alias MissileCockpit =
@@ -199,10 +199,6 @@ type GraphicsObject
         { bodyId : Id
         , meshName : String
         , shader : ShaderType
-        }
-    | Explosion
-        { bodyId : Id
-        , meshName : String
         }
 
 

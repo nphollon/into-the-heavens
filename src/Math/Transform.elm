@@ -1,5 +1,6 @@
-module Math.Transform exposing (Orientable, rotationFor, toBodyFrame, fromBodyFrame, degreesFromForward, add)
+module Math.Transform exposing (Orientable, rotationFor, toBodyFrame, fromBodyFrame, degreesFromForward, add, toMat4)
 
+import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion exposing (Quaternion)
 
@@ -60,3 +61,9 @@ add { position, orientation } addend =
         | position = Vector.add position addend.position
         , orientation = Quaternion.compose addend.orientation orientation
     }
+
+
+toMat4 : Orientable a -> Mat4
+toMat4 body =
+    Mat4.mul (Mat4.makeTranslate (Vector.toVec3 body.position))
+        (Quaternion.toMat4 body.orientation)
