@@ -26,15 +26,11 @@ spawnMissile parent targetId model =
             , ai = Seeking { lifespan = 4, target = targetId }
             , collisionClass = Blockable
             }
-
-        graphics id =
-            Object
-                { bodyId = id
-                , meshName = "Missile"
-                , shader = Bright Color.red
-                }
     in
-        spawn graphics body model
+        { model
+            | universe = Dict.insert model.nextId body model.universe
+            , nextId = model.nextId + 1
+        }
 
 
 spawnExplosion : Body -> GameState -> GameState

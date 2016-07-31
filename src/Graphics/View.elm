@@ -19,6 +19,7 @@ import Graphics.Hud as Hud
 import Flight.Hostile as Hostile
 import Flight.Explosion as Explosion
 import Flight.Spawn as Spawn
+import Flight.Seeking as Seeking
 
 
 view : GameState -> Html a
@@ -94,6 +95,9 @@ drawWorld aspect model player =
             case body.ai of
                 Hostile cockpit ->
                     Hostile.draw camera model.library body
+
+                Seeking cockpit ->
+                    Seeking.draw camera model.library body
 
                 Explosion lifespan ->
                     Explosion.draw camera model.library body lifespan

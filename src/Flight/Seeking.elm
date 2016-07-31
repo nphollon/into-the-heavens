@@ -1,9 +1,14 @@
-module Flight.Seeking exposing (update)
+module Flight.Seeking exposing (update, draw)
 
 import Dict exposing (Dict)
+import Color
+import WebGL exposing (Renderable)
 import Types exposing (..)
+import Library
+import Math.Transform as Transform
 import Math.Vector as Vector
 import Flight.Mechanics as Mechanics
+import Graphics.Foreground as Foreground
 
 
 update : Dict Id Body -> Id -> Body -> MissileCockpit -> ( Body, List EngineEffect )
@@ -45,3 +50,12 @@ accelTowards scale target missile =
         { linear = Vector.cross velocity lineOfSightRotation
         , angular = Vector.vector 0 0 0
         }
+
+
+draw : Camera -> Library -> Body -> List Renderable
+draw camera library body =
+    [ Foreground.entity (Bright Color.red)
+        (Transform.toMat4 body)
+        camera
+        (Library.getMesh "Missile" library)
+    ]
