@@ -19,9 +19,9 @@ import Graphics.Format as Format
 import Graphics.Hud as Hud
 import Flight.Hostile as Hostile
 import Flight.Explosion as Explosion
-import Flight.Spawn as Spawn
 import Flight.Seeking as Seeking
 import Flight.Dumb as Dumb
+import Flight.Mechanics as Mechanics
 
 
 view : GameState -> Html a
@@ -42,7 +42,7 @@ view model =
 
 getPlayer : Dict Id Body -> Maybe PlayerData
 getPlayer universe =
-    Dict.get Spawn.playerId universe
+    Dict.get Mechanics.playerId universe
         |> flip Maybe.andThen
             (\body ->
                 case body.ai of

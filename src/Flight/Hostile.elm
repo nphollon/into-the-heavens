@@ -10,7 +10,6 @@ import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion
 import Math.Transform as Transform
 import Flight.Mechanics as Mechanics
-import Flight.Spawn as Spawn
 import Graphics.Foreground as Foreground
 
 
@@ -24,7 +23,7 @@ init library placement =
     , health = 1
     , ai =
         Hostile
-            { target = Spawn.playerId
+            { target = Mechanics.playerId
             , trigger = { value = 0, decay = 4 }
             }
     , collisionClass = Solid

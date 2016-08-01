@@ -1,15 +1,29 @@
-module Flight.Explosion exposing (update, draw)
+module Flight.Explosion exposing (init, update, draw)
 
 import WebGL exposing (Drawable, Renderable, Shader)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector4 exposing (Vec4)
 import Math.Vector3 exposing (Vec3)
+import Collision
 import Types exposing (..)
 import Library
 import Math.Quaternion as Quaternion
 import Math.Vector as Vector
 import Math.Transform as Transform
 import Flight.Mechanics as Mechanics
+
+
+init : Body -> Body
+init parent =
+    { position = parent.position
+    , velocity = parent.velocity
+    , orientation = Quaternion.identity
+    , angVelocity = Vector.vector 0 0 0
+    , bounds = Collision.empty
+    , health = 1
+    , ai = Explosion 3
+    , collisionClass = Scenery
+    }
 
 
 update : Id -> Body -> Float -> ( Body, List EngineEffect )

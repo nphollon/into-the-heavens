@@ -1,4 +1,4 @@
-module Flight.Mechanics exposing (evolveObject, glide, repeat, drain, delta)
+module Flight.Mechanics exposing (evolveObject, glide, repeat, drain, delta, playerId)
 
 import Types exposing (..)
 import Math.Vector as Vector
@@ -100,3 +100,8 @@ drain dt isOn switch =
 delta : Float
 delta =
     1 / 60
+
+
+playerId : Id
+playerId =
+    0

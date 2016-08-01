@@ -1,19 +1,21 @@
 module Flight.Engine exposing (update, placeAt)
 
 import Dict exposing (Dict)
+import Color
 import List.Extra as ListX
 import Random.Pcg as Random
 import Collision exposing (Bounds)
 import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
+import Math.Quaternion as Quaternion
 import Math.Spherical as Spherical
 import Math.Transform as Transform
-import Flight.Spawn as Spawn
 import Flight.Player as Player
 import Flight.Hostile as Hostile
 import Flight.Seeking as Seeking
 import Flight.Explosion as Explosion
 import Flight.Dumb as Dumb
+import Flight.Mechanics as Mechanics
 
 
 update : GameState -> GameState
@@ -156,6 +158,22 @@ isSatisfied condition model =
                 |> Maybe.withDefault False
 
 
+distanceTo : String -> GameState -> Maybe Float
+distanceTo name model =
+    let
+        player =
+            Dict.get Mechanics.playerId model.universe
+
+        object =
+            Dict.get name model.names
+                |> flip Maybe.andThen (flip Dict.get model.universe)
+
+        bodyDistance a b =
+            Vector.distance a.position b.position
+    in
+        Maybe.map2 bodyDistance player object
+
+
 applyEffects : List EngineEffect -> GameState -> GameState
 applyEffects effects model =
     List.foldl applyEffect model effects
@@ -172,29 +190,21 @@ applyEffect effect model =
                         |> Random.list n
                         |> flip Random.step model.seed
             in
-                List.foldl
-                    (\placement m ->
-                        { m
-                            | universe =
-                                Dict.insert m.nextId
-                                    (Hostile.init model.library placement)
-                                    m.universe
-                            , nextId = m.nextId + 1
-                        }
-                    )
+                List.foldl (Hostile.init model.library >> spawn)
                     { model | seed = newSeed }
                     placements
 
         SpawnMissile sourceId targetId ->
             case Dict.get sourceId model.universe of
                 Just source ->
-                    Spawn.spawnMissile source targetId model
+                    spawn (Seeking.init model.library source targetId) model
 
                 Nothing ->
                     model
 
-        SpawnCheckpoint id position ->
-            Spawn.spawnCheckpoint id position model
+        SpawnCheckpoint name position ->
+            spawn (checkpoint position)
+                { model | names = Dict.insert name model.nextId model.names }
 
         Destroy id ->
             { model | universe = Dict.remove id model.universe }
@@ -207,7 +217,7 @@ applyEffect effect model =
         Explode id ->
             case Dict.get id model.universe of
                 Just object ->
-                    Spawn.spawnExplosion object
+                    spawn (Explosion.init object)
                         { model
                             | universe = Dict.remove id model.universe
                             , score = model.score + 1
@@ -228,20 +238,29 @@ applyEffect effect model =
             { model | victory = True }
 
 
-distanceTo : String -> GameState -> Maybe Float
-distanceTo name model =
-    let
-        player =
-            Dict.get Spawn.playerId model.universe
+spawn : Body -> GameState -> GameState
+spawn body model =
+    { model
+        | universe = Dict.insert model.nextId body model.universe
+        , nextId = model.nextId + 1
+    }
 
-        object =
-            Dict.get name model.names
-                |> flip Maybe.andThen (flip Dict.get model.universe)
 
-        bodyDistance a b =
-            Vector.distance a.position b.position
-    in
-        Maybe.map2 bodyDistance player object
+checkpoint : Vector -> Body
+checkpoint position =
+    { position = position
+    , velocity = Vector.vector 0 0 0
+    , orientation = Quaternion.identity
+    , angVelocity = Vector.vector 0 0 1
+    , bounds = Collision.empty
+    , health = 0
+    , ai =
+        Dumb
+            { meshName = "Explosion"
+            , shader = Bright Color.yellow
+            }
+    , collisionClass = Scenery
+    }
 
 
 placeAt : Random.Generator Vector -> Random.Generator Placement

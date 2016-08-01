@@ -1,4 +1,4 @@
-module Flight.Seeking exposing (update, draw)
+module Flight.Seeking exposing (init, update, draw)
 
 import Dict exposing (Dict)
 import Color
@@ -7,8 +7,25 @@ import Types exposing (..)
 import Library
 import Math.Transform as Transform
 import Math.Vector as Vector
+import Math.Quaternion as Quaternion
 import Flight.Mechanics as Mechanics
 import Graphics.Foreground as Foreground
+
+
+init : Library -> Body -> Id -> Body
+init library parent target =
+    { position = Transform.fromBodyFrame parent (Vector.vector 0 -1 0)
+    , velocity =
+        Vector.vector 0 0 -30
+            |> Quaternion.rotateVector parent.orientation
+            |> Vector.add parent.velocity
+    , orientation = parent.orientation
+    , angVelocity = Vector.vector 0 0 0
+    , bounds = Library.getBounds "Missile" library
+    , health = 1
+    , ai = Seeking { lifespan = 4, target = target }
+    , collisionClass = Blockable
+    }
 
 
 update : Dict Id Body -> Id -> Body -> MissileCockpit -> ( Body, List EngineEffect )

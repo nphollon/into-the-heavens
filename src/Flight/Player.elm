@@ -9,7 +9,6 @@ import Math.Vector as Vector
 import Math.Quaternion as Quaternion
 import Math.Transform as Transform
 import Flight.Mechanics as Mechanics
-import Flight.Spawn as Spawn
 
 
 init : Library -> Body
@@ -84,7 +83,7 @@ update model actor cockpit =
                 |> Mechanics.evolveObject (accelFromAction cockpit.action)
     in
         if newCockpit.trigger.value == 1 then
-            ( moved, [ SpawnMissile Spawn.playerId cockpit.target ] )
+            ( moved, [ SpawnMissile Mechanics.playerId cockpit.target ] )
         else
             ( moved, [] )
 

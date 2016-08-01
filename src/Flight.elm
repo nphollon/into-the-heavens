@@ -7,7 +7,6 @@ import Time exposing (Time)
 import Html exposing (Html)
 import Types exposing (..)
 import Flight.Engine as Engine
-import Flight.Spawn as Spawn
 import Flight.Mechanics as Mechanics
 import Menu.Init
 import Graphics.View as View
@@ -32,7 +31,7 @@ timeUpdate clockTime model =
             engineUpdate clockTime model
 
         hasCrashed =
-            not (Dict.member Spawn.playerId newModel.universe)
+            not (Dict.member Mechanics.playerId newModel.universe)
     in
         if newModel.victory then
             Menu.Init.victory newModel.level

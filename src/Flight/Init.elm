@@ -4,8 +4,8 @@ import Dict
 import Set
 import Random.Pcg as Random exposing (Seed)
 import Types exposing (..)
-import Flight.Spawn as Spawn
 import Flight.Player as Player
+import Flight.Mechanics as Mechanics
 
 
 game : LevelData -> Seed -> Library -> ( Mode, Cmd Update )
@@ -26,7 +26,7 @@ game data seed library =
         , level = data.level
         , events = data.events
         , universe =
-            Dict.insert Spawn.playerId
+            Dict.insert Mechanics.playerId
                 (Player.init library)
                 data.universe
         }
