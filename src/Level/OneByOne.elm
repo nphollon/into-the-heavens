@@ -5,7 +5,7 @@ import Color
 import Types exposing (..)
 import Library
 import Math.Vector as Vector
-import Flight.Spawn exposing (defaultBody)
+import Math.Quaternion as Quaternion
 
 
 data : Library -> LevelData
@@ -51,21 +51,20 @@ data library =
     , universe =
         Dict.fromList
             [ ( 1
-              , { defaultBody
-                    | position = Vector.vector -35 5 -10
-                    , angVelocity = Vector.vector 3.0e-2 4.0e-2 0
-                    , bounds = Library.getBounds "Cage" library
-                    , health = 1
+              , { position = Vector.vector -35 5 -10
+                , velocity = Vector.vector 0 0 0
+                , orientation = Quaternion.identity
+                , angVelocity = Vector.vector 3.0e-2 4.0e-2 0
+                , bounds = Library.getBounds "Cage" library
+                , health = 1
+                , ai =
+                    Dumb
+                        { meshName = "Cage"
+                        , shader = Matte Color.purple
+                        }
+                , collisionClass = Scenery
                 }
               )
             ]
-    , graphics =
-        [ Background "Background"
-        , Object
-            { bodyId = 1
-            , meshName = "Cage"
-            , shader = Matte Color.purple
-            }
-        ]
     , names = Dict.empty
     }

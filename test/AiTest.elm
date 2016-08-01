@@ -3,10 +3,11 @@ module AiTest exposing (testSuite)
 import ElmTest exposing (..)
 import Assertion exposing (..)
 import Dict
+import Types exposing (..)
 import Math.Vector as Vec exposing (Vector)
 import Math.Quaternion as Quaternion
-import Flight.Spawn exposing (defaultBody)
 import Flight.Hostile as Ai
+import Collision
 
 
 testSuite : Test
@@ -174,3 +175,20 @@ assertTriggerChange shouldFire position orientation targetPosition =
     in
         assertEqual shouldFire
             (Ai.faces 2 body universe)
+
+
+defaultBody : Body
+defaultBody =
+    { position = Vec.vector 0 0 0
+    , velocity = Vec.vector 0 0 0
+    , orientation = Quaternion.identity
+    , angVelocity = Vec.vector 0 0 0
+    , bounds = Collision.empty
+    , health = 0
+    , ai =
+        Hostile
+            { target = 0
+            , trigger = { value = 0, decay = 1 }
+            }
+    , collisionClass = Scenery
+    }

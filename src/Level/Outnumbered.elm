@@ -5,7 +5,7 @@ import Dict exposing (Dict)
 import Types exposing (..)
 import Library
 import Math.Vector as Vector
-import Flight.Spawn as Spawn exposing (defaultBody)
+import Math.Quaternion as Quaternion
 
 
 data : Library -> LevelData
@@ -43,21 +43,20 @@ data library =
     , universe =
         Dict.fromList
             [ ( 1
-              , { defaultBody
-                    | position = Vector.vector 0 -20 0
-                    , angVelocity = Vector.vector 0 3.0e-2 0
-                    , bounds = Library.getBounds "Sphere" library
-                    , health = 1.0e10
+              , { position = Vector.vector 0 -20 0
+                , velocity = Vector.vector 0 0 0
+                , orientation = Quaternion.identity
+                , angVelocity = Vector.vector 0 3.0e-2 0
+                , bounds = Library.getBounds "Sphere" library
+                , health = 1.0e10
+                , ai =
+                    Dumb
+                        { meshName = "Sphere"
+                        , shader = Matte Color.darkGreen
+                        }
+                , collisionClass = Scenery
                 }
               )
             ]
-    , graphics =
-        [ Background "Background"
-        , Object
-            { bodyId = 1
-            , meshName = "Sphere"
-            , shader = Matte Color.darkGreen
-            }
-        ]
     , names = Dict.empty
     }

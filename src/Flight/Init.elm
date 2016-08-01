@@ -29,6 +29,5 @@ game data seed library =
             Dict.insert Spawn.playerId
                 (Player.init library)
                 data.universe
-        , graphics = data.graphics
         }
         ! []

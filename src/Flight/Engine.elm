@@ -103,20 +103,20 @@ addEffects ( idA, bodyA ) ( idB, bodyB ) effects =
 
 hit : Float -> Id -> GameState -> GameState
 hit damage id model =
-    let
-        object =
-            Dict.get id model.universe
-                |> Maybe.withDefault Spawn.defaultBody
-    in
-        if object.health > damage then
-            { model
-                | universe =
-                    Dict.insert id
-                        { object | health = object.health - damage }
-                        model.universe
-            }
-        else
-            applyEffect (Explode id) model
+    case Dict.get id model.universe of
+        Just object ->
+            if object.health > damage then
+                { model
+                    | universe =
+                        Dict.insert id
+                            { object | health = object.health - damage }
+                            model.universe
+                }
+            else
+                applyEffect (Explode id) model
+
+        Nothing ->
+            model
 
 
 checkSchedule : GameState -> GameState
@@ -291,5 +291,5 @@ act model id actor =
         Explosion lifespan ->
             Explosion.update id actor lifespan
 
-        Dumb ->
+        Dumb _ ->
             Dumb.update actor

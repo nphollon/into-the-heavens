@@ -5,7 +5,7 @@ import Color
 import Types exposing (..)
 import Library
 import Math.Vector as Vector
-import Flight.Spawn exposing (defaultBody)
+import Math.Quaternion as Quaternion
 
 
 data : Library -> LevelData
@@ -43,33 +43,35 @@ data library =
     , universe =
         Dict.fromList
             [ ( 1
-              , { defaultBody
-                    | position = Vector.vector -35 5 -10
-                    , bounds = Library.getBounds "Sphere" library
-                    , health = 1.0e10
+              , { position = Vector.vector -35 5 -10
+                , velocity = Vector.vector 0 0 0
+                , orientation = Quaternion.identity
+                , angVelocity = Vector.vector 0 0 0
+                , bounds = Library.getBounds "Sphere" library
+                , health = 1.0e10
+                , ai =
+                    Dumb
+                        { meshName = "Sphere"
+                        , shader = Matte Color.lightBlue
+                        }
+                , collisionClass = Scenery
                 }
               )
             , ( 2
-              , { defaultBody
-                    | position = Vector.vector 0 0 5
-                    , angVelocity = Vector.vector 0.5 0 0
-                    , bounds = Library.getBounds "Donut" library
-                    , health = 1.0e10
+              , { position = Vector.vector 0 0 5
+                , velocity = Vector.vector 0 0 0
+                , orientation = Quaternion.identity
+                , angVelocity = Vector.vector 0.5 0 0
+                , bounds = Library.getBounds "Donut" library
+                , health = 1.0e10
+                , ai =
+                    Dumb
+                        { meshName = "Donut"
+                        , shader = Matte Color.lightYellow
+                        }
+                , collisionClass = Scenery
                 }
               )
             ]
-    , graphics =
-        [ Background "Background"
-        , Object
-            { bodyId = 1
-            , meshName = "Sphere"
-            , shader = Matte Color.lightBlue
-            }
-        , Object
-            { bodyId = 2
-            , meshName = "Donut"
-            , shader = Matte Color.lightYellow
-            }
-        ]
     , names = Dict.empty
     }

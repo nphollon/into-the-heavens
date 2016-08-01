@@ -1,4 +1,4 @@
-module Flight.Spawn exposing (spawnMissile, spawnExplosion, spawnCheckpoint, defaultBody, playerId)
+module Flight.Spawn exposing (spawnMissile, spawnExplosion, spawnCheckpoint, playerId)
 
 import Color
 import Dict exposing (Dict)
@@ -57,51 +57,25 @@ spawnCheckpoint : String -> Vector -> GameState -> GameState
 spawnCheckpoint name position model =
     let
         body =
-            { defaultBody
-                | position = position
-                , angVelocity = Vector.vector 0 0 1
+            { position = position
+            , velocity = Vector.vector 0 0 0
+            , orientation = Quaternion.identity
+            , angVelocity = Vector.vector 0 0 1
+            , bounds = Collision.empty
+            , health = 0
+            , ai =
+                Dumb
+                    { meshName = "Explosion"
+                    , shader = Bright Color.yellow
+                    }
+            , collisionClass = Scenery
             }
-
-        graphics id =
-            Object
-                { bodyId = id
-                , meshName = "Explosion"
-                , shader = Bright Color.yellow
-                }
-    in
-        spawnWithName name graphics body model
-
-
-spawn : (Id -> GraphicsObject) -> Body -> GameState -> GameState
-spawn graphics body model =
-    let
-        id =
-            model.nextId
     in
         { model
-            | universe = Dict.insert id body model.universe
-            , graphics = graphics id :: model.graphics
-            , nextId = id + 1
+            | names = Dict.insert name model.nextId model.names
+            , universe = Dict.insert model.nextId body model.universe
+            , nextId = model.nextId + 1
         }
-
-
-spawnWithName : String -> (Id -> GraphicsObject) -> Body -> GameState -> GameState
-spawnWithName name graphics body model =
-    { model | names = Dict.insert name model.nextId model.names }
-        |> spawn graphics body
-
-
-defaultBody : Body
-defaultBody =
-    { position = Vector.vector 0 0 0
-    , velocity = Vector.vector 0 0 0
-    , orientation = Quaternion.identity
-    , angVelocity = Vector.vector 0 0 0
-    , bounds = Collision.empty
-    , health = 0
-    , ai = Dumb
-    , collisionClass = Scenery
-    }
 
 
 playerId : Id

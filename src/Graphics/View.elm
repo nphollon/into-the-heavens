@@ -9,6 +9,7 @@ import Html.Attributes as Attributes exposing (class)
 import WebGL exposing (Drawable, Renderable)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Types exposing (..)
+import Library
 import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion exposing (Quaternion)
 import Graphics.AppFrame as AppFrame
@@ -20,6 +21,7 @@ import Flight.Hostile as Hostile
 import Flight.Explosion as Explosion
 import Flight.Spawn as Spawn
 import Flight.Seeking as Seeking
+import Flight.Dumb as Dumb
 
 
 view : GameState -> Html a
@@ -77,19 +79,9 @@ drawWorld aspect model player =
         camera =
             Camera.at aspect player.body
 
-        body =
-            flip Dict.get model.universe
-
-        mesh =
-            flip Dict.get model.library.meshes
-
-        draw object =
-            case object of
-                Background meshName ->
-                    drawBackground camera (mesh meshName)
-
-                Object { bodyId, meshName, shader } ->
-                    drawObject shader camera (body bodyId) (mesh meshName)
+        background =
+            drawBackground camera
+                (Library.getMesh "Background" model.library)
 
         drawFromAi body =
             case body.ai of
@@ -102,21 +94,22 @@ drawWorld aspect model player =
                 Explosion lifespan ->
                     Explosion.draw camera model.library body lifespan
 
+                Dumb graphics ->
+                    Dumb.draw camera model.library body graphics
+
                 _ ->
                     []
     in
-        (List.concatMap draw model.graphics)
-            ++ (List.concatMap drawFromAi (Dict.values model.universe))
+        background :: (List.concatMap drawFromAi (Dict.values model.universe))
 
 
-drawBackground : Camera -> Maybe (Drawable Vertex) -> List Renderable
+drawBackground : Camera -> Drawable Vertex -> Renderable
 drawBackground camera mesh =
     let
         p =
             placement camera.position Quaternion.identity
     in
-        Maybe.map (Foreground.entity (Bright Color.lightBlue) p camera) mesh
-            |> MaybeX.maybeToList
+        Foreground.entity (Bright Color.lightBlue) p camera mesh
 
 
 drawObject : ShaderType -> Camera -> Maybe Body -> Maybe (Drawable Vertex) -> List Renderable

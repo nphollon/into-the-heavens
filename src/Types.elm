@@ -53,7 +53,6 @@ type alias GameState =
     , playerActions : Set KeyCode
     , universe : Dict Id Body
     , names : Dict String Id
-    , graphics : List GraphicsObject
     , library : Library
     }
 
@@ -62,7 +61,6 @@ type alias LevelData =
     { level : Level
     , events : List ( EventCondition, List EngineEffect )
     , universe : Dict Id Body
-    , graphics : List GraphicsObject
     , names : Dict String Id
     }
 
@@ -144,7 +142,7 @@ type alias Acceleration =
 
 
 type Ai
-    = Dumb
+    = Dumb { meshName : String, shader : ShaderType }
     | PlayerControlled PlayerCockpit
     | Seeking MissileCockpit
     | Hostile HostileCockpit
@@ -191,15 +189,6 @@ type alias Action =
     , yaw : Int
     , roll : Int
     }
-
-
-type GraphicsObject
-    = Background String
-    | Object
-        { bodyId : Id
-        , meshName : String
-        , shader : ShaderType
-        }
 
 
 type ShaderType

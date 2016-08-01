@@ -6,14 +6,25 @@ import Types exposing (..)
 import Library
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion exposing (Quaternion)
-import Flight.Spawn exposing (defaultBody)
 
 
 data : Library -> LevelData
 data library =
     let
-        column =
-            Library.getBounds "Column" library
+        column position orientation =
+            { position = position
+            , velocity = Vector.vector 0 0 0
+            , orientation = orientation
+            , angVelocity = Vector.vector 0 0 0
+            , bounds = Library.getBounds "Column" library
+            , health = 1.0e10
+            , ai =
+                Dumb
+                    { meshName = "Column"
+                    , shader = Matte Color.white
+                    }
+            , collisionClass = Scenery
+            }
     in
         { level = Pavilion
         , events =
@@ -56,166 +67,19 @@ data library =
             ]
         , universe =
             Dict.fromList
-                [ ( 1
-                  , { defaultBody
-                        | position = Vector.vector -60 0 -60
-                        , orientation = negZ
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
-                , ( 2
-                  , { defaultBody
-                        | position = Vector.vector 60 0 -60
-                        , orientation = negZ
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
-                , ( 3
-                  , { defaultBody
-                        | position = Vector.vector 60 0 60
-                        , orientation = posZ
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
-                , ( 4
-                  , { defaultBody
-                        | position = Vector.vector -60 0 60
-                        , orientation = posZ
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
-                , ( 5
-                  , { defaultBody
-                        | position = Vector.vector -60 -60 0
-                        , orientation = negX
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
-                , ( 6
-                  , { defaultBody
-                        | position = Vector.vector -60 60 0
-                        , orientation = negX
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
-                , ( 7
-                  , { defaultBody
-                        | position = Vector.vector 60 -60 0
-                        , orientation = posX
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
-                , ( 8
-                  , { defaultBody
-                        | position = Vector.vector 60 60 0
-                        , orientation = posX
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
-                , ( 9
-                  , { defaultBody
-                        | position = Vector.vector 0 -60 -60
-                        , orientation = negY
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
-                , ( 10
-                  , { defaultBody
-                        | position = Vector.vector 0 -60 60
-                        , orientation = negY
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
-                , ( 11
-                  , { defaultBody
-                        | position = Vector.vector 0 60 -60
-                        , orientation = posY
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
-                , ( 12
-                  , { defaultBody
-                        | position = Vector.vector 0 60 60
-                        , orientation = posY
-                        , bounds = column
-                        , health = 1.0e10
-                    }
-                  )
+                [ ( 1, column (Vector.vector -60 0 -60) negZ )
+                , ( 2, column (Vector.vector 60 0 -60) negZ )
+                , ( 3, column (Vector.vector 60 0 60) posZ )
+                , ( 4, column (Vector.vector -60 0 60) posZ )
+                , ( 5, column (Vector.vector -60 -60 0) negX )
+                , ( 6, column (Vector.vector -60 60 0) negX )
+                , ( 7, column (Vector.vector 60 -60 0) posX )
+                , ( 8, column (Vector.vector 60 60 0) posX )
+                , ( 9, column (Vector.vector 0 -60 -60) negY )
+                , ( 10, column (Vector.vector 0 -60 60) negY )
+                , ( 11, column (Vector.vector 0 60 -60) posY )
+                , ( 12, column (Vector.vector 0 60 60) posY )
                 ]
-        , graphics =
-            [ Background "Background"
-            , Object
-                { bodyId = 1
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            , Object
-                { bodyId = 2
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            , Object
-                { bodyId = 3
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            , Object
-                { bodyId = 4
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            , Object
-                { bodyId = 5
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            , Object
-                { bodyId = 6
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            , Object
-                { bodyId = 7
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            , Object
-                { bodyId = 8
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            , Object
-                { bodyId = 9
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            , Object
-                { bodyId = 10
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            , Object
-                { bodyId = 11
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            , Object
-                { bodyId = 12
-                , meshName = "Column"
-                , shader = Matte Color.white
-                }
-            ]
         , names = Dict.empty
         }
 
