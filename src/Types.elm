@@ -79,6 +79,7 @@ type EngineEffect
     = SpawnShips Int
     | SpawnMissile Id Id
     | SpawnCheckpoint String Vector
+    | SpawnFriendly Id
     | Destroy Id
     | DestroyByName String
     | Explode Id
@@ -147,6 +148,7 @@ type Ai
     | Seeking MissileCockpit
     | Hostile HostileCockpit
     | Explosion Float
+    | PlayerBullet Float
 
 
 type alias MissileCockpit =

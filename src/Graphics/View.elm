@@ -21,6 +21,7 @@ import Flight.Hostile as Hostile
 import Flight.Explosion as Explosion
 import Flight.Seeking as Seeking
 import Flight.Dumb as Dumb
+import Flight.PlayerBullet as PlayerBullet
 import Flight.Mechanics as Mechanics
 
 
@@ -85,10 +86,10 @@ drawWorld aspect model player =
 
         drawFromAi body =
             case body.ai of
-                Hostile cockpit ->
+                Hostile _ ->
                     Hostile.draw camera model.library body
 
-                Seeking cockpit ->
+                Seeking _ ->
                     Seeking.draw camera model.library body
 
                 Explosion lifespan ->
@@ -97,7 +98,10 @@ drawWorld aspect model player =
                 Dumb graphics ->
                     Dumb.draw camera model.library body graphics
 
-                _ ->
+                PlayerBullet _ ->
+                    PlayerBullet.draw camera model.library body
+
+                PlayerControlled _ ->
                     []
     in
         background :: (List.concatMap drawFromAi (Dict.values model.universe))

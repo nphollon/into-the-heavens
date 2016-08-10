@@ -15,6 +15,7 @@ import Flight.Hostile as Hostile
 import Flight.Seeking as Seeking
 import Flight.Explosion as Explosion
 import Flight.Dumb as Dumb
+import Flight.PlayerBullet as PlayerBullet
 import Flight.Mechanics as Mechanics
 
 
@@ -202,6 +203,14 @@ applyEffect effect model =
                 Nothing ->
                     model
 
+        SpawnFriendly sourceId ->
+            case Dict.get sourceId model.universe of
+                Just source ->
+                    spawn (PlayerBullet.init model.library source) model
+
+                Nothing ->
+                    model
+
         SpawnCheckpoint name position ->
             spawn (checkpoint position)
                 { model | names = Dict.insert name model.nextId model.names }
@@ -306,6 +315,9 @@ act model id actor =
 
         Seeking cockpit ->
             Seeking.update model.universe id actor cockpit
+
+        PlayerBullet lifespan ->
+            PlayerBullet.update model.universe id actor lifespan
 
         Explosion lifespan ->
             Explosion.update id actor lifespan

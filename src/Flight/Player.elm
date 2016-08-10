@@ -83,7 +83,7 @@ update model actor cockpit =
                 |> Mechanics.evolveObject (accelFromAction cockpit.action)
     in
         if newCockpit.trigger.value == 1 then
-            ( moved, [ SpawnMissile Mechanics.playerId cockpit.target ] )
+            ( moved, [ SpawnFriendly Mechanics.playerId ] )
         else
             ( moved, [] )
 
