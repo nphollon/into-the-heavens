@@ -23,7 +23,7 @@ init library parent target =
     , angVelocity = Vector.vector 0 0 0
     , bounds = Library.getBounds "Missile" library
     , health = 1
-    , ai = Seeking { lifespan = 4, target = target }
+    , ai = Seeking { lifespan = 3, target = target }
     , collisionClass = Blockable
     }
 
@@ -38,7 +38,7 @@ update universe id actor cockpit =
                         Mechanics.glide actor
 
                     Just target ->
-                        Mechanics.evolveObject (accelTowards 0.7 target)
+                        Mechanics.evolveObject (accelTowards 0.2 target)
                             actor
 
             agedCockpit =

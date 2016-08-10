@@ -14,16 +14,16 @@ import Graphics.Foreground as Foreground
 
 init : Library -> Body -> Body
 init library parent =
-    { position = Transform.fromBodyFrame parent (Vector.vector 0 -1 0)
+    { position = Transform.fromBodyFrame parent (Vector.vector 0 -1.5 0)
     , velocity =
         Vector.vector 0 0 -100
             |> Quaternion.rotateVector parent.orientation
             |> Vector.add parent.velocity
     , orientation = parent.orientation
     , angVelocity = Vector.vector 0 0 0
-    , bounds = Library.getBounds "Missile" library
+    , bounds = Library.getBounds "Bullet" library
     , health = 1
-    , ai = PlayerBullet 10
+    , ai = PlayerBullet 3
     , collisionClass = Friendly
     }
 

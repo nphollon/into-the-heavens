@@ -186,7 +186,7 @@ applyEffect effect model =
         SpawnShips n ->
             let
                 ( placements, newSeed ) =
-                    Spherical.random (always 300)
+                    Spherical.random (always 100)
                         |> placeAt
                         |> Random.list n
                         |> flip Random.step model.seed

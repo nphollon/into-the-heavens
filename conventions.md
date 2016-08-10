@@ -14,3 +14,4 @@ Time is in seconds.
 12. Checkpoints activated by collisions
 13. Pausing
 14. Page-visibility turns animation frame on and off
+15. Replace sed in build script with programWithFlags

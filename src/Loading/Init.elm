@@ -46,6 +46,7 @@ library =
             , ( "OrthoVertex", "ortho-vertex.box" )
             , ( "Column", "column.box" )
             , ( "Missile", "sphere-quarter.box" )
+            , ( "Bullet", "sphere-half.box" )
             , ( "Player", "player.box" )
             ]
                 |> List.map (get Collision.decode)
