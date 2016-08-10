@@ -5,7 +5,6 @@ Time is in seconds.
 
 2. Decorations should not get rendered with Foreground engine.
 3. Dumb => Scenery
-5. Player spawns friendly missiles
 6. Missile expirations can have their own particle effect?
 7. New enemy types!!
 8. Positioning should be encapsulated.

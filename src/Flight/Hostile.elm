@@ -62,33 +62,27 @@ update universe id actor cockpit =
 smartAccel : Body -> Body -> Acceleration
 smartAccel target object =
     let
-        relativePosition =
-            Vector.sub target.position object.position
+        turningSpeed =
+            2.0
 
-        relativeVelocity =
-            Vector.sub target.velocity object.velocity
+        turningAccel =
+            5.0
 
-        scale =
-            1.0
+        speed =
+            5.0
 
-        damping =
-            0.3
+        accel =
+            5.0
 
-        max m v =
-            let
-                mag =
-                    Vector.length v
-            in
-                if mag > m then
-                    Vector.scale (m / mag) v
-                else
-                    v
+        goOrStop dir vel =
+            turningAccel * (turningSpeed * toFloat dir - vel)
+
+        targetVelocity =
+            Vector.vector 0 0 -speed
+                |> Quaternion.rotateVector object.orientation
     in
         { linear =
-            Vector.scale (0.25 / damping) relativePosition
-                |> Vector.add relativeVelocity
-                |> Vector.scale scale
-                |> max 10
+            Vector.scale accel (Vector.sub targetVelocity object.velocity)
         , angular =
             angleSpring 0.5 target.position object
                 |> Vector.scale 3
