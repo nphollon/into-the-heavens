@@ -18,7 +18,7 @@ init library =
     , orientation = Quaternion.identity
     , angVelocity = Vector.vector 0 0 0
     , bounds = Library.getBounds "Player" library
-    , health = 1
+    , health = 10
     , ai =
         PlayerControlled
             { action =

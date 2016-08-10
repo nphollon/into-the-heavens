@@ -43,6 +43,7 @@ draw aspect model player =
         List.concat
             [ reticule orthoCamera
             , shieldSystem player.cockpit.shields orthoCamera
+            , health (0.1 * player.body.health) orthoCamera
             , target
             , decorateGroup incomingMesh
                 Color.red
@@ -129,9 +130,14 @@ toVertex radius angle =
     }
 
 
+health : Float -> Camera -> List Renderable
+health level camera =
+    [ renderBar level 28 camera ]
+
+
 shieldSystem : DrainSwitch -> Camera -> List Renderable
 shieldSystem switch camera =
-    renderBar switch.value camera
+    renderBar switch.value 26 camera
         :: (if switch.on then
                 [ renderStatic camera shieldMesh ]
             else
@@ -228,28 +234,25 @@ staticFragment =
   |]
 
 
-renderBar : Float -> Camera -> Renderable
-renderBar fraction camera =
+renderBar : Float -> Float -> Camera -> Renderable
+renderBar fraction topLeftX camera =
     let
         uniform =
             { perspective = camera.perspective
             , fraction = fraction
             }
     in
-        WebGL.render barVertex barFragment barMesh uniform
+        WebGL.render barVertex barFragment (barMesh topLeftX) uniform
 
 
-barMesh : Drawable FlatVertex
-barMesh =
+barMesh : Float -> Drawable FlatVertex
+barMesh topLeftX =
     let
         full =
             Vec4.vec4 1 1 1 1
 
         empty =
             Vec4.vec4 0 0 0 1
-
-        topLeftX =
-            28
 
         topLeftY =
             -5
