@@ -2,7 +2,6 @@ module AiTest exposing (testSuite)
 
 import ElmTest exposing (..)
 import Assertion exposing (..)
-import Dict
 import Types exposing (..)
 import Math.Vector as Vec exposing (Vector)
 import Math.Quaternion as Quaternion
@@ -12,45 +11,6 @@ import Collision
 
 testSuite : Test
 testSuite =
-    suite "AI tests"
-        [ hostileFiring
-        , hostileSteering
-        ]
-
-
-hostileFiring : Test
-hostileFiring =
-    suite "Pull trigger iff target within 30 degree FOV"
-        [ test "default placement, target in -Z"
-            <| assertFaces (Vec.vector 0 0 0)
-                (Vec.vector 0 0 0)
-                (Vec.vector 0 0 -10)
-        , test "default placement, target in +Z"
-            <| assertDoesntFace (Vec.vector 0 0 0)
-                (Vec.vector 0 0 0)
-                (Vec.vector 0 0 10)
-        , test "at z 20, target at z 10"
-            <| assertFaces (Vec.vector 0 0 20)
-                (Vec.vector 0 0 0)
-                (Vec.vector 0 0 10)
-        , test "facing target from same z, positive y"
-            <| assertFaces (Vec.vector 0 10 10)
-                (Vec.vector (turns -0.25) 0 0)
-                (Vec.vector 0 0 10)
-        , test "facing 15.1 degrees above target"
-            <| assertDoesntFace (Vec.vector 0 0 0)
-                (Vec.vector (degrees 15.1) 0 0)
-                (Vec.vector 0 0 -10)
-        , test "facing 14.9 degrees above target"
-            <| assertFaces (Vec.vector 0 0 0)
-                (Vec.vector (degrees 14.9) 0 0)
-                (Vec.vector 0 0 -10)
-          -- not covered : cooldown!
-        ]
-
-
-hostileSteering : Test
-hostileSteering =
     let
         criticalDamping =
             Ai.angleSpring 1 (Vec.vector 0 0 -1)
@@ -143,40 +103,6 @@ hostileSteering =
             ]
 
 
-assertFaces : Vector -> Vector -> Vector -> Assertion
-assertFaces =
-    assertTriggerChange True
-
-
-assertDoesntFace : Vector -> Vector -> Vector -> Assertion
-assertDoesntFace =
-    assertTriggerChange False
-
-
-assertTriggerChange : Bool -> Vector -> Vector -> Vector -> Assertion
-assertTriggerChange shouldFire position orientation targetPosition =
-    let
-        body =
-            { defaultBody
-                | position = position
-                , orientation = Quaternion.fromVector orientation
-            }
-
-        target =
-            { defaultBody
-                | position = targetPosition
-            }
-
-        universe =
-            Dict.fromList
-                [ ( 1, body )
-                , ( 2, target )
-                ]
-    in
-        assertEqual shouldFire
-            (Ai.faces 2 body universe)
-
-
 defaultBody : Body
 defaultBody =
     { position = Vec.vector 0 0 0
@@ -189,6 +115,7 @@ defaultBody =
         Hostile
             { target = 0
             , trigger = { value = 0, decay = 1 }
+            , status = LockingOn
             }
     , collisionClass = Scenery
     }

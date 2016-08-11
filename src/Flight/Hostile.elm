@@ -1,8 +1,7 @@
-module Flight.Hostile exposing (init, update, faces, angleSpring, draw)
+module Flight.Hostile exposing (init, update, angleSpring, draw)
 
 import Dict exposing (Dict)
 import Color
-import Maybe.Extra as MaybeX
 import WebGL exposing (Renderable)
 import Types exposing (..)
 import Library
@@ -24,7 +23,8 @@ init library placement =
     , ai =
         Hostile
             { target = Mechanics.playerId
-            , trigger = { value = 0, decay = 4 }
+            , trigger = { value = 0, decay = 0.3 }
+            , status = LockingOn
             }
     , collisionClass = Solid
     }
@@ -32,50 +32,64 @@ init library placement =
 
 update : Dict Id Body -> Id -> Body -> HostileCockpit -> ( Body, List EngineEffect )
 update universe id actor cockpit =
+    case Dict.get cockpit.target universe of
+        Nothing ->
+            ( Mechanics.glide actor, [] )
+
+        Just target ->
+            let
+                facesTarget =
+                    Transform.degreesFromForward actor target.position < degrees 1
+
+                distance =
+                    Vector.distance actor.position target.position
+
+                damping =
+                    case cockpit.status of
+                        LockingOn ->
+                            0.15
+
+                        Fleeing ->
+                            10
+
+                newStatus =
+                    if distance < 20 then
+                        Fleeing
+                    else if facesTarget || distance > 100 then
+                        LockingOn
+                    else
+                        cockpit.status
+
+                newAi =
+                    Hostile
+                        { cockpit
+                            | trigger =
+                                Mechanics.repeat Mechanics.delta
+                                    facesTarget
+                                    cockpit.trigger
+                            , status = newStatus
+                        }
+
+                moved =
+                    Mechanics.evolveObject (smartAccel damping target) actor
+
+                effects =
+                    if cockpit.trigger.value == 1 then
+                        [ SpawnMissile id cockpit.target ]
+                    else
+                        []
+            in
+                ( { moved | ai = newAi }, effects )
+
+
+smartAccel : Float -> Body -> Body -> Acceleration
+smartAccel damping target object =
     let
-        newAi =
-            Hostile
-                { cockpit
-                    | trigger =
-                        Mechanics.repeat Mechanics.delta
-                            (faces cockpit.target actor universe)
-                            cockpit.trigger
-                }
-
-        moved =
-            case Dict.get cockpit.target universe of
-                Nothing ->
-                    Mechanics.glide actor
-
-                Just target ->
-                    Mechanics.evolveObject (smartAccel target) actor
-
-        effects =
-            if cockpit.trigger.value == 1 then
-                [ SpawnMissile id cockpit.target ]
-            else
-                []
-    in
-        ( { moved | ai = newAi }, effects )
-
-
-smartAccel : Body -> Body -> Acceleration
-smartAccel target object =
-    let
-        turningSpeed =
-            2.0
-
-        turningAccel =
-            5.0
-
         speed =
-            5.0
+            30.0
 
         accel =
-            5.0
-
-        goOrStop dir vel =
-            turningAccel * (turningSpeed * toFloat dir - vel)
+            100.0
 
         targetVelocity =
             Vector.vector 0 0 -speed
@@ -84,7 +98,7 @@ smartAccel target object =
         { linear =
             Vector.scale accel (Vector.sub targetVelocity object.velocity)
         , angular =
-            angleSpring 0.5 target.position object
+            angleSpring damping target.position object
                 |> Vector.scale 3
         }
 
@@ -98,16 +112,6 @@ angleSpring damping targetPosition body =
     in
         Vector.sub (Vector.scale (0.25 / damping) (Quaternion.toVector rotation))
             body.angVelocity
-
-
-faces : Id -> Body -> Dict Id Body -> Bool
-faces targetId viewer universe =
-    let
-        inRange t =
-            Transform.degreesFromForward viewer t.position < degrees 15
-    in
-        Dict.get targetId universe
-            |> MaybeX.mapDefault False inRange
 
 
 draw : Camera -> Library -> Body -> List Renderable

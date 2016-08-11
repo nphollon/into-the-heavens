@@ -153,7 +153,7 @@ accelFromAction action object =
             2.0
 
         turningAccel =
-            5.0
+            2.0
 
         speed =
             5.0

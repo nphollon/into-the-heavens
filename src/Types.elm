@@ -160,7 +160,13 @@ type alias MissileCockpit =
 type alias HostileCockpit =
     { target : Id
     , trigger : RepeatSwitch
+    , status : HostileStatus
     }
+
+
+type HostileStatus
+    = LockingOn
+    | Fleeing
 
 
 type alias PlayerCockpit =

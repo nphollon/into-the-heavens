@@ -27,7 +27,7 @@ library =
         remoteMeshes =
             [ ( "Sphere", "sphere.json" )
             , ( "Background", "background.json" )
-            , ( "Ship", "ship.json" )
+            , ( "Ship", "boxy.json" )
             , ( "Missile", "sphere-eighth.json" )
             , ( "Explosion", "explosion.json" )
             , ( "Column", "column.json" )
@@ -40,7 +40,7 @@ library =
 
         remoteBoxes =
             [ ( "Donut", "donut.box" )
-            , ( "Ship", "ship.box" )
+            , ( "Ship", "boxy.box" )
             , ( "Sphere", "sphere.box" )
             , ( "Cage", "cage.box" )
             , ( "OrthoVertex", "ortho-vertex.box" )

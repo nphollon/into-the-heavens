@@ -14,7 +14,7 @@ import Graphics.Foreground as Foreground
 
 init : Library -> Body -> Id -> Body
 init library parent target =
-    { position = Transform.fromBodyFrame parent (Vector.vector 0 -1 0)
+    { position = Transform.fromBodyFrame parent (Vector.vector 0 0 -3.5)
     , velocity =
         Vector.vector 0 0 -30
             |> Quaternion.rotateVector parent.orientation
