@@ -1,6 +1,7 @@
 module Main exposing (..)
 
-import Html exposing (Html)
+import Html exposing (Html, div)
+import Html.Attributes exposing (class)
 import Html.App as App
 import AnimationFrame
 import Keyboard
@@ -65,12 +66,14 @@ update action mode =
 
 view : Mode -> Html Update
 view mode =
-    case mode of
-        GameMode data ->
-            Flight.view data
+    Html.div [ class "app" ]
+        [ case mode of
+            GameMode data ->
+                Flight.view data
 
-        LoadingMode data ->
-            Loading.view data
+            LoadingMode data ->
+                Loading.view data
 
-        MenuMode data ->
-            App.map MenuUpdate (Menu.view data)
+            MenuMode data ->
+                App.map MenuUpdate (Menu.view data)
+        ]

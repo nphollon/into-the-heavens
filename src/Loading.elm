@@ -5,7 +5,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Types exposing (..)
-import Graphics.AppFrame as AppFrame
 import Menu.Init
 
 
@@ -26,23 +25,15 @@ meshesUpdate response model =
 
 view : LoadingState -> Html a
 view state =
-    let
-        top =
-            case state.response of
-                Nothing ->
-                    loading state.isMobile
+    case state.response of
+        Nothing ->
+            loading state.isMobile
 
-                Just (Err e) ->
-                    resourceFailure e
+        Just (Err e) ->
+            resourceFailure e
 
-                Just (Ok lib) ->
-                    ready state.isMobile
-    in
-        AppFrame.view [ top ]
-            [ p []
-                [ text "\"Your task is not to foresee the future, but to enable it.\" ~ Antoine de St. Exupéry"
-                ]
-            ]
+        Just (Ok lib) ->
+            ready state.isMobile
 
 
 ready : Bool -> Html a

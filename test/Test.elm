@@ -2,7 +2,6 @@ module Main exposing (..)
 
 import ElmTest exposing (..)
 import AiTest
-import FormatTest
 import SwitchTest
 import SphericalTest
 import SpawnTest
@@ -13,7 +12,6 @@ testSuite : Test
 testSuite =
     suite "All tests"
         [ AiTest.testSuite
-        , FormatTest.testSuite
         , SwitchTest.testSuite
         , SphericalTest.testSuite
         , SpawnTest.testSuite

@@ -5,7 +5,6 @@ import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Types exposing (..)
-import Graphics.AppFrame as AppFrame
 import Flight.Init
 import Level.Outnumbered
 import Level.FlightTest
@@ -57,11 +56,9 @@ view state =
 
         Won level ->
             gameOverView "You won"
-                "\"The machine does not isolate us from the great problems of nature.\" ~ Antoine de St. Exupéry"
 
         Lost level ->
             gameOverView "You crashed"
-                "\"Even our misfortunes are a part of our belongings.\" ~ Antoine de St. Exupéry"
 
 
 mainMenuView : Html MenuAction
@@ -70,28 +67,22 @@ mainMenuView =
         levelButton name data =
             menuButton (onClick (StartGame data)) name
     in
-        AppFrame.view
-            [ div [ class "menu" ]
-                [ h2 [] [ text "Select a level" ]
-                , levelButton "Flight Practice" FlightTest
-                , levelButton "One By One" OneByOne
-                , levelButton "Pavilion" Pavilion
-                , levelButton "Outnumbered" Outnumbered
-                ]
+        div [ class "menu" ]
+            [ h2 [] [ text "Select a level" ]
+            , levelButton "Flight Practice" FlightTest
+            , levelButton "One By One" OneByOne
+            , levelButton "Pavilion" Pavilion
+            , levelButton "Outnumbered" Outnumbered
             ]
-            []
 
 
-gameOverView : String -> String -> Html MenuAction
-gameOverView message quote =
-    AppFrame.view
-        [ div []
-            [ h1 [ class "title" ] [ text message ]
-            , h2 [ class "subtitle" ] [ text "Press 'N' to replay" ]
-            , menuButton (onClick ToMainMenu) "Main Menu"
-            ]
+gameOverView : String -> Html MenuAction
+gameOverView message =
+    div []
+        [ h1 [ class "title" ] [ text message ]
+        , h2 [ class "subtitle" ] [ text "Press 'N' to replay" ]
+        , menuButton (onClick ToMainMenu) "Main Menu"
         ]
-        [ p [] [ text quote ] ]
 
 
 menuButton : Attribute a -> String -> Html a

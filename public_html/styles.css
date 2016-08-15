@@ -41,13 +41,9 @@ body {
 }
 
 .app {
+    background-color: #1A1319;
     margin: 2em;
     width: 950px;
-    background-color: #1A1319;
-    border-radius: 1em;
-}
-
-.top {
     height: 600px;
     display: flex;
     justify-content: center;
@@ -61,18 +57,6 @@ body {
 .log {
     position: absolute;
     left : 0px;
-}
-
-.bottom {
-    border-top: thin double #33273B;
-    min-height: 200px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.dashboard {
-    width: 440px;
 }
 
 h1 {

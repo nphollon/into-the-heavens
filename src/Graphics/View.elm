@@ -6,9 +6,7 @@ import Html exposing (..)
 import Html.Attributes as Attributes exposing (class)
 import WebGL exposing (Renderable)
 import Types exposing (..)
-import Graphics.AppFrame as AppFrame
 import Graphics.Camera as Camera
-import Graphics.Format as Format
 import Flight.Hostile as Hostile
 import Flight.Explosion as Explosion
 import Flight.Seeking as Seeking
@@ -22,16 +20,13 @@ view : GameState -> Html a
 view model =
     case getPlayer model.universe of
         Just player ->
-            AppFrame.view
+            span []
                 [ scene 900 600 model player.body
                 , log model
                 ]
-                [ dashboard model player
-                , instructions
-                ]
 
         Nothing ->
-            AppFrame.view [] []
+            span [] []
 
 
 getPlayer : Dict Id Body -> Maybe PlayerData
@@ -109,43 +104,3 @@ log model =
             |> List.reverse
             |> List.map lineHtml
             |> div [ class "log" ]
-
-
-dashboard : GameState -> PlayerData -> Html a
-dashboard model player =
-    let
-        printNumber label value =
-            Format.float value
-                |> Format.tag label
-                |> text
-
-        printInt label value =
-            toString value
-                |> Format.tag label
-                |> text
-
-        shipPosition =
-            player.body.position
-    in
-        div [ class "dashboard" ]
-            [ p [] [ printNumber "X" shipPosition.x ]
-            , p [] [ printNumber "Y" shipPosition.y ]
-            , p [] [ printNumber "Z" shipPosition.z ]
-            ]
-
-
-instructions : Html a
-instructions =
-    div [ class "dashboard" ]
-        [ h3 []
-            [ text "Keyboard Controls"
-            ]
-        , ul []
-            [ li [] [ text "Turn Camera : A / D / W / S" ]
-            , li [] [ text "Thrust Forward : I" ]
-            , li [] [ text "Brake : K" ]
-            , li [] [ text "Fire Missile : J" ]
-            , li [] [ text "Raise Shields : H" ]
-            , li [] [ text "Target Ship : L" ]
-            ]
-        ]
