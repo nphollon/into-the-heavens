@@ -55,7 +55,7 @@ update action mode =
 
         ( KeyDown key, MenuMode data ) ->
             Menu.keyUpdate key data
-                
+
         ( MenuUpdate action, MenuMode data ) ->
             Menu.actionUpdate action data
 

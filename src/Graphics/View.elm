@@ -1,25 +1,20 @@
 module Graphics.View exposing (view)
 
 import Dict exposing (Dict)
-import Color
 import List.Extra as ListX
 import Html exposing (..)
 import Html.Attributes as Attributes exposing (class)
-import WebGL exposing (Drawable, Renderable)
-import Math.Matrix4 as Mat4 exposing (Mat4)
+import WebGL exposing (Renderable)
 import Types exposing (..)
-import Library
 import Math.Vector as Vector exposing (Vector)
-import Math.Quaternion as Quaternion exposing (Quaternion)
 import Graphics.AppFrame as AppFrame
-import Graphics.Foreground as Foreground
 import Graphics.Camera as Camera
 import Graphics.Format as Format
-import Graphics.Hud as Hud
 import Flight.Hostile as Hostile
 import Flight.Explosion as Explosion
 import Flight.Seeking as Seeking
 import Flight.Dumb as Dumb
+import Flight.Player as Player
 import Flight.PlayerBullet as PlayerBullet
 import Flight.Mechanics as Mechanics
 
@@ -29,7 +24,7 @@ view model =
     case getPlayer model.universe of
         Just player ->
             AppFrame.view
-                [ scene 900 600 model player
+                [ scene 900 600 model player.body
                 , log model
                 ]
                 [ dashboard model player
@@ -54,7 +49,7 @@ getPlayer universe =
             )
 
 
-scene : Int -> Int -> GameState -> PlayerData -> Html a
+scene : Int -> Int -> GameState -> Body -> Html a
 scene width height model player =
     let
         functionCalls =
@@ -67,21 +62,16 @@ scene width height model player =
             toFloat width / toFloat height
 
         renderables =
-            (drawWorld aspect model player)
-                ++ (Hud.draw aspect model player)
+            drawWorld aspect model player
     in
         WebGL.toHtmlWith functionCalls attributes renderables
 
 
-drawWorld : Float -> GameState -> PlayerData -> List Renderable
+drawWorld : Float -> GameState -> Body -> List Renderable
 drawWorld aspect model player =
     let
         camera =
-            Camera.at aspect player.body
-
-        background =
-            drawBackground camera
-                (Library.getMesh "Background" model.library)
+            Camera.at aspect player
 
         drawFromAi body =
             case body.ai of
@@ -100,25 +90,10 @@ drawWorld aspect model player =
                 PlayerBullet _ ->
                     PlayerBullet.draw camera model.library body
 
-                PlayerControlled _ ->
-                    []
+                PlayerControlled cockpit ->
+                    Player.draw aspect model player cockpit
     in
-        background :: (List.concatMap drawFromAi (Dict.values model.universe))
-
-
-drawBackground : Camera -> Drawable Vertex -> Renderable
-drawBackground camera mesh =
-    let
-        p =
-            placement camera.position Quaternion.identity
-    in
-        Foreground.entity (Bright Color.lightBlue) p camera mesh
-
-
-placement : Vector -> Quaternion -> Mat4
-placement position orientation =
-    Mat4.mul (Mat4.makeTranslate (Vector.toVec3 position))
-        (Quaternion.toMat4 orientation)
+        List.concatMap drawFromAi (Dict.values model.universe)
 
 
 log : GameState -> Html a

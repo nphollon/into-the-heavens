@@ -15,11 +15,11 @@ import Graphics.Camera as Camera
 import Graphics.Foreground as Foreground
 
 
-draw : Float -> GameState -> PlayerData -> List Renderable
-draw aspect model player =
+draw : Float -> GameState -> Body -> PlayerCockpit -> List Renderable
+draw aspect model player cockpit =
     let
         perspectiveCamera =
-            Camera.at aspect player.body
+            Camera.at aspect player
 
         orthoCamera =
             Camera.ortho aspect
@@ -31,7 +31,7 @@ draw aspect model player =
                 mesh
 
         target =
-            Dict.get player.cockpit.target model.universe
+            Dict.get cockpit.target model.universe
                 |> MaybeX.maybeToList
                 |> List.map (highlight targetMesh Color.blue)
 
@@ -42,8 +42,8 @@ draw aspect model player =
     in
         List.concat
             [ reticule orthoCamera
-            , shieldSystem player.cockpit.shields orthoCamera
-            , health (0.1 * player.body.health) orthoCamera
+            , shieldSystem cockpit.shields orthoCamera
+            , health (0.1 * player.health) orthoCamera
             , target
             , decorateGroup incomingMesh
                 Color.red
