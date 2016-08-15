@@ -6,7 +6,6 @@ import Html exposing (..)
 import Html.Attributes as Attributes exposing (class)
 import WebGL exposing (Renderable)
 import Types exposing (..)
-import Math.Vector as Vector exposing (Vector)
 import Graphics.AppFrame as AppFrame
 import Graphics.Camera as Camera
 import Graphics.Format as Format
@@ -127,13 +126,9 @@ dashboard model player =
 
         shipPosition =
             player.body.position
-
-        speed =
-            Vector.length player.body.velocity
     in
         div [ class "dashboard" ]
-            [ p [] [ printNumber "Speed" speed ]
-            , p [] [ printNumber "X" shipPosition.x ]
+            [ p [] [ printNumber "X" shipPosition.x ]
             , p [] [ printNumber "Y" shipPosition.y ]
             , p [] [ printNumber "Z" shipPosition.z ]
             ]

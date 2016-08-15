@@ -1,6 +1,6 @@
 module Graphics.Dustbox exposing (draw)
 
-import Array
+import Random.Pcg as Random
 import WebGL exposing (Shader, Renderable, Drawable(..))
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
@@ -39,22 +39,25 @@ type alias Varying =
 
 dust : Drawable DustVertex
 dust =
-    Array.initialize 1000
-        (\i ->
-            let
-                x =
-                    toFloat (i % 10)
+    let
+        seed =
+            Random.initialSeed 2122
 
-                y =
-                    toFloat ((i // 10) % 10)
+        generator =
+            Random.list 200 <|
+                Random.map3 dustVertex
+                    (Random.float 0 10)
+                    (Random.float 0 10)
+                    (Random.float 0 10)
+    in
+        Random.step generator seed
+            |> fst
+            |> Points
 
-                z =
-                    toFloat ((i // 100) % 10)
-            in
-                { vertPosition = Vec3.vec3 x y z }
-        )
-        |> Array.toList
-        |> Points
+
+dustVertex : Float -> Float -> Float -> DustVertex
+dustVertex x y z =
+    { vertPosition = Vec3.vec3 x y z }
 
 
 vertexShader : Shader DustVertex Uniform Varying
