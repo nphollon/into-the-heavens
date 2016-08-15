@@ -16,14 +16,14 @@ testSuite =
             Covariance.eigenbasis matrix
     in
         suite "Eigenbasis for a real symmetric matrix"
-            [ test "one component should be (2, 1, 3) normalized"
-                <| assertBasisContains (Vector.normalize (Vector.vector 2 1 3))
+            [ test "one component should be (2, 1, 3) normalized" <|
+                assertBasisContains (Vector.normalize (Vector.vector 2 1 3))
                     eigenbasis
-            , test "one component should be (-5, 1, 3) normalized"
-                <| assertBasisContains (Vector.normalize (Vector.vector -5 1 3))
+            , test "one component should be (-5, 1, 3) normalized" <|
+                assertBasisContains (Vector.normalize (Vector.vector -5 1 3))
                     eigenbasis
-            , test "one component should be (0, -3, 1) normalized"
-                <| assertBasisContains (Vector.normalize (Vector.vector 0 -3 1))
+            , test "one component should be (0, -3, 1) normalized" <|
+                assertBasisContains (Vector.normalize (Vector.vector 0 -3 1))
                     eigenbasis
             ]
 

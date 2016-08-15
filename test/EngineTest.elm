@@ -26,88 +26,94 @@ testSuite =
             }
     in
         suite "Crash rules"
-            [ test "no collision, no effects"
-                <| assertEqual []
-                <| shouldCrash
-                <| Dict.fromList
-                    [ ( ids.missile, missile 1 )
-                    , ( ids.visitor, object 1 "farHull" )
-                    ]
-            , test "missiles ignore each other"
-                <| assertEqual []
-                <| shouldCrash
-                <| Dict.fromList
-                    [ ( ids.missileA, missile 1 )
-                    , ( ids.missileB, missile 1 )
-                    ]
-            , test "1 HP missile deducts 1 HP from ship"
-                <| assertEqual
+            [ test "no collision, no effects" <|
+                assertEqual [] <|
+                    shouldCrash <|
+                        Dict.fromList
+                            [ ( ids.missile, missile 1 )
+                            , ( ids.visitor, object 1 "farHull" )
+                            ]
+            , test "missiles ignore each other" <|
+                assertEqual [] <|
+                    shouldCrash <|
+                        Dict.fromList
+                            [ ( ids.missileA, missile 1 )
+                            , ( ids.missileB, missile 1 )
+                            ]
+            , test "1 HP missile deducts 1 HP from ship" <|
+                assertEqual
                     [ Destroy ids.missile
                     , DeductHealth 1 ids.visitor
                     ]
-                <| shouldCrash
-                <| Dict.fromList
-                    [ ( ids.missile, missile 1 )
-                    , ( ids.visitor, object 1 "hitHull" )
-                    ]
-            , test "2 HP missile deducts 2 HP from ship"
-                <| assertEqual
+                <|
+                    shouldCrash <|
+                        Dict.fromList
+                            [ ( ids.missile, missile 1 )
+                            , ( ids.visitor, object 1 "hitHull" )
+                            ]
+            , test "2 HP missile deducts 2 HP from ship" <|
+                assertEqual
                     [ Destroy ids.missile
                     , DeductHealth 2 ids.visitor
                     ]
-                <| shouldCrash
-                <| Dict.fromList
-                    [ ( ids.missile, missile 2 )
-                    , ( ids.visitor, object 1 "hitHull" )
-                    ]
-            , test "shielded ship is protected from missile"
-                <| assertEqual [ Destroy ids.missile ]
-                <| shouldCrash
-                <| Dict.fromList
-                    [ ( ids.missile, missile 1 )
-                    , ( ids.visitor, shielded 1 "hitHull" )
-                    ]
-            , test "ships deduct their health from each other"
-                <| assertEqual
+                <|
+                    shouldCrash <|
+                        Dict.fromList
+                            [ ( ids.missile, missile 2 )
+                            , ( ids.visitor, object 1 "hitHull" )
+                            ]
+            , test "shielded ship is protected from missile" <|
+                assertEqual [ Destroy ids.missile ] <|
+                    shouldCrash <|
+                        Dict.fromList
+                            [ ( ids.missile, missile 1 )
+                            , ( ids.visitor, shielded 1 "hitHull" )
+                            ]
+            , test "ships deduct their health from each other" <|
+                assertEqual
                     [ DeductHealth 3 ids.smallShip
                     , DeductHealth 2 ids.bigShip
                     ]
-                <| shouldCrash
-                <| Dict.fromList
-                    [ ( ids.smallShip, object 2 "outHull" )
-                    , ( ids.bigShip, object 3 "hitHull" )
-                    ]
-            , test "ships colliding ignore shields"
-                <| assertEqual
+                <|
+                    shouldCrash <|
+                        Dict.fromList
+                            [ ( ids.smallShip, object 2 "outHull" )
+                            , ( ids.bigShip, object 3 "hitHull" )
+                            ]
+            , test "ships colliding ignore shields" <|
+                assertEqual
                     [ DeductHealth 3 ids.unshielded
                     , DeductHealth 2 ids.shielded
                     ]
-                <| shouldCrash
-                <| Dict.fromList
-                    [ ( ids.unshielded, object 2 "outHull" )
-                    , ( ids.shielded, shielded 3 "hitHull" )
-                    ]
-            , test "ship collisions are commutative"
-                <| assertEqual
+                <|
+                    shouldCrash <|
+                        Dict.fromList
+                            [ ( ids.unshielded, object 2 "outHull" )
+                            , ( ids.shielded, shielded 3 "hitHull" )
+                            ]
+            , test "ship collisions are commutative" <|
+                assertEqual
                     [ DeductHealth 3 ids.first
                     , DeductHealth 3 ids.second
                     ]
-                <| shouldCrash
-                <| Dict.fromList
-                    [ ( ids.first, shielded 3 "outHull" )
-                    , ( ids.second, object 3 "hitHull" )
-                    ]
-            , test "accumulate effects from multiple collisions"
-                <| assertEqual
+                <|
+                    shouldCrash <|
+                        Dict.fromList
+                            [ ( ids.first, shielded 3 "outHull" )
+                            , ( ids.second, object 3 "hitHull" )
+                            ]
+            , test "accumulate effects from multiple collisions" <|
+                assertEqual
                     [ Destroy ids.missileB
                     , Destroy ids.missileA
                     ]
-                <| shouldCrash
-                <| Dict.fromList
-                    [ ( ids.missileA, missile 1 )
-                    , ( ids.missileB, missile 1 )
-                    , ( ids.visitor, shielded 1 "hitHull" )
-                    ]
+                <|
+                    shouldCrash <|
+                        Dict.fromList
+                            [ ( ids.missileA, missile 1 )
+                            , ( ids.missileB, missile 1 )
+                            , ( ids.visitor, shielded 1 "hitHull" )
+                            ]
             ]
 
 

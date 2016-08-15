@@ -69,8 +69,8 @@ assertListContents expected actual =
         if List.isEmpty extra && List.isEmpty missing then
             pass
         else
-            fail
-                <| "Result list was missing "
-                ++ toString missing
-                ++ " and should not have contained "
-                ++ toString extra
+            fail <|
+                "Result list was missing "
+                    ++ toString missing
+                    ++ " and should not have contained "
+                    ++ toString extra

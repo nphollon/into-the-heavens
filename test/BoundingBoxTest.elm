@@ -29,57 +29,57 @@ obbSuite =
             (assertEqual False) (BoundingBox.boxCollide boxA { boxB | position = v })
     in
         suite "Oriented bounding box primitives"
-            [ test "concentric boxes collide"
-                <| assertCollide (Vector.vector 0 0 0)
+            [ test "concentric boxes collide" <|
+                assertCollide (Vector.vector 0 0 0)
             , suite "no collision on face axis projections"
-                [ test "A major axis"
-                    <| assertMiss (Vector.vector 6.7 0 0)
-                , test "A secondary axis"
-                    <| assertMiss (Vector.vector 0 5.07 0)
-                , test "A minor axis"
-                    <| assertMiss (Vector.vector 0 0 3.33)
-                , test "B major axis"
-                    <| assertMiss (Vector.vector 6.1 2.2 -1.6)
-                , test "B secondary axis"
-                    <| assertMiss (Vector.vector -1.2 4.6 1.7)
-                , test "B minor axis"
-                    <| assertMiss (Vector.vector 1.2 -1.2 3)
+                [ test "A major axis" <|
+                    assertMiss (Vector.vector 6.7 0 0)
+                , test "A secondary axis" <|
+                    assertMiss (Vector.vector 0 5.07 0)
+                , test "A minor axis" <|
+                    assertMiss (Vector.vector 0 0 3.33)
+                , test "B major axis" <|
+                    assertMiss (Vector.vector 6.1 2.2 -1.6)
+                , test "B secondary axis" <|
+                    assertMiss (Vector.vector -1.2 4.6 1.7)
+                , test "B minor axis" <|
+                    assertMiss (Vector.vector 1.2 -1.2 3)
                 ]
             , suite "no collision on edge-pair axis projections"
-                [ test "A major x B major"
-                    <| assertMiss (Vector.vector 0 4 3)
-                , test "A major x B middle"
-                    <| assertMiss (Vector.vector -1 -3 3)
-                , test "A major x B minor"
-                    <| assertMiss (Vector.vector 0 5 1)
-                , test "A middle x B major"
-                    <| assertMiss (Vector.vector 5 4 2.2)
-                , test "A middle x B middle"
-                    <| assertMiss (Vector.vector 6.5 0 1)
-                , test "A middle x B minor"
-                    <| assertMiss (Vector.vector 6.5 0 -2)
-                , test "A minor x B major"
-                    <| assertMiss (Vector.vector 6 -3.5 0)
-                , test "A minor x B middle"
-                    <| assertMiss (Vector.vector 6 3.5 0)
-                , test "A minor x B minor"
-                    <| assertMiss (Vector.vector 5.1 5 -1)
+                [ test "A major x B major" <|
+                    assertMiss (Vector.vector 0 4 3)
+                , test "A major x B middle" <|
+                    assertMiss (Vector.vector -1 -3 3)
+                , test "A major x B minor" <|
+                    assertMiss (Vector.vector 0 5 1)
+                , test "A middle x B major" <|
+                    assertMiss (Vector.vector 5 4 2.2)
+                , test "A middle x B middle" <|
+                    assertMiss (Vector.vector 6.5 0 1)
+                , test "A middle x B minor" <|
+                    assertMiss (Vector.vector 6.5 0 -2)
+                , test "A minor x B major" <|
+                    assertMiss (Vector.vector 6 -3.5 0)
+                , test "A minor x B middle" <|
+                    assertMiss (Vector.vector 6 3.5 0)
+                , test "A minor x B minor" <|
+                    assertMiss (Vector.vector 5.1 5 -1)
                 ]
             , suite "Moving box A"
-                [ test "collision with box A translated"
-                    <| (assertEqual True)
+                [ test "collision with box A translated" <|
+                    (assertEqual True)
                         (BoundingBox.boxCollide { boxA | position = Vector.vector 0.2 0.2 0.2 }
                             { boxB | position = Vector.vector 5 4 2.2 }
                         )
-                , test "collision with box A rotated"
-                    <| (assertEqual True)
+                , test "collision with box A rotated" <|
+                    (assertEqual True)
                         (BoundingBox.boxCollide boxB
                             { boxA | position = Vector.vector 0 4 2.2 }
                         )
                 ]
             , suite "degenerate cases"
-                [ test "collision when boxes are aligned"
-                    <| (assertEqual True)
+                [ test "collision when boxes are aligned" <|
+                    (assertEqual True)
                         (BoundingBox.boxCollide { boxA | position = Vector.vector 0 1 0 }
                             { boxA | position = Vector.vector 0 -1 0 }
                         )
@@ -126,24 +126,24 @@ bodySuite =
                 (BoundingBox.collide a box b box)
     in
         suite "Body collisions"
-            [ test "bodies that do not collide"
-                <| assertMiss
+            [ test "bodies that do not collide" <|
+                assertMiss
                     { defaultBody
                         | position = Vector.vector 0 0 0
                     }
                     { defaultBody
                         | position = Vector.vector 10 0 0
                     }
-            , test "aligned bodies that do collide"
-                <| assertHit
+            , test "aligned bodies that do collide" <|
+                assertHit
                     { defaultBody
                         | position = Vector.vector 0 0 0
                     }
                     { defaultBody
                         | position = Vector.vector 1 0 0
                     }
-            , test "unaligned bodies that do collide"
-                <| assertHit
+            , test "unaligned bodies that do collide" <|
+                assertHit
                     { defaultBody
                         | position = Vector.vector 0 0 -2
                         , orientation = Vector.vector (degrees -36.9) 0 0
@@ -152,8 +152,8 @@ bodySuite =
                         | position = Vector.vector 0 0 2
                         , orientation = Vector.vector 0 (degrees 20.8) 0
                     }
-            , test "unaligned bodies that do not collide"
-                <| assertMiss
+            , test "unaligned bodies that do not collide" <|
+                assertMiss
                     { defaultBody
                         | position = Vector.vector 0 0 -2
                         , orientation = Vector.vector (degrees -36.8) 0 0
@@ -203,8 +203,8 @@ projectAndSplitSuite =
             BoundingBox.projectAndSplit (Vector.vector 1 0 0)
     in
         suite "Box splitting"
-            [ test "split fails if projections are identical"
-                <| assertEqual Nothing
+            [ test "split fails if projections are identical" <|
+                assertEqual Nothing
                     (projectAndSplit
                         [ facts 1 one
                         , facts 1 two
@@ -213,8 +213,8 @@ projectAndSplitSuite =
                         , facts 1 five
                         ]
                     )
-            , test "split halfway point if projections are different and list size is even"
-                <| assertEqual (Just ( [ one, two ], [ three, four ] ))
+            , test "split halfway point if projections are different and list size is even" <|
+                assertEqual (Just ( [ one, two ], [ three, four ] ))
                     (projectAndSplit
                         [ facts 1 one
                         , facts 2 two
@@ -222,8 +222,8 @@ projectAndSplitSuite =
                         , facts 4 four
                         ]
                     )
-            , test "split just after halfway point if projections are different and list size is odd"
-                <| assertEqual (Just ( [ one, two, three ], [ four, five ] ))
+            , test "split just after halfway point if projections are different and list size is odd" <|
+                assertEqual (Just ( [ one, two, three ], [ four, five ] ))
                     (projectAndSplit
                         [ facts 1 one
                         , facts 2 two
@@ -232,8 +232,8 @@ projectAndSplitSuite =
                         , facts 5 five
                         ]
                     )
-            , test "split by value if 4 items of lower and 1 of higher"
-                <| assertEqual (Just ( [ one, two, three, four ], [ five ] ))
+            , test "split by value if 4 items of lower and 1 of higher" <|
+                assertEqual (Just ( [ one, two, three, four ], [ five ] ))
                     (projectAndSplit
                         [ facts 1 one
                         , facts 1 two
@@ -242,8 +242,8 @@ projectAndSplitSuite =
                         , facts 2 five
                         ]
                     )
-            , test "split by value if 3 items of lower and 2 of higher"
-                <| assertEqual (Just ( [ one, two, three ], [ four, five ] ))
+            , test "split by value if 3 items of lower and 2 of higher" <|
+                assertEqual (Just ( [ one, two, three ], [ four, five ] ))
                     (projectAndSplit
                         [ facts 1 one
                         , facts 1 two
@@ -252,8 +252,8 @@ projectAndSplitSuite =
                         , facts 2 five
                         ]
                     )
-            , test "split by value if 2 items of lower and 3 of higher"
-                <| assertEqual (Just ( [ one, two ], [ three, four, five ] ))
+            , test "split by value if 2 items of lower and 3 of higher" <|
+                assertEqual (Just ( [ one, two ], [ three, four, five ] ))
                     (projectAndSplit
                         [ facts 1 one
                         , facts 1 two
@@ -262,8 +262,8 @@ projectAndSplitSuite =
                         , facts 2 five
                         ]
                     )
-            , test "split by value if 1 item of lower and 4 of higher"
-                <| assertEqual (Just ( [ one ], [ two, three, four, five ] ))
+            , test "split by value if 1 item of lower and 4 of higher" <|
+                assertEqual (Just ( [ one ], [ two, three, four, five ] ))
                     (projectAndSplit
                         [ facts 1 one
                         , facts 2 two
@@ -272,8 +272,8 @@ projectAndSplitSuite =
                         , facts 2 five
                         ]
                     )
-            , test "median group goes to first half even if split is very unbalanced"
-                <| assertEqual (Just ( [ one, two, three, four ], [ five ] ))
+            , test "median group goes to first half even if split is very unbalanced" <|
+                assertEqual (Just ( [ one, two, three, four ], [ five ] ))
                     (projectAndSplit
                         [ facts 1 one
                         , facts 1 two
@@ -282,8 +282,8 @@ projectAndSplitSuite =
                         , facts 3 five
                         ]
                     )
-            , test "median group goes to first half even if split is unbalanced"
-                <| assertEqual (Just ( [ one, two, three ], [ four, five ] ))
+            , test "median group goes to first half even if split is unbalanced" <|
+                assertEqual (Just ( [ one, two, three ], [ four, five ] ))
                     (projectAndSplit
                         [ facts 1 one
                         , facts 2 two
@@ -292,8 +292,8 @@ projectAndSplitSuite =
                         , facts 3 five
                         ]
                     )
-            , test "tolerance in floating point comparisons"
-                <| assertEqual Nothing
+            , test "tolerance in floating point comparisons" <|
+                assertEqual Nothing
                     (projectAndSplit
                         [ facts 0 one
                         , facts 1.0e-10 two
@@ -314,6 +314,6 @@ jsonSuite =
             , orientation = Vector.vector 0.4 0.6 0
             }
     in
-        test "Json encoding & decoding"
-            <| assertEqual (Ok box)
+        test "Json encoding & decoding" <|
+            assertEqual (Ok box)
                 (Decode.decodeValue BoundingBox.decode (BoundingBox.encode box))

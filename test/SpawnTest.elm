@@ -21,23 +21,23 @@ testSuite =
             Vector.vector -1000 0 0
     in
         suite "Spawning visitor"
-            [ test "Uses generator to set position"
-                <| assertEqualVector up
+            [ test "Uses generator to set position" <|
+                assertEqualVector up
                     (.position (spawnAt up))
-            , test "Faces down when spawning from up"
-                <| assertEqualQuaternion Quaternion.identity
+            , test "Faces down when spawning from up" <|
+                assertEqualQuaternion Quaternion.identity
                     (.orientation (spawnAt up))
-            , test "Faces east when spawning from west"
-                <| assertEqualQuaternion (Quaternion.fromVector (Vector.vector 0 (turns -0.25) 0))
+            , test "Faces east when spawning from west" <|
+                assertEqualQuaternion (Quaternion.fromVector (Vector.vector 0 (turns -0.25) 0))
                     (.orientation (spawnAt west))
-            , test "Faces south when spawning from north"
-                <| assertEqualQuaternion (Quaternion.fromVector (Vector.vector (turns -0.25) 0 0))
+            , test "Faces south when spawning from north" <|
+                assertEqualQuaternion (Quaternion.fromVector (Vector.vector (turns -0.25) 0 0))
                     (.orientation (spawnAt north))
-            , test "Going down when spawning from up"
-                <| assertEqualVector (Vector.vector 0 0 -1)
+            , test "Going down when spawning from up" <|
+                assertEqualVector (Vector.vector 0 0 -1)
                     (velocityDirection (spawnAt up))
-            , test "Going east when spawning from west"
-                <| assertEqualVector (Vector.vector 1 0 0)
+            , test "Going east when spawning from west" <|
+                assertEqualVector (Vector.vector 1 0 0)
                     (velocityDirection (spawnAt west))
             ]
 

@@ -10,35 +10,35 @@ import Math.Vector as Vector
 testSuite : Test
 testSuite =
     suite "OBJ file parsing"
-        [ test "simple successful case"
-            <| assertEqual (Ok goodMeshData)
+        [ test "simple successful case" <|
+            assertEqual (Ok goodMeshData)
                 (parse goodInput)
-        , test "extra lines are ignored"
-            <| assertEqual (Ok goodMeshData)
+        , test "extra lines are ignored" <|
+            assertEqual (Ok goodMeshData)
                 (parse extraCrap)
-        , test "fail if no vertex lines"
-            <| assertEqual (Err "no lines that look like vertexes")
+        , test "fail if no vertex lines" <|
+            assertEqual (Err "no lines that look like vertexes")
                 (parse noVLines)
-        , test "fail if no face lines"
-            <| assertEqual (Err "no lines that look like faces")
+        , test "fail if no face lines" <|
+            assertEqual (Err "no lines that look like faces")
                 (parse noFLines)
-        , test "fail if empty v line"
-            <| assertEqual (Err "vertex line was empty!")
+        , test "fail if empty v line" <|
+            assertEqual (Err "vertex line was empty!")
                 (parse emptyVLine)
-        , test "fail if empty f line"
-            <| assertEqual (Err "face line was empty!")
+        , test "fail if empty f line" <|
+            assertEqual (Err "face line was empty!")
                 (parse emptyFLine)
-        , test "fail if can't parse vector component as float"
-            <| assertEqual (Err "could not convert string '10.a000005' to a Float")
+        , test "fail if can't parse vector component as float" <|
+            assertEqual (Err "could not convert string '10.a000005' to a Float")
                 (parse cantParseFloat)
-        , test "fail if can't parse index"
-            <| assertEqual (Err "could not convert string '?' to an Int")
+        , test "fail if can't parse index" <|
+            assertEqual (Err "could not convert string '?' to an Int")
                 (parse cantParseInt)
-        , test "fail if vector has less than 3 components"
-            <| assertEqual (Err "could not convert [10,-10] to a vector")
+        , test "fail if vector has less than 3 components" <|
+            assertEqual (Err "could not convert [10,-10] to a vector")
                 (parse vectorTooShort)
-        , test "fail if vector has more than 3 components"
-            <| assertEqual (Err "could not convert [10.000005,10,-9.999994,7.35] to a vector")
+        , test "fail if vector has more than 3 components" <|
+            assertEqual (Err "could not convert [10.000005,10,-9.999994,7.35] to a vector")
                 (parse vectorTooLong)
         ]
 
