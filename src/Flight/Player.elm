@@ -15,6 +15,7 @@ import Flight.Mechanics as Mechanics
 import Graphics.Camera as Camera
 import Graphics.Hud as Hud
 import Graphics.Foreground as Foreground
+import Graphics.Dustbox as Dustbox
 
 
 init : Library -> Body
@@ -192,16 +193,19 @@ draw aspect model player cockpit =
         camera =
             Camera.at aspect player
 
-        mesh =
-            Library.getMesh "Background" model.library
-
         placement =
             Mat4.makeTranslate (Vector.toVec3 camera.position)
 
         background =
-            Foreground.entity (Bright Color.lightBlue) placement camera mesh
+            Foreground.entity (Bright Color.lightBlue)
+                placement
+                camera
+                (Library.getMesh "Background" model.library)
+
+        dustbox =
+            Dustbox.draw camera
 
         hud =
             Hud.draw aspect model player cockpit
     in
-        background :: hud
+        dustbox :: background :: hud
