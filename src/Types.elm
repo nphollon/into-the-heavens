@@ -42,7 +42,6 @@ type alias GameState =
     { victory : Bool
     , level : Level
     , nextId : Id
-    , score : Int
     , log : List ( Float, String )
     , seed : Random.Seed
     , clockTime : Maybe Time

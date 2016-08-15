@@ -227,10 +227,7 @@ applyEffect effect model =
             case Dict.get id model.universe of
                 Just object ->
                     spawn (Explosion.init object)
-                        { model
-                            | universe = Dict.remove id model.universe
-                            , score = model.score + 1
-                        }
+                        { model | universe = Dict.remove id model.universe }
 
                 Nothing ->
                     model

@@ -18,7 +18,6 @@ game data seed library =
         , gameTime = 0
         , seed = seed
         , nextId = 100
-        , score = 0
         , log = []
         , lastEventTime = 0
         , playerActions = Set.empty

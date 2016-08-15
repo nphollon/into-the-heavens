@@ -2,7 +2,6 @@ module Graphics.View exposing (view)
 
 import Dict exposing (Dict)
 import Color
-import Maybe.Extra as MaybeX
 import List.Extra as ListX
 import Html exposing (..)
 import Html.Attributes as Attributes exposing (class)
@@ -116,19 +115,6 @@ drawBackground camera mesh =
         Foreground.entity (Bright Color.lightBlue) p camera mesh
 
 
-drawObject : ShaderType -> Camera -> Maybe Body -> Maybe (Drawable Vertex) -> List Renderable
-drawObject shader camera body mesh =
-    Maybe.map2 (\b m -> Foreground.entity shader (objectPlacement b) camera m)
-        body
-        mesh
-        |> MaybeX.maybeToList
-
-
-objectPlacement : Body -> Mat4
-objectPlacement object =
-    placement object.position object.orientation
-
-
 placement : Vector -> Quaternion -> Mat4
 placement position orientation =
     Mat4.mul (Mat4.makeTranslate (Vector.toVec3 position))
@@ -171,8 +157,7 @@ dashboard model player =
             Vector.length player.body.velocity
     in
         div [ class "dashboard" ]
-            [ p [] [ printInt "Visitors Destroyed" model.score ]
-            , p [] [ printNumber "Speed" speed ]
+            [ p [] [ printNumber "Speed" speed ]
             , p [] [ printNumber "X" shipPosition.x ]
             , p [] [ printNumber "Y" shipPosition.y ]
             , p [] [ printNumber "Z" shipPosition.z ]
