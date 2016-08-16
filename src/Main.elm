@@ -66,7 +66,7 @@ update action mode =
 
 view : Mode -> Html Update
 view mode =
-    Html.div [ class "app" ]
+    Html.div [ class "app container" ]
         [ case mode of
             GameMode data ->
                 Flight.view data

@@ -20,7 +20,7 @@ view : GameState -> Html a
 view model =
     case getPlayer model.universe of
         Just player ->
-            span []
+            div [ class "container" ]
                 [ scene 900 600 model player.body
                 , log model
                 ]

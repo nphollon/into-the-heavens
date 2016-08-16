@@ -43,10 +43,13 @@ body {
 .app {
     background-color: #1A1319;
     margin: 2em;
-    width: 950px;
     height: 600px;
-    display: flex;
+    width: 900px;
     justify-content: center;
+}
+
+.container {
+    display: flex;
     position: relative;
 }
 

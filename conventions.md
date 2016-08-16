@@ -15,4 +15,3 @@ Time is in seconds.
 13. Pausing
 14. Page-visibility turns animation frame on and off
 15. Replace sed in build script with programWithFlags
-16. Dustbox
