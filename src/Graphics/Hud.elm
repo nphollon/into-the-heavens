@@ -1,79 +1,24 @@
 module Graphics.Hud exposing (draw)
 
-import Dict
-import Color
-import Maybe.Extra as MaybeX
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import WebGL exposing (Renderable, Drawable(..), Shader)
 import Types exposing (..)
-import Math.Vector as Vector exposing (Vector)
-import Math.Transform as Transform
-import Math.Quaternion as Quaternion exposing (Quaternion)
 import Graphics.Camera as Camera
-import Graphics.Foreground as Foreground
 
 
 draw : Float -> GameState -> Body -> PlayerCockpit -> List Renderable
 draw aspect model player cockpit =
     let
-        perspectiveCamera =
-            Camera.at aspect player
-
         orthoCamera =
             Camera.ortho aspect
-
-        highlight mesh color body =
-            Foreground.entity (Bright color)
-                (decorPlacement body perspectiveCamera)
-                perspectiveCamera
-                mesh
-
-        target =
-            Dict.get cockpit.target model.universe
-                |> MaybeX.maybeToList
-                |> List.map (highlight targetMesh Color.blue)
-
-        decorateGroup mesh color filter =
-            Dict.values model.universe
-                |> List.filter filter
-                |> List.map (highlight mesh color)
     in
         List.concat
             [ reticule orthoCamera
             , shieldSystem cockpit.shields orthoCamera
             , health (0.1 * player.health) orthoCamera
-            , target
-            , decorateGroup incomingMesh
-                Color.red
-                (\b -> b.collisionClass == Blockable)
-            , decorateGroup targetableMesh
-                Color.blue
-                (\b -> b.collisionClass == Solid)
             ]
-
-
-decorPlacement : Body -> Camera -> Mat4
-decorPlacement object camera =
-    let
-        direction =
-            Vector.direction object.position camera.position
-                |> Maybe.withDefault (Vector.vector 0 0 0)
-
-        position =
-            Vector.scale 0.1 direction
-                |> Vector.add camera.position
-    in
-        Transform.rotationFor (Vector.vector 0 0 1) direction
-            |> placement position
-            |> Mat4.scale3 1.0e-2 1.0e-2 1.0e-2
-
-
-placement : Vector -> Quaternion -> Mat4
-placement position orientation =
-    Mat4.mul (Mat4.makeTranslate (Vector.toVec3 position))
-        (Quaternion.toMat4 orientation)
 
 
 reticule : Camera -> List Renderable
@@ -88,46 +33,6 @@ reticule camera =
         [ square 1 (Vec4.vec4 0.9 0.9 0.9 1)
         , square 1.1 (Vec4.vec4 0 0 0 1)
         ]
-
-
-targetMesh : Drawable Vertex
-targetMesh =
-    LineLoop (ngon 30 1)
-
-
-targetableMesh : Drawable Vertex
-targetableMesh =
-    Lines (dashedNgon 15 1)
-
-
-incomingMesh : Drawable Vertex
-incomingMesh =
-    LineLoop (ngon 30 0.4)
-
-
-ngon : Int -> Float -> List Vertex
-ngon sides radius =
-    [0..sides]
-        |> List.map (\i -> turns (toFloat i / toFloat sides))
-        |> List.map (toVertex radius)
-
-
-dashedNgon : Int -> Float -> List ( Vertex, Vertex )
-dashedNgon sides radius =
-    let
-        vertex i =
-            toVertex radius (turns (i / toFloat sides))
-    in
-        [0..sides]
-            |> List.map toFloat
-            |> List.map (\i -> ( vertex i, vertex (i + 0.4) ))
-
-
-toVertex : Float -> Float -> Vertex
-toVertex radius angle =
-    { vertPosition = toPosition radius angle
-    , normal = Vec3.vec3 0 0 0
-    }
 
 
 health : Float -> Camera -> List Renderable

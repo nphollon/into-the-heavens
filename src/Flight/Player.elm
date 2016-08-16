@@ -34,7 +34,6 @@ init library =
                 , yaw = 0
                 , roll = 0
                 }
-            , target = emptyId
             , trigger = { value = 0, decay = 0.3 }
             , shields = { value = 1, decay = 5, recover = 10, on = False }
             }
@@ -59,10 +58,6 @@ update model actor cockpit =
                 _ ->
                     0
 
-        shouldChangeTarget =
-            (Dict.get cockpit.target model.universe == Nothing)
-                || toggle TargetFacing
-
         newCockpit =
             { action =
                 { yaw = twoWayToggle RightTurn LeftTurn
@@ -78,11 +73,6 @@ update model actor cockpit =
                 Mechanics.repeat Mechanics.delta
                     (toggle Firing && not cockpit.shields.on)
                     cockpit.trigger
-            , target =
-                if shouldChangeTarget then
-                    newTarget model.universe actor
-                else
-                    cockpit.target
             }
 
         moved =
@@ -145,9 +135,6 @@ keyMap action =
 
         Firing ->
             Char.toCode 'J'
-
-        TargetFacing ->
-            Char.toCode 'L'
 
         _ ->
             -1

@@ -105,7 +105,6 @@ type PlayerAction
     | Brake
     | Firing
     | ShieldsUp
-    | TargetFacing
 
 
 type alias Body =
@@ -170,7 +169,6 @@ type HostileStatus
 
 type alias PlayerCockpit =
     { action : Action
-    , target : Id
     , trigger : RepeatSwitch
     , shields : DrainSwitch
     }
