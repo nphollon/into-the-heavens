@@ -30,96 +30,87 @@ update state =
 checkCollisions : GameState -> GameState
 checkCollisions model =
     let
-        checkPair a b effects =
-            if Collision.collide (snd a) (snd b) then
-                addEffects a b effects
-            else
-                effects
+        checkPair ( idA, bodyA ) ( idB, bodyB ) =
+            case ( bodyA.collisionClass, bodyB.collisionClass ) of
+                ( Scenery, Scenery ) ->
+                    []
+
+                ( Scenery, _ ) ->
+                    if Collision.collide bodyA bodyB then
+                        collideWith bodyA idB bodyB
+                    else
+                        []
+
+                ( _, Scenery ) ->
+                    if Collision.collide bodyA bodyB then
+                        collideWith bodyB idA bodyA
+                    else
+                        []
+
+                _ ->
+                    if Collision.collide bodyA bodyB then
+                        (collideWith bodyB idA bodyA)
+                            ++ (collideWith bodyA idB bodyB)
+                    else
+                        []
 
         allEffects =
             Dict.toList model.universe
                 |> ListX.selectSplit
-                |> List.foldl
-                    (\( _, object, others ) effects ->
-                        List.foldl (checkPair object) effects others
+                |> List.concatMap
+                    (\( _, object, others ) ->
+                        List.concatMap (checkPair object) others
                     )
-                    []
     in
         applyEffects allEffects model
 
 
-type ObjectType
-    = Missile
-    | Shielded
-    | Unshielded
-
-
-objectType : Body -> ObjectType
-objectType body =
-    if body.collisionClass == Blockable then
-        Missile
-    else if isShielded body then
-        Shielded
-    else
-        Unshielded
-
-
-isShielded : Body -> Bool
-isShielded body =
-    case body.ai of
+collideWith : Body -> Id -> Body -> List EngineEffect
+collideWith other id object =
+    case object.ai of
         PlayerControlled cockpit ->
-            cockpit.shields.on
+            Player.collideWith other id cockpit
+
+        Hostile _ ->
+            solidCollision other id
+
+        Seeking _ ->
+            projectileCollision other id
+
+        PlayerBullet _ ->
+            projectileCollision other id
+
+        Explosion _ ->
+            []
+
+        Dumb _ ->
+            solidCollision other id
+
+
+solidCollision : Body -> Id -> List EngineEffect
+solidCollision other objectId =
+    case other.collisionClass of
+        Ethereal ->
+            []
 
         _ ->
-            False
+            [ DeductHealth other.health objectId ]
 
 
-addEffects : ( Id, Body ) -> ( Id, Body ) -> List EngineEffect -> List EngineEffect
-addEffects ( idA, bodyA ) ( idB, bodyB ) effects =
-    case ( objectType bodyA, objectType bodyB ) of
-        ( Missile, Missile ) ->
-            effects
+projectileCollision : Body -> Id -> List EngineEffect
+projectileCollision other objectId =
+    case other.collisionClass of
+        Blockable ->
+            []
 
-        ( Missile, Unshielded ) ->
-            Destroy idA
-                :: DeductHealth bodyA.health idB
-                :: effects
+        Ethereal ->
+            []
 
-        ( Unshielded, Missile ) ->
-            DeductHealth bodyB.health idA
-                :: Destroy idB
-                :: effects
+        Scenery ->
+            [ Explode objectId ]
 
-        ( Missile, Shielded ) ->
-            Destroy idA
-                :: effects
-
-        ( Shielded, Missile ) ->
-            Destroy idB
-                :: effects
-
-        _ ->
-            DeductHealth bodyB.health idA
-                :: DeductHealth bodyA.health idB
-                :: effects
-
-
-hit : Float -> Id -> GameState -> GameState
-hit damage id model =
-    case Dict.get id model.universe of
-        Just object ->
-            if object.health > damage then
-                { model
-                    | universe =
-                        Dict.insert id
-                            { object | health = object.health - damage }
-                            model.universe
-                }
-            else
-                applyEffect (Explode id) model
-
-        Nothing ->
-            model
+        Solid ->
+            [ Explode objectId ]
 
 
 checkSchedule : GameState -> GameState
@@ -148,7 +139,7 @@ isSatisfied condition model =
         NoMoreVisitors ->
             Dict.values model.universe
                 |> List.filter (.collisionClass >> (==) Solid)
-                |> List.isEmpty
+                |> (\l -> List.length l <= 1)
 
         SecondsLater wait ->
             model.lastEventTime + wait < model.gameTime
@@ -232,8 +223,21 @@ applyEffect effect model =
                 Nothing ->
                     model
 
-        DeductHealth n id ->
-            hit n id model
+        DeductHealth damage id ->
+            case Dict.get id model.universe of
+                Just object ->
+                    if object.health > damage then
+                        { model
+                            | universe =
+                                Dict.insert id
+                                    { object | health = object.health - damage }
+                                    model.universe
+                        }
+                    else
+                        applyEffect (Explode id) model
+
+                Nothing ->
+                    model
 
         Notify message ->
             { model

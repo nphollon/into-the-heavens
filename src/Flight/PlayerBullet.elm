@@ -24,7 +24,7 @@ init library parent =
     , bounds = Library.getBounds "Bullet" library
     , health = 1
     , ai = PlayerBullet 3
-    , collisionClass = Friendly
+    , collisionClass = Blockable
     }
 
 

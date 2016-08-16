@@ -132,7 +132,7 @@ type CollisionClass
     = Scenery
     | Solid
     | Blockable
-    | Friendly
+    | Ethereal
 
 
 type alias Acceleration =

@@ -1,4 +1,4 @@
-module Flight.Player exposing (init, update, draw)
+module Flight.Player exposing (init, update, collideWith, draw)
 
 import Set
 import Color
@@ -38,7 +38,7 @@ init library =
             , trigger = { value = 0, decay = 0.3 }
             , shields = { value = 1, decay = 5, recover = 10, on = False }
             }
-    , collisionClass = Friendly
+    , collisionClass = Solid
     }
 
 
@@ -185,6 +185,25 @@ accelFromAction action object =
                 (goOrStop action.yaw (Vector.getY object.angVelocity))
                 (goOrStop action.roll (Vector.getZ object.angVelocity))
         }
+
+
+collideWith : Body -> Id -> PlayerCockpit -> List EngineEffect
+collideWith other playerId cockpit =
+    case other.collisionClass of
+        Blockable ->
+            if cockpit.shields.on then
+                []
+            else
+                [ DeductHealth other.health playerId ]
+
+        Ethereal ->
+            []
+
+        Scenery ->
+            [ DeductHealth other.health playerId ]
+
+        Solid ->
+            [ DeductHealth other.health playerId ]
 
 
 draw : Float -> GameState -> Body -> PlayerCockpit -> List Renderable

@@ -62,7 +62,7 @@ data library =
                         { meshName = "Cage"
                         , shader = Matte Color.purple
                         }
-                , collisionClass = Scenery
+                , collisionClass = Solid
                 }
               )
             ]
