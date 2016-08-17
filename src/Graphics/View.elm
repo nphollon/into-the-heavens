@@ -52,20 +52,17 @@ scene width height model player =
         attributes =
             [ Attributes.width width, Attributes.height height ]
 
-        aspect =
-            toFloat width / toFloat height
-
         renderables =
-            drawWorld aspect model player
+            drawWorld model player
     in
         WebGL.toHtmlWith functionCalls attributes renderables
 
 
-drawWorld : Float -> GameState -> Body -> List Renderable
-drawWorld aspect model player =
+drawWorld : GameState -> Body -> List Renderable
+drawWorld model player =
     let
         camera =
-            Camera.at aspect player
+            Camera.at player
 
         drawFromAi body =
             case body.ai of
@@ -85,7 +82,7 @@ drawWorld aspect model player =
                     PlayerBullet.draw camera model.library body
 
                 PlayerControlled cockpit ->
-                    Player.draw aspect model player cockpit
+                    Player.draw model player cockpit
     in
         List.concatMap drawFromAi (Dict.values model.universe)
 

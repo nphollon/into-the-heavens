@@ -6,11 +6,12 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL exposing (Shader, Renderable, Drawable(..))
 import Types exposing (..)
 import Math.Quaternion as Quaternion exposing (Quaternion)
+import Graphics.Camera as Camera
 
 
 type alias Uniform =
     { northPole : Vec3
-    , southPole : Vec3
+    , scaleFactor : Vec2
     }
 
 
@@ -25,15 +26,18 @@ type alias BkgVertex =
 draw : Camera -> Renderable
 draw camera =
     let
-        cameraOrientation =
-            Quaternion.toMat4 camera.orientation
+        xScale =
+            0.5 / tan (0.5 * (degrees Camera.fovy))
 
-        transform =
-            Mat4.transform cameraOrientation
+        yScale =
+            xScale / Camera.aspect
 
         uniform =
-            { northPole = transform (Vec3.vec3 0 0 1)
-            , southPole = transform (Vec3.vec3 0 0 -1)
+            { northPole =
+                Mat4.transform
+                    (Quaternion.toMat4 camera.orientation)
+                    (Vec3.vec3 0 0 1)
+            , scaleFactor = Vec2.vec2 xScale yScale
             }
     in
         WebGL.render vertexShader fragmentShader rectangle uniform
@@ -67,12 +71,13 @@ vertexShader =
 
          attribute vec2 vertPosition;
 
+         uniform vec2 scaleFactor;
+
          varying vec2 coord;
 
          void main() {
              gl_Position = vec4(vertPosition, (1.0 - 1e-7), 1.0);
-
-             coord = vec2(1.5 * vertPosition.x, vertPosition.y);
+             coord = vertPosition * scaleFactor;
          }
     |]
 
@@ -85,7 +90,6 @@ fragmentShader =
          varying vec2 coord;
 
          uniform vec3 northPole;
-         uniform vec3 southPole;
 
          vec4 skyColor(float x) {
              if (x < -0.1) {
@@ -112,4 +116,4 @@ fragmentShader =
 
              gl_FragColor = skyColor(gradient);
          }
-    |]
+     |]

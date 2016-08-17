@@ -192,11 +192,11 @@ collideWith other playerId cockpit =
             [ DeductHealth other.health playerId ]
 
 
-draw : Float -> GameState -> Body -> PlayerCockpit -> List Renderable
-draw aspect model player cockpit =
+draw : GameState -> Body -> PlayerCockpit -> List Renderable
+draw model player cockpit =
     let
         camera =
-            Camera.at aspect player
+            Camera.at player
 
         placement =
             Mat4.makeTranslate (Vector.toVec3 camera.position)
@@ -208,6 +208,6 @@ draw aspect model player cockpit =
             Dustbox.draw camera
 
         hud =
-            Hud.draw aspect model player cockpit
+            Hud.draw model player cockpit
     in
         dustbox :: background :: hud

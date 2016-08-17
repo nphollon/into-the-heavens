@@ -8,17 +8,13 @@ import Types exposing (..)
 import Graphics.Camera as Camera
 
 
-draw : Float -> GameState -> Body -> PlayerCockpit -> List Renderable
-draw aspect model player cockpit =
-    let
-        orthoCamera =
-            Camera.ortho aspect
-    in
-        List.concat
-            [ reticule orthoCamera
-            , shieldSystem cockpit.shields orthoCamera
-            , health (0.1 * player.health) orthoCamera
-            ]
+draw : GameState -> Body -> PlayerCockpit -> List Renderable
+draw model player cockpit =
+    List.concat
+        [ reticule Camera.ortho
+        , shieldSystem cockpit.shields Camera.ortho
+        , health (0.1 * player.health) Camera.ortho
+        ]
 
 
 reticule : Camera -> List Renderable
