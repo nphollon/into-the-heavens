@@ -1,7 +1,6 @@
 module Flight.Player exposing (init, update, collideWith, draw)
 
 import Set
-import Color
 import Dict exposing (Dict)
 import Char exposing (KeyCode)
 import WebGL exposing (Drawable, Renderable)
@@ -14,8 +13,8 @@ import Math.Transform as Transform
 import Flight.Mechanics as Mechanics
 import Graphics.Camera as Camera
 import Graphics.Hud as Hud
-import Graphics.Foreground as Foreground
 import Graphics.Dustbox as Dustbox
+import Graphics.Background as Background
 
 
 init : Library -> Body
@@ -203,10 +202,7 @@ draw aspect model player cockpit =
             Mat4.makeTranslate (Vector.toVec3 camera.position)
 
         background =
-            Foreground.entity (Bright Color.lightBlue)
-                placement
-                camera
-                (Library.getMesh "Background" model.library)
+            Background.draw camera
 
         dustbox =
             Dustbox.draw camera
