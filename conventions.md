@@ -1,10 +1,9 @@
-All models face down (towards z = -Inf)
+All models face towards z = -Inf
 
 Time is in seconds.
 
 
-3. Dumb => Scenery
-6. Missile expirations can have their own particle effect?
+6. Better particle effects
 7. New enemy types!!
 8. Positioning should be encapsulated.
 9. SpawnShips effect should be replaced with multiple calls to SpawnShip; pass placement info with effect info.
@@ -14,5 +13,4 @@ Time is in seconds.
 14. Page-visibility turns animation frame on and off
 15. Replace sed in build script with programWithFlags
 16. AI should try to avoid colliding with the player
-17. Lighter background
 18. Phong shading
