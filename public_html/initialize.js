@@ -5,8 +5,16 @@ window.onload = function () {
         { seed: [ Math.floor(Math.random()*0xFFFFFFFF), Math.floor(Math.random()*0xFFFFFFFF) ]
         , isMobile : mobileCheck()
         };
-    
+
     var app = Elm.Main.embed(document.getElementById("app"), flags);
+
+    window.onfocus = function () {
+        app.ports.hasFocus.send(true);
+    };
+
+    window.onblur = function () {
+        app.ports.hasFocus.send(false);
+    };
 }
 
 var mobileCheck = function() {

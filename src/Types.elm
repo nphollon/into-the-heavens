@@ -32,6 +32,8 @@ type Update
     | KeyDown KeyCode
     | KeyUp KeyCode
     | Tick Time
+    | LoseVisibility
+    | NoUpdate
 
 
 type alias PauseState =

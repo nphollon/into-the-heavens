@@ -1,9 +1,10 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Html exposing (Html, div)
 import Html.Attributes exposing (class)
 import Html.App as App
 import AnimationFrame
+import PageVisibility exposing (Visibility(..))
 import Keyboard
 import Types exposing (..)
 import Loading
@@ -11,6 +12,7 @@ import Loading.Init
 import Menu
 import Flight
 import Pause
+import Pause.Init
 
 
 main : Program Flags
@@ -28,6 +30,9 @@ init flags =
     ( Loading.Init.menu flags, Loading.Init.library )
 
 
+port hasFocus : (Bool -> msg) -> Sub msg
+
+
 subscriptions : Mode -> Sub Update
 subscriptions mode =
     case mode of
@@ -36,10 +41,20 @@ subscriptions mode =
                 [ Keyboard.downs KeyDown
                 , Keyboard.ups KeyUp
                 , AnimationFrame.times Tick
+                , PageVisibility.visibilityChanges ((==) Visible >> visibility)
+                , hasFocus visibility
                 ]
 
         _ ->
             Keyboard.downs KeyDown
+
+
+visibility : Bool -> Update
+visibility isVisible =
+    if isVisible then
+        NoUpdate
+    else
+        LoseVisibility
 
 
 update : Update -> Mode -> ( Mode, Cmd Update )
@@ -53,6 +68,9 @@ update action mode =
 
         ( KeyUp key, GameMode data ) ->
             Flight.keyUp key data
+
+        ( LoseVisibility, GameMode data ) ->
+            Pause.Init.pause data
 
         ( KeyDown key, LoadingMode data ) ->
             Loading.keyUpdate key data
@@ -75,7 +93,8 @@ update action mode =
 
 view : Mode -> Html Update
 view mode =
-    Html.div [ class "app container" ]
+    Html.div
+        [ class "app container" ]
         [ case mode of
             GameMode data ->
                 Flight.view data
