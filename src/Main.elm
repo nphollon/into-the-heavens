@@ -4,7 +4,6 @@ import Html exposing (Html, div)
 import Html.Attributes exposing (class)
 import Html.App as App
 import AnimationFrame
-import PageVisibility exposing (Visibility(..))
 import Keyboard
 import Types exposing (..)
 import Loading
@@ -30,9 +29,6 @@ init flags =
     ( Loading.Init.menu flags, Loading.Init.library )
 
 
-port hasFocus : (Bool -> msg) -> Sub msg
-
-
 subscriptions : Mode -> Sub Update
 subscriptions mode =
     case mode of
@@ -41,20 +37,14 @@ subscriptions mode =
                 [ Keyboard.downs KeyDown
                 , Keyboard.ups KeyUp
                 , AnimationFrame.times Tick
-                , PageVisibility.visibilityChanges ((==) Visible >> visibility)
-                , hasFocus visibility
+                , lostFocus (always LoseVisibility)
                 ]
 
         _ ->
             Keyboard.downs KeyDown
 
 
-visibility : Bool -> Update
-visibility isVisible =
-    if isVisible then
-        NoUpdate
-    else
-        LoseVisibility
+port lostFocus : ({} -> msg) -> Sub msg
 
 
 update : Update -> Mode -> ( Mode, Cmd Update )

@@ -8,12 +8,8 @@ window.onload = function () {
 
     var app = Elm.Main.embed(document.getElementById("app"), flags);
 
-    window.onfocus = function () {
-        app.ports.hasFocus.send(true);
-    };
-
     window.onblur = function () {
-        app.ports.hasFocus.send(false);
+        app.ports.lostFocus.send();
     };
 }
 
