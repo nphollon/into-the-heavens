@@ -29,11 +29,24 @@ init flags =
 
 subscriptions : Mode -> Sub Update
 subscriptions mode =
-    Sub.batch
-        [ Keyboard.downs KeyDown
-        , Keyboard.ups KeyUp
-        , AnimationFrame.times Tick
-        ]
+    if (isAnimated mode) then
+        Sub.batch
+            [ Keyboard.downs KeyDown
+            , Keyboard.ups KeyUp
+            , AnimationFrame.times Tick
+            ]
+    else
+        Keyboard.downs KeyDown
+
+
+isAnimated : Mode -> Bool
+isAnimated mode =
+    case mode of
+        GameMode _ ->
+            True
+
+        _ ->
+            False
 
 
 update : Update -> Mode -> ( Mode, Cmd Update )
