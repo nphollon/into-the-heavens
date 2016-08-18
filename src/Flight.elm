@@ -9,13 +9,17 @@ import Types exposing (..)
 import Flight.Engine as Engine
 import Flight.Mechanics as Mechanics
 import Menu.Init
+import Pause.Init
 import Graphics.View as View
 
 
 keyDown : KeyCode -> GameState -> ( Mode, Cmd Update )
 keyDown key model =
-    GameMode { model | playerActions = Set.insert key model.playerActions }
-        ! []
+    if key == Char.toCode 'P' then
+        Pause.Init.pause model
+    else
+        GameMode { model | playerActions = Set.insert key model.playerActions }
+            ! []
 
 
 keyUp : KeyCode -> GameState -> ( Mode, Cmd Update )

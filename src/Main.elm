@@ -10,6 +10,7 @@ import Loading
 import Loading.Init
 import Menu
 import Flight
+import Pause
 
 
 main : Program Flags
@@ -29,24 +30,16 @@ init flags =
 
 subscriptions : Mode -> Sub Update
 subscriptions mode =
-    if (isAnimated mode) then
-        Sub.batch
-            [ Keyboard.downs KeyDown
-            , Keyboard.ups KeyUp
-            , AnimationFrame.times Tick
-            ]
-    else
-        Keyboard.downs KeyDown
-
-
-isAnimated : Mode -> Bool
-isAnimated mode =
     case mode of
         GameMode _ ->
-            True
+            Sub.batch
+                [ Keyboard.downs KeyDown
+                , Keyboard.ups KeyUp
+                , AnimationFrame.times Tick
+                ]
 
         _ ->
-            False
+            Keyboard.downs KeyDown
 
 
 update : Update -> Mode -> ( Mode, Cmd Update )
@@ -73,6 +66,9 @@ update action mode =
         ( MenuUpdate action, MenuMode data ) ->
             Menu.actionUpdate action data
 
+        ( KeyDown key, PauseMode data ) ->
+            Pause.keyUpdate key data
+
         _ ->
             mode ! []
 
@@ -89,4 +85,7 @@ view mode =
 
             MenuMode data ->
                 App.map MenuUpdate (Menu.view data)
+
+            PauseMode data ->
+                Pause.view data
         ]

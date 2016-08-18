@@ -21,6 +21,7 @@ type alias Flags =
 
 type Mode
     = GameMode GameState
+    | PauseMode PauseState
     | LoadingMode LoadingState
     | MenuMode MenuState
 
@@ -31,6 +32,10 @@ type Update
     | KeyDown KeyCode
     | KeyUp KeyCode
     | Tick Time
+
+
+type alias PauseState =
+    { inProgress : GameState }
 
 
 type MenuAction

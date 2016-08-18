@@ -1,4 +1,4 @@
-module Flight.Init exposing (game)
+module Flight.Init exposing (game, resume)
 
 import Dict
 import Set
@@ -30,3 +30,8 @@ game data seed library =
                 data.universe
         }
         ! []
+
+
+resume : GameState -> ( Mode, Cmd Update )
+resume gameData =
+    GameMode { gameData | clockTime = Nothing } ! []
