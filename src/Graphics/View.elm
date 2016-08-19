@@ -23,6 +23,7 @@ view model =
             div [ class "container" ]
                 [ scene 900 600 model player.body
                 , log model
+                , instructions
                 ]
 
         Nothing ->
@@ -101,3 +102,8 @@ log model =
             |> List.reverse
             |> List.map lineHtml
             |> div [ class "log" ]
+
+
+instructions : Html a
+instructions =
+    p [ class "reminder" ] [ text "Press 'P' to Pause" ]

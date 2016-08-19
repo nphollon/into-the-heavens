@@ -59,7 +59,13 @@ body {
 
 .log {
     position: absolute;
-    left : 0px;
+    left : 20px;
+}
+
+.reminder {
+    position: absolute;
+    left : 20px;
+    bottom : 0px;
 }
 
 h1 {
@@ -86,10 +92,6 @@ h3 {
     margin-bottom: 0.5em;
 }
 
-p {
-    padding-left: 5em;
-    padding-right: 5em;
-}
 
 a {
     color: #4444FF;

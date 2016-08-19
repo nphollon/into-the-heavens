@@ -1,7 +1,8 @@
 module Pause exposing (keyUpdate, view)
 
 import Char exposing (KeyCode)
-import Html exposing (Html)
+import Html exposing (..)
+import Html.Attributes exposing (class)
 import Types exposing (..)
 import Flight.Init
 import Menu.Init
@@ -24,4 +25,8 @@ keyUpdate key model =
 
 view : PauseState -> Html a
 view state =
-    Html.text "Paused"
+    div []
+        [ h1 [ class "title" ] [ text "Paused" ]
+        , h2 [ class "subtitle" ] [ text "Press 'R' to resume" ]
+        , h2 [ class "subtitle" ] [ text "Press 'X' to return to main menu" ]
+        ]
