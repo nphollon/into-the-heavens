@@ -16,7 +16,10 @@ import Math.Quaternion exposing (Quaternion)
 
 
 type alias Flags =
-    { seed : ( Int, Int ), isMobile : Bool }
+    { seed : ( Int, Int )
+    , isMobile : Bool
+    , domain : String
+    }
 
 
 type Mode

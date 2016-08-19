@@ -2,45 +2,26 @@
 
 temp_dir=${TMPDIR:-"/tmp"}
 elm_out="$temp_dir/elm.js"
-min_out="$temp_dir/elm.js.min"
 final_out="public_html/heavens.js"
 main_elm="src/Main.elm"
-elm_make="elm-make"
 
-function compile {
-    scripts/test.sh;
-    if [ $? -ne 0 ]; then exit 1; fi;
+scripts/test.sh;
+if [ $? -ne 0 ]; then exit 1; fi;
 
-    scripts/make-mesh.sh;
-    if [ $? -ne 0 ]; then exit 1; fi;
+scripts/make-mesh.sh;
+if [ $? -ne 0 ]; then exit 1; fi;
 
-    echo; echo;
-    echo "Hostname: $1";
+echo;
 
-    $elm_make $main_elm --output $elm_out --yes --warn
-    if [ $? -ne 0 ]; then exit 1; fi;
+elm make $main_elm --output $elm_out --yes --warn
+if [ $? -ne 0 ]; then exit 1; fi;
 
-    uglifyjs $elm_out -m -c warnings=false -o $min_out
-    if [ $? -ne 0 ]; then exit 1; fi;
-    echo "Successfully generated $min_out"
+uglifyjs $elm_out -m -c warnings=false -o $final_out
+if [ $? -ne 0 ]; then exit 1; fi;
 
-    sed "s/\$DOMAIN/$1/g" $min_out > $final_out;
-    if [ $? -ne 0 ]; then exit 1; fi;
-    echo "Successfully generated $final_out"
-}
+echo "Successfully minified to $final_out"
 
-if [ $# -lt 1 ];
+if [ $1 == "prod" ];
 then
-    echo "Usage: $0 [local|prod]";
-elif [ $1 == "prod" ];
-then
-    compile "https:\/\/intotheheavens\.net";
     scp -r public_html intotheh@intotheheavens.net:.
-elif [ $1 == "local" ];
-then
-    compile "http:\/\/localhost:8080\/~vagrant";
-else
-    echo "Invalid environment: $1"
-    exit 1;
 fi;
-

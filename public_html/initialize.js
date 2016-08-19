@@ -2,8 +2,9 @@ window.onload = function () {
     "use strict";
 
     var flags =
-        { seed: [ Math.floor(Math.random()*0xFFFFFFFF), Math.floor(Math.random()*0xFFFFFFFF) ]
-        , isMobile : mobileCheck()
+        { seed : [ Math.floor(Math.random()*0xFFFFFFFF), Math.floor(Math.random()*0xFFFFFFFF) ]
+          , isMobile : mobileCheck()
+          , domain : "http://localhost:8080/~vagrant"
         };
 
     var app = Elm.Main.embed(document.getElementById("app"), flags);

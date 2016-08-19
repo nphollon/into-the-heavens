@@ -1,4 +1,4 @@
-module Loading.Init exposing (menu, library)
+module Loading.Init exposing (loadResources)
 
 import Types exposing (..)
 import Dict exposing (Dict)
@@ -12,17 +12,24 @@ import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 
 
-menu : Flags -> Mode
-menu flags =
-    LoadingMode
-        { response = Nothing
-        , seed = uncurry Random.initialSeed2 flags.seed
-        , isMobile = flags.isMobile
-        }
+loadResources : Flags -> ( Mode, Cmd Update )
+loadResources flags =
+    let
+        model =
+            LoadingMode
+                { response = Nothing
+                , seed = uncurry Random.initialSeed2 flags.seed
+                , isMobile = flags.isMobile
+                }
+
+        command =
+            library flags.domain
+    in
+        ( model, command )
 
 
-library : Cmd Update
-library =
+library : String -> Cmd Update
+library domain =
     let
         remoteMeshes =
             [ ( "Sphere", "sphere.json" )
@@ -58,7 +65,7 @@ library =
             }
 
         get decoder ( id, file ) =
-            ("$DOMAIN/data/" ++ file)
+            (domain ++ "/data/" ++ file)
                 |> Http.get decoder
                 |> Task.map ((,) id)
     in

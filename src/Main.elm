@@ -26,7 +26,7 @@ main =
 
 init : Flags -> ( Mode, Cmd Update )
 init flags =
-    ( Loading.Init.menu flags, Loading.Init.library )
+    Loading.Init.loadResources flags
 
 
 subscriptions : Mode -> Sub Update
