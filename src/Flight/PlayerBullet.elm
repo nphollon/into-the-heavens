@@ -20,7 +20,7 @@ init library parent =
             |> Quaternion.rotateVector parent.orientation
             |> Vector.add parent.velocity
     , orientation = parent.orientation
-    , angVelocity = Vector.vector 0 0 0
+    , angVelocity = Quaternion.identity
     , bounds = Library.getBounds "Bullet" library
     , health = 1
     , ai = PlayerBullet 3

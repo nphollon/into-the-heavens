@@ -20,7 +20,7 @@ init library parent target =
             |> Quaternion.rotateVector parent.orientation
             |> Vector.add parent.velocity
     , orientation = parent.orientation
-    , angVelocity = Vector.vector 0 0 0
+    , angVelocity = Quaternion.identity
     , bounds = Library.getBounds "Missile" library
     , health = 1
     , ai = Seeking { lifespan = 3, target = target }
@@ -65,7 +65,7 @@ accelTowards scale target missile =
             Vector.scale (scale / rSquared) (Vector.cross range velocity)
     in
         { linear = Vector.cross velocity lineOfSightRotation
-        , angular = Vector.vector 0 0 0
+        , angular = Quaternion.identity
         }
 
 

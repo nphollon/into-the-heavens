@@ -54,7 +54,9 @@ data library =
               , { position = Vector.vector -35 5 -10
                 , velocity = Vector.vector 0 0 0
                 , orientation = Quaternion.identity
-                , angVelocity = Vector.vector 3.0e-2 4.0e-2 0
+                , angVelocity =
+                    Quaternion.fromVector
+                        (Vector.vector 3.0e-2 4.0e-2 0)
                 , bounds = Library.getBounds "Cage" library
                 , health = 1
                 , ai =

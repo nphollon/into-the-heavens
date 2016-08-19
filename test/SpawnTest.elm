@@ -63,5 +63,5 @@ type alias Placement =
     { position : Vector
     , orientation : Quaternion
     , velocity : Vector
-    , angVelocity : Vector
+    , angVelocity : Quaternion
     }

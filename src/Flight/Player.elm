@@ -22,7 +22,7 @@ init library =
     { position = Vector.vector 0 0 0
     , velocity = Vector.vector 0 0 0
     , orientation = Quaternion.identity
-    , angVelocity = Vector.vector 0 0 0
+    , angVelocity = Quaternion.identity
     , bounds = Library.getBounds "Player" library
     , health = 10
     , ai =
@@ -31,7 +31,6 @@ init library =
                 { thrust = 0
                 , pitch = 0
                 , yaw = 0
-                , roll = 0
                 }
             , trigger = { value = 0, decay = 0.3 }
             , shields = { value = 1, decay = 5, recover = 10, on = False }
@@ -61,7 +60,6 @@ update model actor cockpit =
             { action =
                 { yaw = twoWayToggle RightTurn LeftTurn
                 , pitch = twoWayToggle DownTurn UpTurn
-                , roll = twoWayToggle CounterclockwiseRoll ClockwiseRoll
                 , thrust = twoWayToggle Brake Thrust
                 }
             , shields =
@@ -135,18 +133,12 @@ keyMap action =
         Firing ->
             Char.toCode 'J'
 
-        _ ->
-            -1
-
 
 accelFromAction : Action -> Body -> Acceleration
 accelFromAction action object =
     let
         turningSpeed =
-            2.0
-
-        turningAccel =
-            2.0
+            degrees 70.0
 
         speed =
             5.0
@@ -154,8 +146,15 @@ accelFromAction action object =
         accel =
             5.0
 
-        goOrStop dir vel =
-            turningAccel * (turningSpeed * toFloat dir - vel)
+        axis =
+            Vector.vector (toFloat action.pitch) (toFloat action.yaw) 0
+
+        rotationThrust =
+            Quaternion.fromAxisAngle axis turningSpeed
+                |> Maybe.withDefault Quaternion.identity
+
+        rotationFriction =
+            Quaternion.conjugate object.angVelocity
 
         targetSpeed =
             speed * (1 + toFloat action.thrust)
@@ -167,9 +166,7 @@ accelFromAction action object =
         { linear =
             Vector.scale accel (Vector.sub targetVelocity object.velocity)
         , angular =
-            Vector.vector (goOrStop action.pitch (Vector.getX object.angVelocity))
-                (goOrStop action.yaw (Vector.getY object.angVelocity))
-                (goOrStop action.roll (Vector.getZ object.angVelocity))
+            Quaternion.compose rotationFriction rotationThrust
         }
 
 

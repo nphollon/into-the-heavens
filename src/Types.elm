@@ -106,8 +106,6 @@ type PlayerAction
     | RightTurn
     | UpTurn
     | DownTurn
-    | ClockwiseRoll
-    | CounterclockwiseRoll
     | Thrust
     | Brake
     | Firing
@@ -118,7 +116,7 @@ type alias Body =
     { position : Vector
     , velocity : Vector
     , orientation : Quaternion
-    , angVelocity : Vector
+    , angVelocity : Quaternion
     , bounds : Bounds
     , health : Float
     , ai : Ai
@@ -130,7 +128,7 @@ type alias Placement =
     { position : Vector
     , orientation : Quaternion
     , velocity : Vector
-    , angVelocity : Vector
+    , angVelocity : Quaternion
     }
 
 
@@ -143,7 +141,7 @@ type CollisionClass
 
 type alias Acceleration =
     { linear : Vector
-    , angular : Vector
+    , angular : Quaternion
     }
 
 
@@ -199,7 +197,6 @@ type alias Action =
     { thrust : Int
     , pitch : Int
     , yaw : Int
-    , roll : Int
     }
 
 

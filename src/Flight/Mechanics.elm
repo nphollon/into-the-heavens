@@ -16,7 +16,7 @@ evolveObject acceleration object =
                 { state
                     | position = state.velocity
                     , velocity = accel.linear
-                    , orientation = Quaternion.fromVector state.angVelocity
+                    , orientation = state.angVelocity
                     , angVelocity = accel.angular
                 }
 
@@ -43,13 +43,19 @@ nudge : Float -> Body -> Body -> Body
 nudge delta dpdelta p =
     { p
         | position =
-            Vector.add p.position (Vector.scale delta dpdelta.position)
+            Vector.add (Vector.scale delta dpdelta.position)
+                p.position
         , velocity =
-            Vector.add p.velocity (Vector.scale delta dpdelta.velocity)
+            Vector.add (Vector.scale delta dpdelta.velocity)
+                p.velocity
         , orientation =
-            Quaternion.compose (Quaternion.scale delta dpdelta.orientation) p.orientation
+            Quaternion.compose
+                (Quaternion.scale delta dpdelta.orientation)
+                p.orientation
         , angVelocity =
-            Vector.add p.angVelocity (Vector.scale delta dpdelta.angVelocity)
+            Quaternion.compose
+                (Quaternion.scale delta dpdelta.angVelocity)
+                p.angVelocity
     }
 
 
@@ -60,8 +66,7 @@ glide body =
             Vector.scale delta body.velocity
 
         orientationChange =
-            Quaternion.fromVector body.angVelocity
-                |> Quaternion.scale delta
+            Quaternion.scale delta body.angVelocity
     in
         { body
             | position = Vector.add positionChange body.position

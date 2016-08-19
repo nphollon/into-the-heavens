@@ -100,6 +100,7 @@ smartAccel damping target object =
         , angular =
             angleSpring damping target.position object
                 |> Vector.scale 3
+                |> Quaternion.fromVector
         }
 
 
@@ -111,7 +112,7 @@ angleSpring damping targetPosition body =
                 (Transform.toBodyFrame body targetPosition)
     in
         Vector.sub (Vector.scale (0.25 / damping) (Quaternion.toVector rotation))
-            body.angVelocity
+            (Quaternion.toVector body.angVelocity)
 
 
 draw : Camera -> Library -> Body -> List Renderable

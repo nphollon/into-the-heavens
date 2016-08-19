@@ -62,22 +62,27 @@ testSuite =
                         |> Vec.length
                     )
             , test "Acceleration opposes velocity if facing target" <|
-                assertEqualVector (Vec.vector 0 -1 0)
-                    (criticalDamping { defaultBody | angVelocity = Vec.vector 0 (turns 1.25e-2) 0 })
-            , test "coaxial velocity & orientation, critically damped" <|
-                assertEqualVector (Vec.vector 0 -12 0)
-                    (criticalDamping
+                assertEqualVector (Vec.vector 0 -1 0) <|
+                    criticalDamping
                         { defaultBody
-                            | orientation = Quaternion.fromVector (Vec.vector 0 (turns 0.1) 0)
-                            , angVelocity = Vec.vector 0 (turns 0.125) 0
+                            | angVelocity =
+                                Quaternion.fromVector (Vec.vector 0 (turns 1.25e-2) 0)
                         }
-                    )
+            , test "coaxial velocity & orientation, critically damped" <|
+                assertEqualVector (Vec.vector 0 -12 0) <|
+                    criticalDamping
+                        { defaultBody
+                            | orientation =
+                                Quaternion.fromVector (Vec.vector 0 (turns 0.1) 0)
+                            , angVelocity =
+                                Quaternion.fromVector (Vec.vector 0 (turns 0.125) 0)
+                        }
             , test "coaxial velocity & orientation, underdamped" <|
                 assertEqualVector (Vec.vector 0 -14 0)
                     (underdamping
                         { defaultBody
                             | orientation = Quaternion.fromVector (Vec.vector 0 (turns 0.1) 0)
-                            , angVelocity = Vec.vector 0 (turns 0.125) 0
+                            , angVelocity = Quaternion.fromVector (Vec.vector 0 (turns 0.125) 0)
                         }
                     )
             , test "orientation perpendicular to velocity" <|
@@ -85,7 +90,7 @@ testSuite =
                     (criticalDamping
                         { defaultBody
                             | orientation = Quaternion.fromVector (Vec.vector 0 (turns 0.25) 0)
-                            , angVelocity = Vec.vector 0 0 (turns 0.25)
+                            , angVelocity = Quaternion.fromVector (Vec.vector 0 0 (turns 0.25))
                         }
                     )
             , test "oblique orientation" <|
@@ -108,7 +113,7 @@ defaultBody =
     { position = Vec.vector 0 0 0
     , velocity = Vec.vector 0 0 0
     , orientation = Quaternion.identity
-    , angVelocity = Vec.vector 0 0 0
+    , angVelocity = Quaternion.identity
     , bounds = Collision.empty
     , health = 0
     , ai =

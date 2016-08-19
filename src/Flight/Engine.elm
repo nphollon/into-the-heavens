@@ -261,7 +261,7 @@ checkpoint position =
     { position = position
     , velocity = Vector.vector 0 0 0
     , orientation = Quaternion.identity
-    , angVelocity = Vector.vector 0 0 1
+    , angVelocity = Quaternion.fromVector (Vector.vector 0 0 1)
     , bounds = Collision.empty
     , health = 0
     , ai =
@@ -283,7 +283,7 @@ placeAt positionGenerator =
             { position = position
             , velocity = Vector.scale -0.1 position
             , orientation = orientationFor position
-            , angVelocity = Vector.vector 0 0 0
+            , angVelocity = Quaternion.identity
             }
     in
         Random.map place positionGenerator
