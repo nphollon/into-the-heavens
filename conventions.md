@@ -5,7 +5,6 @@ Time is in seconds.
 
 6. Better particle effects
 7. New enemy types!!
-8. Positioning should be encapsulated.
 9. SpawnShips effect should be replaced with multiple calls to SpawnShip; pass placement info with effect info.
 10. Fucking collision detection still doesn't work
 12. Checkpoints activated by collisions
