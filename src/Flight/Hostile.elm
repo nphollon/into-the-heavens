@@ -114,8 +114,8 @@ angleSpring damping targetPosition body =
 
 draw : Camera -> Library -> Body -> List Renderable
 draw camera library body =
-    [ Foreground.entity (Matte Color.purple)
-        (Frame.toMat4 body.frame)
-        camera
-        (Library.getMesh "Ship" library)
-    ]
+    let
+        mesh =
+            Library.getMesh "Ship" library
+    in
+        [ Foreground.entity (Matte Color.purple) body.frame camera mesh ]

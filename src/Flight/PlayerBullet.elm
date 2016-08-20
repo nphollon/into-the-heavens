@@ -43,8 +43,8 @@ update universe id actor lifespan =
 
 draw : Camera -> Library -> Body -> List Renderable
 draw camera library body =
-    [ Foreground.entity (Bright Color.red)
-        (Frame.toMat4 body.frame)
-        camera
-        (Library.getMesh "Missile" library)
-    ]
+    let
+        mesh =
+            Library.getMesh "Missile" library
+    in
+        [ Foreground.entity (Bright Color.red) body.frame camera mesh ]
