@@ -14,3 +14,5 @@ Time is in seconds.
 19. Menus should be operated with keyboard?
 20. Prettify menus
 21. Document keyboard controls somewhere (maybe on pause menu?)
+22. Tests for Frame.compose and Frame.composeDelta!
+23. no more runge-kutta?

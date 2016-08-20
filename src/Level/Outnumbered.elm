@@ -43,10 +43,14 @@ data library =
     , universe =
         Dict.fromList
             [ ( 1
-              , { position = Vector.vector 0 -20 0
-                , velocity = Vector.vector 0 0 0
-                , orientation = Quaternion.identity
-                , angVelocity = Quaternion.fromVector (Vector.vector 0 3.0e-2 0)
+              , { frame =
+                    { position = Vector.vector 0 -20 0
+                    , orientation = Quaternion.identity
+                    }
+                , delta =
+                    { position = Vector.identity
+                    , orientation = Quaternion.fromVector (Vector.vector 0 3.0e-2 0)
+                    }
                 , bounds = Library.getBounds "Sphere" library
                 , health = 1.0e10
                 , ai =

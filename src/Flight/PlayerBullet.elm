@@ -4,7 +4,7 @@ import Color
 import Dict exposing (Dict)
 import WebGL exposing (Renderable)
 import Types exposing (..)
-import Math.Transform as Transform
+import Math.Frame as Frame
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion
 import Library
@@ -14,13 +14,16 @@ import Graphics.Foreground as Foreground
 
 init : Library -> Body -> Body
 init library parent =
-    { position = Transform.fromBodyFrame parent (Vector.vector 0 -1.5 0)
-    , velocity =
-        Vector.vector 0 0 -100
-            |> Quaternion.rotateVector parent.orientation
-            |> Vector.add parent.velocity
-    , orientation = parent.orientation
-    , angVelocity = Quaternion.identity
+    { frame =
+        Frame.compose parent.frame
+            { position = Vector.vector 0 -1.5 0
+            , orientation = Quaternion.identity
+            }
+    , delta =
+        Frame.composeDelta parent
+            { position = Vector.vector 0 0 -100
+            , orientation = Quaternion.identity
+            }
     , bounds = Library.getBounds "Bullet" library
     , health = 1
     , ai = PlayerBullet 3
@@ -31,7 +34,7 @@ init library parent =
 update : Dict Id Body -> Id -> Body -> Float -> ( Body, List EngineEffect )
 update universe id actor lifespan =
     if lifespan > 0 then
-        ( Mechanics.glide { actor | ai = PlayerBullet (lifespan - Mechanics.delta) }
+        ( Mechanics.glide { actor | ai = PlayerBullet (lifespan - Mechanics.timeDelta) }
         , []
         )
     else
@@ -41,7 +44,7 @@ update universe id actor lifespan =
 draw : Camera -> Library -> Body -> List Renderable
 draw camera library body =
     [ Foreground.entity (Bright Color.red)
-        (Transform.toMat4 body)
+        (Frame.toMat4 body.frame)
         camera
         (Library.getMesh "Missile" library)
     ]

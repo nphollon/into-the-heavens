@@ -1,77 +1,63 @@
-module Flight.Mechanics exposing (evolveObject, glide, repeat, drain, delta, playerId)
+module Flight.Mechanics exposing (evolveObject, glide, repeat, drain, timeDelta, playerId)
 
 import Types exposing (..)
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion
+import Math.Frame exposing (Frame)
 
 
-evolveObject : (Body -> Acceleration) -> Body -> Body
+evolveObject : (Body -> Frame) -> Body -> Body
 evolveObject acceleration object =
     let
         stateDerivative state =
-            let
-                accel =
-                    acceleration state
-            in
-                { state
-                    | position = state.velocity
-                    , velocity = accel.linear
-                    , orientation = state.angVelocity
-                    , angVelocity = accel.angular
-                }
+            { state
+                | frame = state.delta
+                , delta = acceleration state
+            }
 
         a =
             stateDerivative object
 
         b =
-            stateDerivative (nudge (delta / 2) a object)
+            stateDerivative (nudge (timeDelta / 2) a object)
 
         c =
-            stateDerivative (nudge (delta / 2) b object)
+            stateDerivative (nudge (timeDelta / 2) b object)
 
         d =
-            stateDerivative (nudge delta c object)
+            stateDerivative (nudge timeDelta c object)
     in
         object
-            |> nudge (delta / 6) a
-            |> nudge (delta / 3) b
-            |> nudge (delta / 3) c
-            |> nudge (delta / 6) d
+            |> nudge (timeDelta / 6) a
+            |> nudge (timeDelta / 3) b
+            |> nudge (timeDelta / 3) c
+            |> nudge (timeDelta / 6) d
 
 
 nudge : Float -> Body -> Body -> Body
-nudge delta dpdelta p =
+nudge dt dpdt p =
     { p
-        | position =
-            Vector.add (Vector.scale delta dpdelta.position)
-                p.position
-        , velocity =
-            Vector.add (Vector.scale delta dpdelta.velocity)
-                p.velocity
-        , orientation =
-            Quaternion.compose
-                (Quaternion.scale delta dpdelta.orientation)
-                p.orientation
-        , angVelocity =
-            Quaternion.compose
-                (Quaternion.scale delta dpdelta.angVelocity)
-                p.angVelocity
+        | frame = nudgeFrame dt dpdt.frame p.frame
+        , delta = nudgeFrame dt dpdt.delta p.delta
+    }
+
+
+nudgeFrame : Float -> Frame -> Frame -> Frame
+nudgeFrame dt deltaFrame frame =
+    { position =
+        Vector.add
+            (Vector.scale dt deltaFrame.position)
+            frame.position
+    , orientation =
+        Quaternion.compose
+            (Quaternion.scale dt deltaFrame.orientation)
+            frame.orientation
     }
 
 
 glide : Body -> Body
 glide body =
-    let
-        positionChange =
-            Vector.scale delta body.velocity
-
-        orientationChange =
-            Quaternion.scale delta body.angVelocity
-    in
-        { body
-            | position = Vector.add positionChange body.position
-            , orientation = Quaternion.compose orientationChange body.orientation
-        }
+    { body | frame = nudgeFrame timeDelta body.delta body.frame }
 
 
 repeat : Float -> Bool -> RepeatSwitch -> RepeatSwitch
@@ -102,8 +88,8 @@ drain dt isOn switch =
         }
 
 
-delta : Float
-delta =
+timeDelta : Float
+timeDelta =
     1 / 60
 
 

@@ -6,16 +6,18 @@ import Types exposing (..)
 import Library
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion exposing (Quaternion)
+import Math.Frame as Frame
 
 
 data : Library -> LevelData
 data library =
     let
         column position orientation =
-            { position = position
-            , velocity = Vector.vector 0 0 0
-            , orientation = orientation
-            , angVelocity = Quaternion.identity
+            { frame =
+                { position = position
+                , orientation = orientation
+                }
+            , delta = Frame.identity
             , bounds = Library.getBounds "Column" library
             , health = 1.0e10
             , ai =

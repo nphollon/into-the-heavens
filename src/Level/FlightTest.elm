@@ -6,6 +6,7 @@ import Types exposing (..)
 import Library
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion
+import Math.Frame as Frame
 
 
 data : Library -> LevelData
@@ -43,10 +44,11 @@ data library =
     , universe =
         Dict.fromList
             [ ( 1
-              , { position = Vector.vector -35 5 -10
-                , velocity = Vector.vector 0 0 0
-                , orientation = Quaternion.identity
-                , angVelocity = Quaternion.identity
+              , { frame =
+                    { position = Vector.vector -35 5 -10
+                    , orientation = Quaternion.identity
+                    }
+                , delta = Frame.identity
                 , bounds = Library.getBounds "Sphere" library
                 , health = 1.0e10
                 , ai =
@@ -58,10 +60,14 @@ data library =
                 }
               )
             , ( 2
-              , { position = Vector.vector 0 0 5
-                , velocity = Vector.vector 0 0 0
-                , orientation = Quaternion.identity
-                , angVelocity = Quaternion.fromVector (Vector.vector 0.5 0 0)
+              , { frame =
+                    { position = Vector.vector 0 0 5
+                    , orientation = Quaternion.identity
+                    }
+                , delta =
+                    { position = Vector.identity
+                    , orientation = Quaternion.fromVector (Vector.vector 0.5 0 0)
+                    }
                 , bounds = Library.getBounds "Donut" library
                 , health = 1.0e10
                 , ai =

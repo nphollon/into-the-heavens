@@ -3,7 +3,7 @@ module Flight.Dumb exposing (update, draw)
 import WebGL exposing (Renderable)
 import Types exposing (..)
 import Library
-import Math.Transform as Transform
+import Math.Frame as Frame
 import Flight.Mechanics as Mechanics
 import Graphics.Foreground as Foreground
 
@@ -16,7 +16,7 @@ update actor =
 draw : Camera -> Library -> Body -> { meshName : String, shader : ShaderType } -> List Renderable
 draw camera library body { meshName, shader } =
     [ Foreground.entity shader
-        (Transform.toMat4 body)
+        (Frame.toMat4 body.frame)
         camera
         (Library.getMesh meshName library)
     ]

@@ -1,7 +1,6 @@
 module Flight.Player exposing (init, update, collideWith, draw)
 
 import Set
-import Dict exposing (Dict)
 import Char exposing (KeyCode)
 import WebGL exposing (Drawable, Renderable)
 import Math.Matrix4 as Mat4 exposing (Mat4)
@@ -9,7 +8,7 @@ import Types exposing (..)
 import Library
 import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion exposing (Quaternion)
-import Math.Transform as Transform
+import Math.Frame as Frame exposing (Frame)
 import Flight.Mechanics as Mechanics
 import Graphics.Camera as Camera
 import Graphics.Hud as Hud
@@ -19,10 +18,8 @@ import Graphics.Background as Background
 
 init : Library -> Body
 init library =
-    { position = Vector.vector 0 0 0
-    , velocity = Vector.vector 0 0 0
-    , orientation = Quaternion.identity
-    , angVelocity = Quaternion.identity
+    { frame = Frame.identity
+    , delta = Frame.identity
     , bounds = Library.getBounds "Player" library
     , health = 10
     , ai =
@@ -63,11 +60,11 @@ update model actor cockpit =
                 , thrust = twoWayToggle Brake Thrust
                 }
             , shields =
-                Mechanics.drain Mechanics.delta
+                Mechanics.drain Mechanics.timeDelta
                     (toggle ShieldsUp)
                     cockpit.shields
             , trigger =
-                Mechanics.repeat Mechanics.delta
+                Mechanics.repeat Mechanics.timeDelta
                     (toggle Firing && not cockpit.shields.on)
                     cockpit.trigger
             }
@@ -80,30 +77,6 @@ update model actor cockpit =
             ( moved, [ SpawnFriendly Mechanics.playerId ] )
         else
             ( moved, [] )
-
-
-newTarget : Dict Id Body -> Body -> Id
-newTarget universe player =
-    let
-        closestVisitor id other ( winningId, winningDistance ) =
-            let
-                distance =
-                    Transform.degreesFromForward player other.position
-            in
-                if other.collisionClass == Solid && distance < winningDistance then
-                    ( id, distance )
-                else
-                    ( winningId, winningDistance )
-    in
-        Dict.foldl closestVisitor
-            ( emptyId, 1 / 0 )
-            universe
-            |> fst
-
-
-emptyId : Id
-emptyId =
-    -1
 
 
 keyMap : PlayerAction -> KeyCode
@@ -134,7 +107,7 @@ keyMap action =
             Char.toCode 'J'
 
 
-accelFromAction : Action -> Body -> Acceleration
+accelFromAction : Action -> Body -> Frame
 accelFromAction action object =
     let
         turningSpeed =
@@ -154,18 +127,20 @@ accelFromAction action object =
                 |> Maybe.withDefault Quaternion.identity
 
         rotationFriction =
-            Quaternion.conjugate object.angVelocity
+            Quaternion.conjugate (Frame.angVelocity object)
 
         targetSpeed =
             speed * (1 + toFloat action.thrust)
 
         targetVelocity =
             Vector.vector 0 0 -targetSpeed
-                |> Quaternion.rotateVector object.orientation
+                |> Quaternion.rotateVector (Frame.orientation object)
     in
-        { linear =
-            Vector.scale accel (Vector.sub targetVelocity object.velocity)
-        , angular =
+        { position =
+            Frame.velocity object
+                |> Vector.sub targetVelocity
+                |> Vector.scale accel
+        , orientation =
             Quaternion.compose rotationFriction rotationThrust
         }
 
@@ -193,10 +168,10 @@ draw : GameState -> Body -> PlayerCockpit -> List Renderable
 draw model player cockpit =
     let
         camera =
-            Camera.at player
+            Camera.at player.frame
 
         placement =
-            Mat4.makeTranslate (Vector.toVec3 camera.position)
+            Mat4.makeTranslate camera.position
 
         background =
             Background.draw camera

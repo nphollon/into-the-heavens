@@ -5,6 +5,7 @@ import Assertion exposing (..)
 import Random.Pcg as Random
 import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion exposing (Quaternion)
+import Math.Frame exposing (Frame)
 import Flight.Engine as Spawn
 
 
@@ -33,16 +34,10 @@ testSuite =
             , test "Faces south when spawning from north" <|
                 assertEqualQuaternion (Quaternion.fromVector (Vector.vector (turns -0.25) 0 0))
                     (.orientation (spawnAt north))
-            , test "Going down when spawning from up" <|
-                assertEqualVector (Vector.vector 0 0 -1)
-                    (velocityDirection (spawnAt up))
-            , test "Going east when spawning from west" <|
-                assertEqualVector (Vector.vector 1 0 0)
-                    (velocityDirection (spawnAt west))
             ]
 
 
-spawnAt : Vector -> Placement
+spawnAt : Vector -> Frame
 spawnAt spawnPoint =
     let
         generator =
@@ -52,16 +47,3 @@ spawnAt spawnPoint =
             Random.initialSeed 0
     in
         fst (Random.step generator seed)
-
-
-velocityDirection : Placement -> Vector
-velocityDirection =
-    .velocity >> Vector.normalize >> Maybe.withDefault (Vector.vector 0 0 0)
-
-
-type alias Placement =
-    { position : Vector
-    , orientation : Quaternion
-    , velocity : Vector
-    , angVelocity : Quaternion
-    }

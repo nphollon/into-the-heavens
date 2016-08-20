@@ -63,7 +63,7 @@ drawWorld : GameState -> Body -> List Renderable
 drawWorld model player =
     let
         camera =
-            Camera.at player
+            Camera.at player.frame
 
         drawFromAi body =
             case body.ai of

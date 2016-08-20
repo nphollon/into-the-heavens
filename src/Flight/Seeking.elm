@@ -5,7 +5,7 @@ import Color
 import WebGL exposing (Renderable)
 import Types exposing (..)
 import Library
-import Math.Transform as Transform
+import Math.Frame as Frame exposing (Frame)
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion
 import Flight.Mechanics as Mechanics
@@ -14,13 +14,16 @@ import Graphics.Foreground as Foreground
 
 init : Library -> Body -> Id -> Body
 init library parent target =
-    { position = Transform.fromBodyFrame parent (Vector.vector 0 0 -3.5)
-    , velocity =
-        Vector.vector 0 0 -30
-            |> Quaternion.rotateVector parent.orientation
-            |> Vector.add parent.velocity
-    , orientation = parent.orientation
-    , angVelocity = Quaternion.identity
+    { frame =
+        Frame.compose parent.frame
+            { position = Vector.vector 0 0 -3.5
+            , orientation = Quaternion.identity
+            }
+    , delta =
+        Frame.composeDelta parent
+            { position = Vector.vector 0 0 -30
+            , orientation = Quaternion.identity
+            }
     , bounds = Library.getBounds "Missile" library
     , health = 1
     , ai = Seeking { lifespan = 3, target = target }
@@ -42,37 +45,37 @@ update universe id actor cockpit =
                             actor
 
             agedCockpit =
-                { cockpit | lifespan = cockpit.lifespan - Mechanics.delta }
+                { cockpit | lifespan = cockpit.lifespan - Mechanics.timeDelta }
         in
             ( { moved | ai = Seeking agedCockpit }, [] )
     else
         ( actor, [ Destroy id ] )
 
 
-accelTowards : Float -> Body -> Body -> Acceleration
+accelTowards : Float -> Body -> Body -> Frame
 accelTowards scale target missile =
     let
         range =
-            Vector.sub target.position missile.position
+            Vector.sub (Frame.position target) (Frame.position missile)
 
         velocity =
-            Vector.sub target.velocity missile.velocity
+            Vector.sub (Frame.velocity target) (Frame.velocity missile)
 
         rSquared =
-            Vector.distanceSquared target.position missile.position
+            Vector.distanceSquared (Frame.position target) (Frame.position missile)
 
         lineOfSightRotation =
             Vector.scale (scale / rSquared) (Vector.cross range velocity)
     in
-        { linear = Vector.cross velocity lineOfSightRotation
-        , angular = Quaternion.identity
+        { position = Vector.cross velocity lineOfSightRotation
+        , orientation = Quaternion.identity
         }
 
 
 draw : Camera -> Library -> Body -> List Renderable
 draw camera library body =
     [ Foreground.entity (Bright Color.red)
-        (Transform.toMat4 body)
+        (Frame.toMat4 body.frame)
         camera
         (Library.getMesh "Missile" library)
     ]

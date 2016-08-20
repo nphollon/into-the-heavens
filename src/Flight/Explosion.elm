@@ -7,18 +7,14 @@ import Math.Vector3 exposing (Vec3)
 import Collision
 import Types exposing (..)
 import Library
-import Math.Quaternion as Quaternion
-import Math.Vector as Vector
-import Math.Transform as Transform
+import Math.Frame as Frame
 import Flight.Mechanics as Mechanics
 
 
 init : Body -> Body
 init parent =
-    { position = parent.position
-    , velocity = parent.velocity
-    , orientation = Quaternion.identity
-    , angVelocity = Quaternion.identity
+    { frame = parent.frame
+    , delta = parent.delta
     , bounds = Collision.empty
     , health = 1
     , ai = Explosion 3
@@ -29,7 +25,7 @@ init parent =
 update : Id -> Body -> Float -> ( Body, List EngineEffect )
 update id actor lifespan =
     if lifespan > 0 then
-        ( Mechanics.glide { actor | ai = Explosion (lifespan - Mechanics.delta) }, [] )
+        ( Mechanics.glide { actor | ai = Explosion (lifespan - Mechanics.timeDelta) }, [] )
     else
         ( actor, [ Destroy id ] )
 
@@ -37,7 +33,7 @@ update id actor lifespan =
 draw : Camera -> Library -> Body -> Float -> List Renderable
 draw camera library body lifespan =
     [ entity (lifespan / 3)
-        (Transform.toMat4 body)
+        (Frame.toMat4 body.frame)
         camera
         (Library.getMesh "Explosion" library)
     ]
@@ -84,8 +80,8 @@ entity percentCountdown placement camera mesh =
 
         uniform =
             { perspective = camera.perspective
-            , cameraOrientation = Quaternion.toMat4 camera.orientation
-            , cameraPosition = Vector.toVec3 camera.position
+            , cameraOrientation = camera.orientation
+            , cameraPosition = camera.position
             , placement = Mat4.scale3 radius radius radius placement
             , inversePlacement = Mat4.inverseOrthonormal placement
             , lightness = percentCountdown

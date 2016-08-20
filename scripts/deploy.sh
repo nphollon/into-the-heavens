@@ -21,7 +21,7 @@ if [ $? -ne 0 ]; then exit 1; fi;
 
 echo "Successfully minified to $final_out"
 
-if [ $1 == "prod" ];
+if [ $# -ge 1 ] && [ $1 == "prod" ];
 then
     scp -r public_html intotheh@intotheheavens.net:.
 fi;

@@ -5,7 +5,6 @@ import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import WebGL exposing (Shader, Renderable, Drawable(..))
 import Types exposing (..)
-import Math.Quaternion as Quaternion exposing (Quaternion)
 import Graphics.Camera as Camera
 
 
@@ -27,11 +26,8 @@ type alias BkgVertex =
 draw : Camera -> Renderable
 draw camera =
     let
-        cameraOrientation =
-            Quaternion.toMat4 camera.orientation
-
         transform =
-            Mat4.transform cameraOrientation
+            Mat4.transform camera.orientation
 
         xScale =
             0.5 / tan (0.5 * (degrees Camera.fovy))

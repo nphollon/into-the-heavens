@@ -70,10 +70,10 @@ engineUpdate clockTime model =
 
 reduceLag : GameState -> GameState
 reduceLag model =
-    if model.lag < Mechanics.delta then
+    if model.lag < Mechanics.timeDelta then
         model
     else
-        { model | lag = model.lag - Mechanics.delta }
+        { model | lag = model.lag - Mechanics.timeDelta }
             |> Engine.update
             |> reduceLag
 

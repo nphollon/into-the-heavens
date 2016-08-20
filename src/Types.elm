@@ -12,7 +12,7 @@ import WebGL exposing (Drawable)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 exposing (Mat4)
 import Math.Vector exposing (Vector)
-import Math.Quaternion exposing (Quaternion)
+import Math.Frame exposing (Frame)
 
 
 type alias Flags =
@@ -116,22 +116,12 @@ type PlayerAction
 
 
 type alias Body =
-    { position : Vector
-    , velocity : Vector
-    , orientation : Quaternion
-    , angVelocity : Quaternion
+    { frame : Frame
+    , delta : Frame
     , bounds : Bounds
     , health : Float
     , ai : Ai
     , collisionClass : CollisionClass
-    }
-
-
-type alias Placement =
-    { position : Vector
-    , orientation : Quaternion
-    , velocity : Vector
-    , angVelocity : Quaternion
     }
 
 
@@ -140,12 +130,6 @@ type CollisionClass
     | Solid
     | Blockable
     | Ethereal
-
-
-type alias Acceleration =
-    { linear : Vector
-    , angular : Quaternion
-    }
 
 
 type Ai
@@ -210,8 +194,8 @@ type ShaderType
 
 type alias Camera =
     { perspective : Mat4
-    , orientation : Quaternion
-    , position : Vector
+    , orientation : Mat4
+    , position : Vec3
     }
 
 

@@ -1,4 +1,4 @@
-module Math.Vector exposing (Vector, vector, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, equal, fromTuple, toTuple, unique, encode, decode, toVec3)
+module Math.Vector exposing (Vector, vector, identity, getX, getY, getZ, add, sub, negate, scale, dot, cross, normalize, direction, length, lengthSquared, distance, distanceSquared, equal, fromTuple, toTuple, unique, encode, decode, toVec3)
 
 import Set
 import Json.Encode as Encode exposing (Value)
@@ -13,6 +13,11 @@ type alias Vector =
 vector : Float -> Float -> Float -> Vector
 vector x y z =
     { x = x, y = y, z = z }
+
+
+identity : Vector
+identity =
+    vector 0 0 0
 
 
 getX : Vector -> Float

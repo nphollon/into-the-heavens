@@ -6,8 +6,6 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Vector4 as Vec4 exposing (Vec4)
 import Types exposing (..)
-import Math.Quaternion as Quaternion
-import Math.Vector as Vector
 
 
 draw : Camera -> Renderable
@@ -15,8 +13,8 @@ draw camera =
     let
         uniform =
             { perspective = camera.perspective
-            , cameraOrientation = Quaternion.toMat4 camera.orientation
-            , cameraPosition = Vector.toVec3 camera.position
+            , cameraOrientation = camera.orientation
+            , cameraPosition = camera.position
             }
     in
         WebGL.render vertexShader fragmentShader dust uniform

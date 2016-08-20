@@ -9,7 +9,7 @@ import Types exposing (..)
 import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion
 import Math.Spherical as Spherical
-import Math.Transform as Transform
+import Math.Frame as Frame exposing (Frame)
 import Flight.Player as Player
 import Flight.Hostile as Hostile
 import Flight.Seeking as Seeking
@@ -30,25 +30,36 @@ update state =
 checkCollisions : GameState -> GameState
 checkCollisions model =
     let
+        collide a b =
+            Collision.collide
+                { bounds = a.bounds
+                , position = Frame.position a
+                , orientation = Frame.orientation a
+                }
+                { bounds = b.bounds
+                , position = Frame.position b
+                , orientation = Frame.orientation b
+                }
+
         checkPair ( idA, bodyA ) ( idB, bodyB ) =
             case ( bodyA.collisionClass, bodyB.collisionClass ) of
                 ( Scenery, Scenery ) ->
                     []
 
                 ( Scenery, _ ) ->
-                    if Collision.collide bodyA bodyB then
+                    if collide bodyA bodyB then
                         collideWith bodyA idB bodyB
                     else
                         []
 
                 ( _, Scenery ) ->
-                    if Collision.collide bodyA bodyB then
+                    if collide bodyA bodyB then
                         collideWith bodyB idA bodyA
                     else
                         []
 
                 _ ->
-                    if Collision.collide bodyA bodyB then
+                    if collide bodyA bodyB then
                         (collideWith bodyB idA bodyA)
                             ++ (collideWith bodyA idB bodyB)
                     else
@@ -157,13 +168,11 @@ distanceTo name model =
             Dict.get Mechanics.playerId model.universe
 
         object =
-            Dict.get name model.names
-                |> flip Maybe.andThen (flip Dict.get model.universe)
-
-        bodyDistance a b =
-            Vector.distance a.position b.position
+            Maybe.andThen
+                (Dict.get name model.names)
+                (flip Dict.get model.universe)
     in
-        Maybe.map2 bodyDistance player object
+        Maybe.map2 Frame.distance player object
 
 
 applyEffects : List EngineEffect -> GameState -> GameState
@@ -181,8 +190,15 @@ applyEffect effect model =
                         |> placeAt
                         |> Random.list n
                         |> flip Random.step model.seed
+
+                init frame =
+                    Hostile.init model.library
+                        frame
+                        { position = Vector.scale -0.1 frame.position
+                        , orientation = Quaternion.identity
+                        }
             in
-                List.foldl (Hostile.init model.library >> spawn)
+                List.foldl (init >> spawn)
                     { model | seed = newSeed }
                     placements
 
@@ -258,10 +274,14 @@ spawn body model =
 
 checkpoint : Vector -> Body
 checkpoint position =
-    { position = position
-    , velocity = Vector.vector 0 0 0
-    , orientation = Quaternion.identity
-    , angVelocity = Quaternion.fromVector (Vector.vector 0 0 1)
+    { frame =
+        { position = position
+        , orientation = Quaternion.identity
+        }
+    , delta =
+        { position = Vector.identity
+        , orientation = Quaternion.fromVector (Vector.vector 0 0 1)
+        }
     , bounds = Collision.empty
     , health = 0
     , ai =
@@ -273,17 +293,15 @@ checkpoint position =
     }
 
 
-placeAt : Random.Generator Vector -> Random.Generator Placement
+placeAt : Random.Generator Vector -> Random.Generator Frame
 placeAt positionGenerator =
     let
         orientationFor position =
-            Transform.rotationFor (Vector.vector 0 0 1) position
+            Frame.rotationFor (Vector.vector 0 0 1) position
 
         place position =
             { position = position
-            , velocity = Vector.scale -0.1 position
             , orientation = orientationFor position
-            , angVelocity = Quaternion.identity
             }
     in
         Random.map place positionGenerator
