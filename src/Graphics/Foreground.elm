@@ -8,6 +8,41 @@ import Types exposing (ShaderType(..), Camera, Vertex)
 import Math.Frame as Frame exposing (Frame)
 
 
+entity : ShaderType -> Frame -> Camera -> Drawable Vertex -> Renderable
+entity objectType frame camera mesh =
+    let
+        lightSource =
+            { ambient = vectorColor (Color.rgb 50 103 145)
+            , diffuse = vectorColor (Color.rgb 254 241 127)
+            , specular = vectorColor (Color.rgb 255 244 222)
+            , direction = Vec3.vec3 0 1 0
+            }
+
+        material =
+            case objectType of
+                Matte color ->
+                    matteMaterial (vectorColor color)
+
+                Bright color ->
+                    { ambient = vectorColor color
+                    , diffuse = Vec3.vec3 0 0 0
+                    , specular = Vec3.vec3 0 0 0
+                    , shininess = 0
+                    }
+    in
+        uniform lightSource material frame camera
+            |> WebGL.render phongVertex phongFragment mesh
+
+
+matteMaterial : Vec3 -> Material
+matteMaterial color =
+    { ambient = Vec3.scale 0.1 color
+    , diffuse = color
+    , specular = Vec3.vec3 1 1 1
+    , shininess = 4
+    }
+
+
 type alias Uniform =
     { ambientColor : Vec3
     , diffuseReflection : Vec3
@@ -84,36 +119,6 @@ vectorColor c =
         Vec3.vec3 (toFloat rgb.red / 255)
             (toFloat rgb.green / 255)
             (toFloat rgb.blue / 255)
-
-
-entity : ShaderType -> Frame -> Camera -> Drawable Vertex -> Renderable
-entity objectType frame camera mesh =
-    let
-        lightSource =
-            { ambient = Vec3.vec3 1 1 1
-            , diffuse = Vec3.vec3 1 1 1
-            , specular = Vec3.vec3 1 1 1
-            , direction = Vec3.vec3 0 1 0
-            }
-
-        material =
-            case objectType of
-                Matte color ->
-                    { ambient = Vec3.vec3 0 0 0
-                    , diffuse = vectorColor color
-                    , specular = Vec3.vec3 1 1 1
-                    , shininess = 10
-                    }
-
-                Bright color ->
-                    { ambient = vectorColor color
-                    , diffuse = Vec3.vec3 0 0 0
-                    , specular = Vec3.vec3 0 0 0
-                    , shininess = 0
-                    }
-    in
-        uniform lightSource material frame camera
-            |> WebGL.render phongVertex phongFragment mesh
 
 
 phongVertex : Shader Vertex Uniform Varying
