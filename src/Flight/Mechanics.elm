@@ -8,38 +8,15 @@ import Math.Frame exposing (Frame)
 
 evolveObject : (Body -> Frame) -> Body -> Body
 evolveObject acceleration object =
-    let
-        stateDerivative state =
-            { state
-                | frame = state.delta
-                , delta = acceleration state
-            }
-
-        a =
-            stateDerivative object
-
-        b =
-            stateDerivative (nudge (timeDelta / 2) a object)
-
-        c =
-            stateDerivative (nudge (timeDelta / 2) b object)
-
-        d =
-            stateDerivative (nudge timeDelta c object)
-    in
-        object
-            |> nudge (timeDelta / 6) a
-            |> nudge (timeDelta / 3) b
-            |> nudge (timeDelta / 3) c
-            |> nudge (timeDelta / 6) d
-
-
-nudge : Float -> Body -> Body -> Body
-nudge dt dpdt p =
-    { p
-        | frame = nudgeFrame dt dpdt.frame p.frame
-        , delta = nudgeFrame dt dpdt.delta p.delta
+    { object
+        | frame = nudgeFrame timeDelta object.delta object.frame
+        , delta = nudgeFrame timeDelta (acceleration object) object.delta
     }
+
+
+glide : Body -> Body
+glide body =
+    { body | frame = nudgeFrame timeDelta body.delta body.frame }
 
 
 nudgeFrame : Float -> Frame -> Frame -> Frame
@@ -53,11 +30,6 @@ nudgeFrame dt deltaFrame frame =
             (Quaternion.scale dt deltaFrame.orientation)
             frame.orientation
     }
-
-
-glide : Body -> Body
-glide body =
-    { body | frame = nudgeFrame timeDelta body.delta body.frame }
 
 
 repeat : Float -> Bool -> RepeatSwitch -> RepeatSwitch
