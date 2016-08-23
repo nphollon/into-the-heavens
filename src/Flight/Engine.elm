@@ -1,7 +1,6 @@
 module Flight.Engine exposing (update, placeAt)
 
 import Dict exposing (Dict)
-import Color
 import List.Extra as ListX
 import Random.Pcg as Random
 import Collision exposing (Bounds)
@@ -16,8 +15,6 @@ import Flight.Seeking as Seeking
 import Flight.Explosion as Explosion
 import Flight.Dumb as Dumb
 import Flight.PlayerBullet as PlayerBullet
-import Flight.Mechanics as Mechanics
-import Graphics.Material as Material
 
 
 update : GameState -> GameState
@@ -25,7 +22,6 @@ update state =
     state
         |> checkCollisions
         |> aiUpdate
-        |> checkSchedule
 
 
 checkCollisions : GameState -> GameState
@@ -125,57 +121,6 @@ projectileCollision other objectId =
             [ Explode objectId ]
 
 
-checkSchedule : GameState -> GameState
-checkSchedule model =
-    case model.events of
-        [] ->
-            model
-
-        ( condition, event ) :: events ->
-            if isSatisfied condition model then
-                { model
-                    | events = events
-                    , lastEventTime = model.gameTime
-                }
-                    |> applyEffects event
-            else
-                model
-
-
-isSatisfied : EventCondition -> GameState -> Bool
-isSatisfied condition model =
-    case condition of
-        Immediately ->
-            True
-
-        NoMoreVisitors ->
-            Dict.values model.universe
-                |> List.filter (.collisionClass >> (==) Solid)
-                |> (\l -> List.length l <= 1)
-
-        SecondsLater wait ->
-            model.lastEventTime + wait < model.gameTime
-
-        ReachedCheckpoint bodyName ->
-            distanceTo bodyName model
-                |> Maybe.map (\r -> r < 1)
-                |> Maybe.withDefault False
-
-
-distanceTo : String -> GameState -> Maybe Float
-distanceTo name model =
-    let
-        player =
-            Dict.get Mechanics.playerId model.universe
-
-        object =
-            Maybe.andThen
-                (Dict.get name model.names)
-                (flip Dict.get model.universe)
-    in
-        Maybe.map2 Frame.distance player object
-
-
 applyEffects : List EngineEffect -> GameState -> GameState
 applyEffects effects model =
     List.foldl applyEffect model effects
@@ -219,17 +164,8 @@ applyEffect effect model =
                 Nothing ->
                     model
 
-        SpawnCheckpoint name position ->
-            spawn (checkpoint position)
-                { model | names = Dict.insert name model.nextId model.names }
-
         Destroy id ->
             { model | universe = Dict.remove id model.universe }
-
-        DestroyByName name ->
-            Dict.get name model.names
-                |> Maybe.map (Destroy >> flip applyEffect model)
-                |> Maybe.withDefault model
 
         Explode id ->
             case Dict.get id model.universe of
@@ -270,27 +206,6 @@ spawn body model =
     { model
         | universe = Dict.insert model.nextId body model.universe
         , nextId = model.nextId + 1
-    }
-
-
-checkpoint : Vector -> Body
-checkpoint position =
-    { frame =
-        { position = position
-        , orientation = Quaternion.identity
-        }
-    , delta =
-        { position = Vector.identity
-        , orientation = Quaternion.fromVector (Vector.vector 0 0 1)
-        }
-    , bounds = Collision.empty
-    , health = 0
-    , ai =
-        Dumb
-            { meshName = "Explosion"
-            , material = Material.bright Color.yellow
-            }
-    , collisionClass = Scenery
     }
 
 

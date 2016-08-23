@@ -10,7 +10,6 @@ import Collision exposing (Bounds)
 import WebGL exposing (Drawable)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 exposing (Mat4)
-import Math.Vector exposing (Vector)
 import Math.Frame exposing (Frame)
 
 
@@ -35,7 +34,6 @@ type Update
     | KeyUp KeyCode
     | Tick Time
     | LoseVisibility
-    | NoUpdate
 
 
 type alias PauseState =
@@ -57,19 +55,15 @@ type alias GameState =
     , lag : Time
     , gameTime : Float
     , lastEventTime : Float
-    , events : List ( EventCondition, List EngineEffect )
     , playerActions : Set KeyCode
     , universe : Dict Id Body
-    , names : Dict String Id
     , library : Library
     }
 
 
 type alias LevelData =
     { level : Level
-    , events : List ( EventCondition, List EngineEffect )
     , universe : Dict Id Body
-    , names : Dict String Id
     }
 
 
@@ -86,21 +80,12 @@ type alias Id =
 type EngineEffect
     = SpawnShips Int
     | SpawnMissile Id Id
-    | SpawnCheckpoint String Vector
     | SpawnFriendly Id
     | Destroy Id
-    | DestroyByName String
     | Explode Id
     | DeductHealth Float Id
     | Notify String
     | Victory
-
-
-type EventCondition
-    = Immediately
-    | NoMoreVisitors
-    | SecondsLater Float
-    | ReachedCheckpoint String
 
 
 type PlayerAction
@@ -252,7 +237,4 @@ type alias LightSource =
 
 
 type Level
-    = FlightTest
-    | OneByOne
-    | Pavilion
-    | Outnumbered
+    = SimplePlatform

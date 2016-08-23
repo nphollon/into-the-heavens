@@ -21,9 +21,7 @@ game data seed library =
         , log = []
         , lastEventTime = 0
         , playerActions = Set.empty
-        , names = Dict.empty
         , level = data.level
-        , events = data.events
         , universe =
             Dict.insert Mechanics.playerId
                 (Player.init library)

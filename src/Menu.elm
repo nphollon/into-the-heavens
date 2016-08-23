@@ -6,10 +6,7 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Types exposing (..)
 import Flight.Init
-import Level.Outnumbered
 import Level.FlightTest
-import Level.Pavilion
-import Level.OneByOne
 
 
 keyUpdate : KeyCode -> MenuState -> ( Mode, Cmd Update )
@@ -69,10 +66,7 @@ mainMenuView =
     in
         div [ class "menu" ]
             [ h2 [] [ text "Select a level" ]
-            , levelButton "Flight Practice" FlightTest
-            , levelButton "One By One" OneByOne
-            , levelButton "Pavilion" Pavilion
-            , levelButton "Outnumbered" Outnumbered
+            , levelButton "Platform" SimplePlatform
             ]
 
 
@@ -94,14 +88,5 @@ menuButton action label =
 dataFor : Level -> Library -> LevelData
 dataFor level library =
     case level of
-        FlightTest ->
+        SimplePlatform ->
             Level.FlightTest.data library
-
-        Outnumbered ->
-            Level.Outnumbered.data library
-
-        Pavilion ->
-            Level.Pavilion.data library
-
-        OneByOne ->
-            Level.OneByOne.data library
