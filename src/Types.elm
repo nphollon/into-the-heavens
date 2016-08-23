@@ -36,13 +36,69 @@ type Update
     | LoseVisibility
 
 
-type alias PauseState =
-    { inProgress : GameState }
+
+-- Loading Mode
+
+
+type alias LoadingState =
+    { response : Maybe Response
+    , seed : Random.Seed
+    , isMobile : Bool
+    }
+
+
+type alias Response =
+    Result Http.Error Library
+
+
+type alias Library =
+    { meshes : Dict String (Drawable Vertex)
+    , boxes : Dict String Bounds
+    }
+
+
+
+-- Menu Mode
+
+
+type alias MenuState =
+    { library : Library
+    , seed : Random.Seed
+    , room : Room
+    }
 
 
 type MenuAction
     = StartGame Level
     | ToMainMenu
+
+
+type Room
+    = LevelSelect
+    | Won Level
+    | Lost Level
+
+
+type alias LevelData =
+    { level : Level
+    , universe : Dict Id Body
+    }
+
+
+type Level
+    = SimplePlatform
+
+
+
+-- Pause Mode
+
+
+type alias PauseState =
+    { inProgress : GameState }
+
+
+
+-- Game Mode
 
 
 type alias GameState =
@@ -61,22 +117,6 @@ type alias GameState =
     }
 
 
-type alias LevelData =
-    { level : Level
-    , universe : Dict Id Body
-    }
-
-
-type alias PlayerData =
-    { body : Body
-    , cockpit : PlayerCockpit
-    }
-
-
-type alias Id =
-    Int
-
-
 type EngineEffect
     = SpawnShips Int
     | SpawnMissile Id Id
@@ -88,15 +128,8 @@ type EngineEffect
     | Victory
 
 
-type PlayerAction
-    = LeftTurn
-    | RightTurn
-    | UpTurn
-    | DownTurn
-    | Thrust
-    | Brake
-    | Firing
-    | ShieldsUp
+type alias Id =
+    Int
 
 
 type alias Body =
@@ -131,6 +164,13 @@ type alias Appearance =
     }
 
 
+type alias PlayerCockpit =
+    { action : Action
+    , trigger : RepeatSwitch
+    , shields : DrainSwitch
+    }
+
+
 type alias MissileCockpit =
     { target : Id
     , lifespan : Float
@@ -149,16 +189,16 @@ type HostileStatus
     | Fleeing
 
 
-type alias PlayerCockpit =
-    { action : Action
-    , trigger : RepeatSwitch
-    , shields : DrainSwitch
-    }
-
-
 type alias RepeatSwitch =
     { value : Float
     , decay : Float
+    }
+
+
+type alias Action =
+    { thrust : Int
+    , pitch : Int
+    , yaw : Int
     }
 
 
@@ -170,61 +210,13 @@ type alias DrainSwitch =
     }
 
 
-type alias Action =
-    { thrust : Int
-    , pitch : Int
-    , yaw : Int
-    }
 
-
-type alias Camera =
-    { perspective : Mat4
-    , orientation : Mat4
-    , position : Vec3
-    }
-
-
-type alias LoadingState =
-    { response : Maybe Response
-    , seed : Random.Seed
-    , isMobile : Bool
-    }
-
-
-type alias MenuState =
-    { library : Library
-    , seed : Random.Seed
-    , room : Room
-    }
-
-
-type Room
-    = LevelSelect
-    | Won Level
-    | Lost Level
-
-
-type alias Library =
-    { meshes : Dict String (Drawable Vertex)
-    , boxes : Dict String Bounds
-    }
-
-
-type alias Response =
-    Result Http.Error Library
+-- Graphics
 
 
 type alias Vertex =
     { vertPosition : Vec3
     , normal : Vec3
-    }
-
-
-type alias Material =
-    { ambient : Vec3
-    , diffuse : Vec3
-    , specular : Vec3
-    , shininess : Float
     }
 
 
@@ -236,5 +228,16 @@ type alias LightSource =
     }
 
 
-type Level
-    = SimplePlatform
+type alias Camera =
+    { perspective : Mat4
+    , orientation : Mat4
+    , position : Vec3
+    }
+
+
+type alias Material =
+    { ambient : Vec3
+    , diffuse : Vec3
+    , specular : Vec3
+    , shininess : Float
+    }

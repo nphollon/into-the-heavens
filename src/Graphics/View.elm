@@ -18,30 +18,16 @@ import Flight.Mechanics as Mechanics
 
 view : GameState -> Html a
 view model =
-    case getPlayer model.universe of
+    case Dict.get Mechanics.playerId model.universe of
         Just player ->
             div [ class "container" ]
-                [ scene 900 600 model player.body
+                [ scene 900 600 model player
                 , log model
                 , instructions
                 ]
 
         Nothing ->
             span [] []
-
-
-getPlayer : Dict Id Body -> Maybe PlayerData
-getPlayer universe =
-    Dict.get Mechanics.playerId universe
-        |> flip Maybe.andThen
-            (\body ->
-                case body.ai of
-                    PlayerControlled cockpit ->
-                        Just { body = body, cockpit = cockpit }
-
-                    _ ->
-                        Nothing
-            )
 
 
 scene : Int -> Int -> GameState -> Body -> Html a

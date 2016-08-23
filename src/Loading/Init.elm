@@ -33,25 +33,18 @@ library domain =
     let
         remoteMeshes =
             [ ( "Sphere", "sphere.json" )
-            , ( "Background", "background.json" )
             , ( "Ship", "boxy.json" )
             , ( "Missile", "sphere-eighth.json" )
             , ( "Explosion", "explosion.json" )
-            , ( "Column", "column.json" )
-            , ( "Donut", "donut.json" )
             , ( "Cage", "cage.json" )
-            , ( "OrthoVertex", "ortho-vertex.json" )
             ]
                 |> List.map (get decodeMesh)
                 |> Task.sequence
 
         remoteBoxes =
-            [ ( "Donut", "donut.box" )
-            , ( "Ship", "boxy.box" )
+            [ ( "Ship", "boxy.box" )
             , ( "Sphere", "sphere.box" )
             , ( "Cage", "cage.box" )
-            , ( "OrthoVertex", "ortho-vertex.box" )
-            , ( "Column", "column.box" )
             , ( "Missile", "sphere-quarter.box" )
             , ( "Bullet", "sphere-half.box" )
             , ( "Player", "player.box" )

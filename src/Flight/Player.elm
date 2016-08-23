@@ -16,6 +16,17 @@ import Graphics.Dustbox as Dustbox
 import Graphics.Background as Background
 
 
+type PlayerAction
+    = LeftTurn
+    | RightTurn
+    | UpTurn
+    | DownTurn
+    | Thrust
+    | Brake
+    | Firing
+    | ShieldsUp
+
+
 init : Library -> Body
 init library =
     { frame = Frame.identity
