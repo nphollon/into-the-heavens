@@ -15,3 +15,24 @@ Time is in seconds.
 22. Tests for Frame.compose and Frame.composeDelta!
 24. objects have materials
 25. levels have unique backgrounds & light sources
+26. objects can have multiple materials
+
+
+. a level has one ai that is a director, controls scheduled events
+. enemies flee sometimes
+. non-combatants that try to run and hide
+. floating mines that fire seeker missiles
+. level has a platform with a weak point that must be destroyed
+
+
+level 1 -
+platform is undefended. when the weak point is destroyed, mission success.
+
+level 2 -
+same. when you approach platform, enemies move to intercept.
+
+level 3 -
+capital ship spawns enemies. destroy capital ship.
+
+level 4 -
+defend an artillery piece while it moves into position.

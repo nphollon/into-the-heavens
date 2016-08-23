@@ -6,6 +6,7 @@ import Types exposing (..)
 import Library
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion
+import Graphics.Material as Material
 
 
 data : Library -> LevelData
@@ -66,7 +67,7 @@ data library =
                 , ai =
                     Dumb
                         { meshName = "Cage"
-                        , shader = Matte Color.purple
+                        , material = Material.matte Color.purple
                         }
                 , collisionClass = Solid
                 }

@@ -10,6 +10,7 @@ import Math.Quaternion as Quaternion
 import Library
 import Flight.Mechanics as Mechanics
 import Graphics.Foreground as Foreground
+import Graphics.Material as Material
 
 
 init : Library -> Body -> Body
@@ -46,5 +47,8 @@ draw camera library body =
     let
         mesh =
             Library.getMesh "Missile" library
+
+        material =
+            Material.bright Color.red
     in
-        [ Foreground.entity (Bright Color.red) body.frame camera mesh ]
+        [ Foreground.entity material body.frame camera mesh ]

@@ -4,43 +4,23 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Color exposing (Color)
 import WebGL exposing (Drawable, Renderable, Shader)
-import Types exposing (ShaderType(..), Camera, Vertex)
+import Types exposing (..)
 import Math.Frame as Frame exposing (Frame)
+import Graphics.Material as Material
 
 
-entity : ShaderType -> Frame -> Camera -> Drawable Vertex -> Renderable
-entity objectType frame camera mesh =
+entity : Material -> Frame -> Camera -> Drawable Vertex -> Renderable
+entity material frame camera mesh =
     let
         lightSource =
-            { ambient = vectorColor (Color.rgb 50 103 145)
-            , diffuse = vectorColor (Color.rgb 254 241 127)
-            , specular = vectorColor (Color.rgb 255 244 222)
+            { ambient = Material.color (Color.rgb 50 103 145)
+            , diffuse = Material.color (Color.rgb 254 241 127)
+            , specular = Material.color (Color.rgb 255 244 222)
             , direction = Vec3.vec3 0 1 0
             }
-
-        material =
-            case objectType of
-                Matte color ->
-                    matteMaterial (vectorColor color)
-
-                Bright color ->
-                    { ambient = vectorColor color
-                    , diffuse = Vec3.vec3 0 0 0
-                    , specular = Vec3.vec3 0 0 0
-                    , shininess = 0
-                    }
     in
         uniform lightSource material frame camera
             |> WebGL.render phongVertex phongFragment mesh
-
-
-matteMaterial : Vec3 -> Material
-matteMaterial color =
-    { ambient = Vec3.scale 0.1 color
-    , diffuse = color
-    , specular = Vec3.vec3 1 1 1
-    , shininess = 4
-    }
 
 
 type alias Uniform =
@@ -62,22 +42,6 @@ type alias Uniform =
 type alias Varying =
     { nonspecularColor : Vec3
     , specularFactor : Float
-    }
-
-
-type alias Material =
-    { ambient : Vec3
-    , diffuse : Vec3
-    , specular : Vec3
-    , shininess : Float
-    }
-
-
-type alias LightSource =
-    { ambient : Vec3
-    , diffuse : Vec3
-    , specular : Vec3
-    , direction : Vec3
     }
 
 
@@ -108,17 +72,6 @@ vectorMultiply a b =
         (Vec3.getX a * Vec3.getX b)
         (Vec3.getY a * Vec3.getY b)
         (Vec3.getZ a * Vec3.getZ b)
-
-
-vectorColor : Color -> Vec3
-vectorColor c =
-    let
-        rgb =
-            Color.toRgb c
-    in
-        Vec3.vec3 (toFloat rgb.red / 255)
-            (toFloat rgb.green / 255)
-            (toFloat rgb.blue / 255)
 
 
 phongVertex : Shader Vertex Uniform Varying

@@ -7,6 +7,7 @@ import Library
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion
 import Math.Frame as Frame
+import Graphics.Material as Material
 
 
 data : Library -> LevelData
@@ -54,7 +55,7 @@ data library =
                 , ai =
                     Dumb
                         { meshName = "Sphere"
-                        , shader = Matte Color.lightBlue
+                        , material = Material.matte Color.lightBlue
                         }
                 , collisionClass = Scenery
                 }
@@ -73,7 +74,7 @@ data library =
                 , ai =
                     Dumb
                         { meshName = "Donut"
-                        , shader = Matte Color.lightYellow
+                        , material = Material.matte Color.lightYellow
                         }
                 , collisionClass = Scenery
                 }

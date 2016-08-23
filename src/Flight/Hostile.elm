@@ -10,6 +10,7 @@ import Math.Quaternion as Quaternion
 import Math.Frame as Frame exposing (Frame)
 import Flight.Mechanics as Mechanics
 import Graphics.Foreground as Foreground
+import Graphics.Material as Material
 
 
 init : Library -> Frame -> Frame -> Body
@@ -117,5 +118,8 @@ draw camera library body =
     let
         mesh =
             Library.getMesh "Ship" library
+
+        material =
+            Material.matte Color.purple
     in
-        [ Foreground.entity (Matte Color.purple) body.frame camera mesh ]
+        [ Foreground.entity material body.frame camera mesh ]

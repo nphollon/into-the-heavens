@@ -4,7 +4,6 @@ import Set exposing (Set)
 import Time exposing (Time)
 import Char exposing (KeyCode)
 import Dict exposing (Dict)
-import Color exposing (Color)
 import Random.Pcg as Random
 import Http
 import Collision exposing (Bounds)
@@ -133,12 +132,18 @@ type CollisionClass
 
 
 type Ai
-    = Dumb { meshName : String, shader : ShaderType }
+    = Dumb Appearance
     | PlayerControlled PlayerCockpit
     | Seeking MissileCockpit
     | Hostile HostileCockpit
     | Explosion Float
     | PlayerBullet Float
+
+
+type alias Appearance =
+    { meshName : String
+    , material : Material
+    }
 
 
 type alias MissileCockpit =
@@ -187,11 +192,6 @@ type alias Action =
     }
 
 
-type ShaderType
-    = Matte Color
-    | Bright Color
-
-
 type alias Camera =
     { perspective : Mat4
     , orientation : Mat4
@@ -232,6 +232,22 @@ type alias Response =
 type alias Vertex =
     { vertPosition : Vec3
     , normal : Vec3
+    }
+
+
+type alias Material =
+    { ambient : Vec3
+    , diffuse : Vec3
+    , specular : Vec3
+    , shininess : Float
+    }
+
+
+type alias LightSource =
+    { ambient : Vec3
+    , diffuse : Vec3
+    , specular : Vec3
+    , direction : Vec3
     }
 
 

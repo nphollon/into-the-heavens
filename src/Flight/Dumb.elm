@@ -12,10 +12,10 @@ update actor =
     ( Mechanics.glide actor, [] )
 
 
-draw : Camera -> Library -> Body -> { meshName : String, shader : ShaderType } -> List Renderable
-draw camera library body { meshName, shader } =
+draw : Camera -> Library -> Body -> Appearance -> List Renderable
+draw camera library body appearance =
     let
         mesh =
-            Library.getMesh meshName library
+            Library.getMesh appearance.meshName library
     in
-        [ Foreground.entity shader body.frame camera mesh ]
+        [ Foreground.entity appearance.material body.frame camera mesh ]

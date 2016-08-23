@@ -7,6 +7,7 @@ import Library
 import Math.Vector as Vector
 import Math.Quaternion as Quaternion exposing (Quaternion)
 import Math.Frame as Frame
+import Graphics.Material as Material
 
 
 data : Library -> LevelData
@@ -23,7 +24,7 @@ data library =
             , ai =
                 Dumb
                     { meshName = "Column"
-                    , shader = Matte Color.white
+                    , material = Material.matte Color.white
                     }
             , collisionClass = Scenery
             }

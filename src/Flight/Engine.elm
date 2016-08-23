@@ -17,6 +17,7 @@ import Flight.Explosion as Explosion
 import Flight.Dumb as Dumb
 import Flight.PlayerBullet as PlayerBullet
 import Flight.Mechanics as Mechanics
+import Graphics.Material as Material
 
 
 update : GameState -> GameState
@@ -287,7 +288,7 @@ checkpoint position =
     , ai =
         Dumb
             { meshName = "Explosion"
-            , shader = Bright Color.yellow
+            , material = Material.bright Color.yellow
             }
     , collisionClass = Scenery
     }
