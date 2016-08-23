@@ -2,6 +2,8 @@ All models face towards z = -Inf
 
 Time is in seconds.
 
+GameState.nextId starts at 100.
+
 
 6. Better particle effects
 7. New enemy types!!

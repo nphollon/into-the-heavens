@@ -1,4 +1,4 @@
-module Level.FlightTest exposing (data)
+module Level.FlightTest exposing (data, update)
 
 import Dict
 import Color
@@ -15,7 +15,7 @@ data library =
     { level = SimplePlatform
     , universe =
         Dict.fromList
-            [ ( 1
+            [ ( platformId
               , { frame =
                     { position = Vector.vector -35 5 -10
                     , orientation = Quaternion.identity
@@ -33,3 +33,30 @@ data library =
               )
             ]
     }
+
+
+platformId : Int
+platformId =
+    1
+
+
+update : GameState -> ( MissionStatus, List EngineEffect )
+update model =
+    case model.missionStatus of
+        Beginning ->
+            ( InProgress, [ Notify "Destroy the platform." ] )
+
+        InProgress ->
+            if Dict.member platformId model.universe then
+                ( InProgress, [] )
+            else
+                ( CountdownToVictory 500, [ Notify "Good job." ] )
+
+        CountdownToVictory tick ->
+            if tick > 0 then
+                ( CountdownToVictory (tick - 1), [] )
+            else
+                ( Victory, [] )
+
+        Victory ->
+            ( Victory, [] )

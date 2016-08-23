@@ -12,15 +12,14 @@ game : LevelData -> Seed -> Library -> ( Mode, Cmd Update )
 game data seed library =
     GameMode
         { library = library
-        , victory = False
+        , missionStatus = Beginning
         , clockTime = Nothing
         , lag = 0
         , gameTime = 0
         , seed = seed
         , nextId = 100
         , log = []
-        , lastEventTime = 0
-        , playerActions = Set.empty
+        , keysDown = Set.empty
         , level = data.level
         , universe =
             Dict.insert Mechanics.playerId

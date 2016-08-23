@@ -6,7 +6,7 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Types exposing (..)
 import Flight.Init
-import Level.FlightTest
+import Level
 
 
 keyUpdate : KeyCode -> MenuState -> ( Mode, Cmd Update )
@@ -37,7 +37,7 @@ actionUpdate input model =
 
 load : Level -> MenuState -> ( Mode, Cmd Update )
 load level model =
-    Flight.Init.game (dataFor level model.library) model.seed model.library
+    Flight.Init.game (Level.data level model.library) model.seed model.library
 
 
 noCmd : MenuState -> ( Mode, Cmd Update )
@@ -83,10 +83,3 @@ menuButton : Attribute a -> String -> Html a
 menuButton action label =
     div [ class "menu-item" ]
         [ button [ action ] [ text label ] ]
-
-
-dataFor : Level -> Library -> LevelData
-dataFor level library =
-    case level of
-        SimplePlatform ->
-            Level.FlightTest.data library

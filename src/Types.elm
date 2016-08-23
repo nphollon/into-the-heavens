@@ -102,19 +102,25 @@ type alias PauseState =
 
 
 type alias GameState =
-    { victory : Bool
-    , level : Level
+    { missionStatus : MissionStatus
     , nextId : Id
     , log : List ( Float, String )
     , seed : Random.Seed
     , clockTime : Maybe Time
     , lag : Time
     , gameTime : Float
-    , lastEventTime : Float
-    , playerActions : Set KeyCode
+    , keysDown : Set KeyCode
     , universe : Dict Id Body
     , library : Library
+    , level : Level
     }
+
+
+type MissionStatus
+    = Beginning
+    | InProgress
+    | CountdownToVictory Int
+    | Victory
 
 
 type EngineEffect
@@ -125,7 +131,6 @@ type EngineEffect
     | Explode Id
     | DeductHealth Float Id
     | Notify String
-    | Victory
 
 
 type alias Id =

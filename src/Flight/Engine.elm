@@ -9,6 +9,7 @@ import Math.Vector as Vector exposing (Vector)
 import Math.Quaternion as Quaternion
 import Math.Spherical as Spherical
 import Math.Frame as Frame exposing (Frame)
+import Level
 import Flight.Player as Player
 import Flight.Hostile as Hostile
 import Flight.Seeking as Seeking
@@ -22,6 +23,7 @@ update state =
     state
         |> checkCollisions
         |> aiUpdate
+        |> levelUpdate
 
 
 checkCollisions : GameState -> GameState
@@ -197,9 +199,6 @@ applyEffect effect model =
                 | log = ( model.gameTime, message ) :: model.log
             }
 
-        Victory ->
-            { model | victory = True }
-
 
 spawn : Body -> GameState -> GameState
 spawn body model =
@@ -259,3 +258,12 @@ act model id actor =
 
         Dumb _ ->
             Dumb.update actor
+
+
+levelUpdate : GameState -> GameState
+levelUpdate model =
+    let
+        ( status, effects ) =
+            Level.update model
+    in
+        applyEffects effects { model | missionStatus = status }

@@ -18,13 +18,13 @@ keyDown key model =
     if key == Char.toCode 'P' then
         Pause.Init.pause model
     else
-        GameMode { model | playerActions = Set.insert key model.playerActions }
+        GameMode { model | keysDown = Set.insert key model.keysDown }
             ! []
 
 
 keyUp : KeyCode -> GameState -> ( Mode, Cmd Update )
 keyUp key model =
-    GameMode { model | playerActions = Set.remove key model.playerActions }
+    GameMode { model | keysDown = Set.remove key model.keysDown }
         ! []
 
 
@@ -37,7 +37,7 @@ timeUpdate clockTime model =
         hasCrashed =
             not (Dict.member Mechanics.playerId newModel.universe)
     in
-        if newModel.victory then
+        if newModel.missionStatus == Victory then
             Menu.Init.victory newModel.level
                 newModel.seed
                 newModel.library

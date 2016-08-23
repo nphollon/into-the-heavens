@@ -51,7 +51,7 @@ update : GameState -> Body -> PlayerCockpit -> ( Body, List EngineEffect )
 update model actor cockpit =
     let
         toggle a =
-            Set.member (keyMap a) model.playerActions
+            Set.member (keyMap a) model.keysDown
 
         twoWayToggle neg pos =
             case ( toggle neg, toggle pos ) of
