@@ -36,7 +36,8 @@ library domain =
             , ( "Ship", "boxy.json" )
             , ( "Missile", "sphere-eighth.json" )
             , ( "Explosion", "explosion.json" )
-            , ( "Cage", "cage.json" )
+            , ( "Icostar", "icostar.json" )
+            , ( "Blossom", "blossom.json" )
             ]
                 |> List.map (get decodeMesh)
                 |> Task.sequence
@@ -48,6 +49,7 @@ library domain =
             , ( "Missile", "sphere-quarter.box" )
             , ( "Bullet", "sphere-half.box" )
             , ( "Player", "player.box" )
+            , ( "Blossom", "blossom.box" )
             ]
                 |> List.map (get Collision.decode)
                 |> Task.sequence

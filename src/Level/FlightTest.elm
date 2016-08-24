@@ -15,28 +15,47 @@ data library =
     { level = SimplePlatform
     , universe =
         Dict.fromList
-            [ ( platformId
+            [ ( coreId
               , { frame =
-                    { position = Vector.vector -35 5 -10
+                    { position = Vector.vector 5 120 55
                     , orientation = Quaternion.identity
                     }
-                , delta = Frame.identity
+                , delta =
+                    { position = Vector.vector 0 0 0
+                    , orientation = Quaternion.rotateX (turns 0.3)
+                    }
                 , bounds = Library.getBounds "Cage" library
                 , health = 5
                 , ai =
                     Dumb
-                        { meshName = "Cage"
+                        { meshName = "Icostar"
                         , material = Material.matte Color.lightBlue
                         }
                 , collisionClass = Solid
+                }
+              )
+            , ( 2
+              , { frame =
+                    { position = Vector.vector 5 120 40
+                    , orientation = Quaternion.rotateX (turns -0.25)
+                    }
+                , delta = Frame.identity
+                , bounds = Library.getBounds "Blossom" library
+                , health = 5
+                , ai =
+                    Dumb
+                        { meshName = "Blossom"
+                        , material = Material.matte Color.blue
+                        }
+                , collisionClass = Scenery
                 }
               )
             ]
     }
 
 
-platformId : Int
-platformId =
+coreId : Int
+coreId =
     1
 
 
@@ -47,10 +66,10 @@ update model =
             ( InProgress, [ Notify "Destroy the platform." ] )
 
         InProgress ->
-            if Dict.member platformId model.universe then
+            if Dict.member coreId model.universe then
                 ( InProgress, [] )
             else
-                ( CountdownToVictory 500, [ Notify "Good job." ] )
+                ( CountdownToVictory 300, [ Notify "Good job." ] )
 
         CountdownToVictory tick ->
             if tick > 0 then

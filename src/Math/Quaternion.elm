@@ -1,4 +1,4 @@
-module Math.Quaternion exposing (Quaternion, toVector, fromVector, fromBasis, fromAxisAngle, compose, rotateVector, quaternion, conjugate, encode, decode, scale, identity, negate, toMat4)
+module Math.Quaternion exposing (Quaternion, toVector, fromVector, fromBasis, fromAxisAngle, compose, rotateVector, quaternion, conjugate, encode, decode, scale, identity, negate, toMat4, rotateX, rotateY, rotateZ)
 
 import Json.Encode as Encode exposing (Value)
 import Json.Decode as Decode exposing (Decoder)
@@ -41,6 +41,21 @@ quaternion w x y z =
 identity : Quaternion
 identity =
     quaternion 1 0 0 0
+
+
+rotateX : Float -> Quaternion
+rotateX angle =
+    quaternion (cos (0.5 * angle)) (sin (0.5 * angle)) 0 0
+
+
+rotateY : Float -> Quaternion
+rotateY angle =
+    quaternion (cos (0.5 * angle)) 0 (sin (0.5 * angle)) 0
+
+
+rotateZ : Float -> Quaternion
+rotateZ angle =
+    quaternion (cos (0.5 * angle)) 0 0 (sin (0.5 * angle))
 
 
 negate : Quaternion -> Quaternion

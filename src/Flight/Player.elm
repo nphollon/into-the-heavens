@@ -29,7 +29,13 @@ type PlayerAction
 
 init : Library -> Body
 init library =
-    { frame = Frame.identity
+    { frame =
+        { position = Vector.vector 0 0 0
+        , orientation =
+            Quaternion.compose
+                (Quaternion.rotateZ (turns 0.5))
+                (Quaternion.rotateX (turns 0.25))
+        }
     , delta = Frame.identity
     , bounds = Library.getBounds "Player" library
     , health = 10
