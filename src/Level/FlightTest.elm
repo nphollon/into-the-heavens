@@ -4,9 +4,9 @@ import Dict
 import Color
 import Types exposing (..)
 import Library
-import Math.Vector as Vector
-import Math.Quaternion as Quaternion
-import Math.Frame as Frame
+import Vector as Vector
+import Quaternion as Quaternion
+import Frame as Frame
 import Graphics.Material as Material
 
 
@@ -24,7 +24,7 @@ data library =
                     { position = Vector.vector 0 0 0
                     , orientation = Quaternion.rotateX (turns 0.3)
                     }
-                , bounds = Library.getBounds "Cage" library
+                , bounds = Library.getBounds "Icostar" library
                 , health = 5
                 , ai =
                     Dumb

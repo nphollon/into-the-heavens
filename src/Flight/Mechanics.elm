@@ -1,9 +1,9 @@
-module Flight.Mechanics exposing (evolveObject, glide, repeat, drain, timeDelta, playerId)
+module Flight.Mechanics exposing (evolveObject, glide, repeat, drain, timeDelta, playerId, position, velocity, orientation, angVelocity, composeDelta)
 
 import Types exposing (..)
-import Math.Vector as Vector
-import Math.Quaternion as Quaternion
-import Math.Frame exposing (Frame)
+import Vector exposing (Vector)
+import Quaternion exposing (Quaternion)
+import Frame exposing (Frame)
 
 
 evolveObject : (Body -> Frame) -> Body -> Body
@@ -21,15 +21,24 @@ glide body =
 
 nudgeFrame : Float -> Frame -> Frame -> Frame
 nudgeFrame dt deltaFrame frame =
-    { position =
-        Vector.add
-            (Vector.scale dt deltaFrame.position)
-            frame.position
-    , orientation =
-        Quaternion.compose
-            (Quaternion.scale dt deltaFrame.orientation)
-            frame.orientation
-    }
+    let
+        angle =
+            2 * acos deltaFrame.orientation.scalar
+
+        axis =
+            deltaFrame.orientation.vector
+
+        orientationOffset =
+            Quaternion.fromAxisAngle axis (dt * angle)
+                |> Maybe.withDefault deltaFrame.orientation
+    in
+        { position =
+            Vector.add
+                (Vector.scale dt deltaFrame.position)
+                frame.position
+        , orientation =
+            Quaternion.compose orientationOffset frame.orientation
+        }
 
 
 repeat : Float -> Bool -> RepeatSwitch -> RepeatSwitch
@@ -58,6 +67,37 @@ drain dt isOn switch =
             | value = min 1 (switch.value + dt / switch.recover)
             , on = False
         }
+
+
+position : Body -> Vector
+position body =
+    body.frame.position
+
+
+velocity : Body -> Vector
+velocity body =
+    body.delta.position
+
+
+orientation : Body -> Quaternion
+orientation body =
+    body.frame.orientation
+
+
+angVelocity : Body -> Quaternion
+angVelocity body =
+    body.delta.orientation
+
+
+composeDelta : Body -> Frame -> Frame
+composeDelta parent childDelta =
+    { position =
+        childDelta.position
+            |> Quaternion.rotateVector (orientation parent)
+            |> Vector.add (velocity parent)
+    , orientation =
+        childDelta.orientation
+    }
 
 
 timeDelta : Float

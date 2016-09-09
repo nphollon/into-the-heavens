@@ -9,7 +9,6 @@ import Html.App
 import Http
 import ToJson
 import Explosion
-import Cluster
 import ObjParser exposing (MeshData)
 
 
@@ -170,8 +169,7 @@ writeFile extension encode onSuccess model =
 generatePresets : Model -> ( Model, Cmd Action )
 generatePresets model =
     logCmd "Generating programmatically-defined models"
-        ([ post "background.json" (ToJson.encodeMesh Cluster.mesh)
-         , post "explosion.json" (ToJson.encodeMesh Explosion.mesh)
+        ([ post "explosion.json" (ToJson.encodeMesh Explosion.mesh)
          ]
             |> Task.sequence
             |> Task.perform HttpError (always FinalSuccess)

@@ -2,7 +2,7 @@ module ObjParser exposing (MeshData, parse)
 
 import Array exposing (Array)
 import String
-import Math.Vector as Vector exposing (Vector)
+import Vector exposing (Vector)
 
 
 type alias MeshData =

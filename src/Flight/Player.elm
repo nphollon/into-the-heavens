@@ -6,9 +6,9 @@ import WebGL exposing (Drawable, Renderable)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Types exposing (..)
 import Library
-import Math.Vector as Vector exposing (Vector)
-import Math.Quaternion as Quaternion exposing (Quaternion)
-import Math.Frame as Frame exposing (Frame)
+import Vector exposing (Vector)
+import Quaternion exposing (Quaternion)
+import Frame exposing (Frame)
 import Flight.Mechanics as Mechanics
 import Graphics.Camera as Camera
 import Graphics.Hud as Hud
@@ -144,17 +144,17 @@ accelFromAction action object =
                 |> Maybe.withDefault Quaternion.identity
 
         rotationFriction =
-            Quaternion.conjugate (Frame.angVelocity object)
+            Quaternion.conjugate (Mechanics.angVelocity object)
 
         targetSpeed =
             speed * (1 + toFloat action.thrust)
 
         targetVelocity =
             Vector.vector 0 0 -targetSpeed
-                |> Quaternion.rotateVector (Frame.orientation object)
+                |> Quaternion.rotateVector (Mechanics.orientation object)
     in
         { position =
-            Frame.velocity object
+            Mechanics.velocity object
                 |> Vector.sub targetVelocity
                 |> Vector.scale accel
         , orientation =

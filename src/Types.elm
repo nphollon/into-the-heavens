@@ -10,7 +10,7 @@ import Collision exposing (Bounds)
 import WebGL exposing (Drawable)
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Math.Matrix4 exposing (Mat4)
-import Math.Frame exposing (Frame)
+import Frame exposing (Frame)
 
 
 type alias Flags =

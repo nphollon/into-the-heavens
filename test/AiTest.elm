@@ -2,9 +2,9 @@ module AiTest exposing (testSuite)
 
 import ElmTest exposing (..)
 import Assertion exposing (..)
+import Vector as Vec exposing (Vector)
+import Quaternion exposing (Quaternion)
 import Types exposing (..)
-import Math.Vector as Vec exposing (Vector)
-import Math.Quaternion as Quaternion exposing (Quaternion)
 import Flight.Hostile as Ai
 import Collision
 

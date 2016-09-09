@@ -2,7 +2,7 @@ module SphericalTest exposing (testSuite)
 
 import ElmTest exposing (..)
 import Assertion exposing (..)
-import Math.Vector as Vec
+import Vector as Vec
 import Math.Spherical as Spherical
 
 

@@ -4,7 +4,7 @@ import Array
 import String
 import ElmTest exposing (..)
 import ObjParser exposing (MeshData, parse)
-import Math.Vector as Vector
+import Vector
 
 
 testSuite : Test

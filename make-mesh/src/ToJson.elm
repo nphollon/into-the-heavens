@@ -4,12 +4,10 @@ import Array exposing (Array)
 import String
 import Json.Encode as Json
 import Maybe.Extra as MaybeX
-import Collision exposing (Bounds)
-import Math.Vector as Vector exposing (Vector)
 import Math.Vector4 as Vec4 exposing (Vec4)
-import Math.Face as Face exposing (Face)
-import Math.Transform as Transform
 import WebGL exposing (Drawable(..))
+import Vector exposing (Vector)
+import Collision exposing (Bounds, Face)
 import ObjParser exposing (MeshData)
 
 
@@ -35,7 +33,7 @@ encodeBounds data =
 encodeModel : MeshData -> String
 encodeModel data =
     toFaces data
-        |> List.map toVertexTriangle
+        |> List.filterMap toVertexTriangle
         |> Triangle
         |> encodeMesh
 
@@ -99,7 +97,7 @@ encodeAttribute att =
 flatFace : MeshData -> Drawable Vertex
 flatFace data =
     toFaces data
-        |> List.map toVertexTriangle
+        |> List.filterMap toVertexTriangle
         |> Triangle
 
 
@@ -112,7 +110,7 @@ toFaces { vertexPositions, vertexIndexes } =
         decomposePolygon points =
             case points of
                 i :: (j :: (k :: list)) ->
-                    List.map2 (Face.face i)
+                    List.map2 (Collision.face i)
                         (j :: k :: list)
                         (k :: list)
 
@@ -123,15 +121,21 @@ toFaces { vertexPositions, vertexIndexes } =
             |> List.concatMap decomposePolygon
 
 
-toVertexTriangle : Face -> ( Vertex, Vertex, Vertex )
+toVertexTriangle : Face -> Maybe ( Vertex, Vertex, Vertex )
 toVertexTriangle face =
     let
-        normal =
-            Vector.normalize (Face.cross face)
+        cross =
+            Vector.cross
+                (Vector.sub face.q face.p)
+                (Vector.sub face.r face.p)
+
+        toTriangle normal =
+            ( toVertex face.p normal
+            , toVertex face.q normal
+            , toVertex face.r normal
+            )
     in
-        (,,) (toVertex face.p normal)
-            (toVertex face.q normal)
-            (toVertex face.r normal)
+        Maybe.map toTriangle (Vector.normalize cross)
 
 
 toVertex : Vector -> Vector -> Vertex

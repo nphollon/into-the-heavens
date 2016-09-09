@@ -5,9 +5,9 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector4 exposing (Vec4)
 import Math.Vector3 exposing (Vec3)
 import Collision
+import Frame
 import Types exposing (..)
 import Library
-import Math.Frame as Frame
 import Flight.Mechanics as Mechanics
 
 

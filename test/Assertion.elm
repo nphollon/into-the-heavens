@@ -1,8 +1,8 @@
 module Assertion exposing (..)
 
 import ElmTest exposing (..)
-import Math.Vector as Vec exposing (Vector)
-import Math.Quaternion exposing (Quaternion)
+import Vector as Vec exposing (Vector)
+import Quaternion exposing (Quaternion)
 
 
 equalFloat : Float -> Float -> Bool

@@ -1,7 +1,7 @@
 module Math.Spherical exposing (toRect, random, midpoint)
 
 import Random.Pcg as Random
-import Math.Vector as Vector exposing (Vector)
+import Vector exposing (Vector)
 
 
 toRect : Float -> Float -> Float -> Vector

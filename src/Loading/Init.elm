@@ -32,8 +32,7 @@ library : String -> Cmd Update
 library domain =
     let
         remoteMeshes =
-            [ ( "Sphere", "sphere.json" )
-            , ( "Ship", "boxy.json" )
+            [ ( "Ship", "boxy.json" )
             , ( "Missile", "sphere-eighth.json" )
             , ( "Explosion", "explosion.json" )
             , ( "Icostar", "icostar.json" )
@@ -44,11 +43,10 @@ library domain =
 
         remoteBoxes =
             [ ( "Ship", "boxy.box" )
-            , ( "Sphere", "sphere.box" )
-            , ( "Cage", "cage.box" )
+            , ( "Icostar", "icostar.box" )
             , ( "Missile", "sphere-quarter.box" )
             , ( "Bullet", "sphere-half.box" )
-            , ( "Player", "player.box" )
+            , ( "Player", "sphere-half.box" )
             , ( "Blossom", "blossom.box" )
             ]
                 |> List.map (get Collision.decode)

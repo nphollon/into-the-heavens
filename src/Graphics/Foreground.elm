@@ -5,7 +5,7 @@ import Math.Vector3 as Vec3 exposing (Vec3)
 import Color exposing (Color)
 import WebGL exposing (Drawable, Renderable, Shader)
 import Types exposing (..)
-import Math.Frame as Frame exposing (Frame)
+import Frame exposing (Frame)
 import Graphics.Material as Material
 
 

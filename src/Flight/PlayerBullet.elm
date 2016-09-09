@@ -3,10 +3,10 @@ module Flight.PlayerBullet exposing (init, update, draw)
 import Color
 import Dict exposing (Dict)
 import WebGL exposing (Renderable)
+import Frame
+import Vector
+import Quaternion
 import Types exposing (..)
-import Math.Frame as Frame
-import Math.Vector as Vector
-import Math.Quaternion as Quaternion
 import Library
 import Flight.Mechanics as Mechanics
 import Graphics.Foreground as Foreground
@@ -21,7 +21,7 @@ init library parent =
             , orientation = Quaternion.identity
             }
     , delta =
-        Frame.composeDelta parent
+        Mechanics.composeDelta parent
             { position = Vector.vector 0 0 -100
             , orientation = Quaternion.identity
             }

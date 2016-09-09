@@ -3,9 +3,9 @@ module SpawnTest exposing (testSuite)
 import ElmTest exposing (..)
 import Assertion exposing (..)
 import Random.Pcg as Random
-import Math.Vector as Vector exposing (Vector)
-import Math.Quaternion as Quaternion exposing (Quaternion)
-import Math.Frame exposing (Frame)
+import Vector exposing (Vector)
+import Quaternion exposing (Quaternion)
+import Frame exposing (Frame)
 import Flight.Engine as Spawn
 
 

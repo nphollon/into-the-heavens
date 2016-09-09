@@ -4,11 +4,11 @@ import Dict exposing (Dict)
 import List.Extra as ListX
 import Random.Pcg as Random
 import Collision exposing (Bounds)
+import Vector exposing (Vector)
+import Quaternion
+import Frame exposing (Frame)
 import Types exposing (..)
-import Math.Vector as Vector exposing (Vector)
-import Math.Quaternion as Quaternion
 import Math.Spherical as Spherical
-import Math.Frame as Frame exposing (Frame)
 import Level
 import Flight.Player as Player
 import Flight.Hostile as Hostile
@@ -29,41 +29,6 @@ update state =
 checkCollisions : GameState -> GameState
 checkCollisions model =
     let
-        collide a b =
-            Collision.collide
-                { bounds = a.bounds
-                , position = Frame.position a
-                , orientation = Frame.orientation a
-                }
-                { bounds = b.bounds
-                , position = Frame.position b
-                , orientation = Frame.orientation b
-                }
-
-        checkPair ( idA, bodyA ) ( idB, bodyB ) =
-            case ( bodyA.collisionClass, bodyB.collisionClass ) of
-                ( Scenery, Scenery ) ->
-                    []
-
-                ( Scenery, _ ) ->
-                    if collide bodyA bodyB then
-                        collideWith bodyA idB bodyB
-                    else
-                        []
-
-                ( _, Scenery ) ->
-                    if collide bodyA bodyB then
-                        collideWith bodyB idA bodyA
-                    else
-                        []
-
-                _ ->
-                    if collide bodyA bodyB then
-                        (collideWith bodyB idA bodyA)
-                            ++ (collideWith bodyA idB bodyB)
-                    else
-                        []
-
         allEffects =
             Dict.toList model.universe
                 |> ListX.selectSplit
@@ -73,6 +38,32 @@ checkCollisions model =
                     )
     in
         applyEffects allEffects model
+
+
+checkPair : ( Id, Body ) -> ( Id, Body ) -> List EngineEffect
+checkPair ( idA, bodyA ) ( idB, bodyB ) =
+    case ( bodyA.collisionClass, bodyB.collisionClass ) of
+        ( Scenery, Scenery ) ->
+            []
+
+        ( Scenery, _ ) ->
+            if Collision.collide bodyA bodyB then
+                collideWith bodyA idB bodyB
+            else
+                []
+
+        ( _, Scenery ) ->
+            if Collision.collide bodyA bodyB then
+                collideWith bodyB idA bodyA
+            else
+                []
+
+        _ ->
+            if Collision.collide bodyA bodyB then
+                (collideWith bodyB idA bodyA)
+                    ++ (collideWith bodyA idB bodyB)
+            else
+                []
 
 
 collideWith : Body -> Id -> Body -> List EngineEffect
@@ -212,7 +203,7 @@ placeAt : Random.Generator Vector -> Random.Generator Frame
 placeAt positionGenerator =
     let
         orientationFor position =
-            Frame.rotationFor (Vector.vector 0 0 1) position
+            Quaternion.rotationFor (Vector.vector 0 0 1) position
 
         place position =
             { position = position

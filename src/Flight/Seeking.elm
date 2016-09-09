@@ -3,11 +3,11 @@ module Flight.Seeking exposing (init, update, draw)
 import Dict exposing (Dict)
 import Color
 import WebGL exposing (Renderable)
+import Frame exposing (Frame)
+import Vector
+import Quaternion
 import Types exposing (..)
 import Library
-import Math.Frame as Frame exposing (Frame)
-import Math.Vector as Vector
-import Math.Quaternion as Quaternion
 import Flight.Mechanics as Mechanics
 import Graphics.Foreground as Foreground
 import Graphics.Material as Material
@@ -21,7 +21,7 @@ init library parent target =
             , orientation = Quaternion.identity
             }
     , delta =
-        Frame.composeDelta parent
+        Mechanics.composeDelta parent
             { position = Vector.vector 0 0 -30
             , orientation = Quaternion.identity
             }
@@ -57,13 +57,13 @@ accelTowards : Float -> Body -> Body -> Frame
 accelTowards scale target missile =
     let
         range =
-            Vector.sub (Frame.position target) (Frame.position missile)
+            Vector.sub (Mechanics.position target) (Mechanics.position missile)
 
         velocity =
-            Vector.sub (Frame.velocity target) (Frame.velocity missile)
+            Vector.sub (Mechanics.velocity target) (Mechanics.velocity missile)
 
         rSquared =
-            Vector.distanceSquared (Frame.position target) (Frame.position missile)
+            Vector.distanceSquared (Mechanics.position target) (Mechanics.position missile)
 
         lineOfSightRotation =
             Vector.scale (scale / rSquared) (Vector.cross range velocity)

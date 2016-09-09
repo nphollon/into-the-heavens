@@ -3,8 +3,7 @@ module Explosion exposing (mesh)
 import Array
 import WebGL exposing (Drawable(..))
 import Math.Vector4 as Vec4
-import Math.Vector as Vector exposing (Vector)
-import Math.Spherical as Spherical
+import Vector exposing (Vector)
 import ToJson exposing (Vertex)
 
 
@@ -18,7 +17,7 @@ mesh =
 toVertex : Vector -> Vertex
 toVertex position =
     { position = position
-    , normal = Vector.normalize position
+    , normal = Maybe.withDefault position (Vector.normalize position)
     }
 
 
@@ -33,6 +32,14 @@ basePoints =
                 lat =
                     degrees ((1.8 * toFloat i) - 90)
             in
-                Spherical.toRect 1 lat lon
+                toRect lat lon
         )
         |> Array.toList
+
+
+toRect : Float -> Float -> Vector
+toRect latitude longitude =
+    Vector.vector
+        (cos latitude * cos longitude)
+        (cos latitude * sin longitude)
+        (sin latitude)
