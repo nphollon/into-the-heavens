@@ -42,6 +42,7 @@ type alias Uniform =
 type alias Varying =
     { nonspecularColor : Vec3
     , specularFactor : Float
+    , displacement : Vec3
     }
 
 
@@ -95,6 +96,7 @@ phongVertex =
 
          varying vec3 nonspecularColor;
          varying float specularFactor;
+         varying vec3 displacement;
 
          void main() {
              vec4 worldFrame = placement * vec4(vertPosition, 1);
@@ -123,6 +125,8 @@ phongVertex =
              vec3 reflection = normalize(2.0 * diffuseFactor * surfaceNormal - lightDirection);
              vec3 cameraDirection = normalize(-cameraOffset.xyz);
              specularFactor = clamp(dot(reflection, cameraDirection), 0.0, 1.0);
+
+             displacement = cameraFrame.xyz;
          }
     |]
 
@@ -134,6 +138,7 @@ phongFragment =
 
         varying vec3 nonspecularColor;
         varying float specularFactor;
+        varying vec3 displacement;
 
         uniform vec3 specularReflection;
         uniform vec3 specularLight;
@@ -142,6 +147,41 @@ phongFragment =
         void main() {
             vec3 specularColor = specularReflection * specularLight * pow(specularFactor, shininess);
 
-            gl_FragColor = vec4(nonspecularColor + specularColor, 1);
+            //gl_FragColor = vec4(nonspecularColor + specularColor, 1);
+
+            float distance = length(displacement);
+            if (distance > 94.0) {
+              gl_FragColor = vec4(0, 0, 0, 0);
+
+            } else if (distance > 76.0) {
+              gl_FragColor = vec4(0.2, 0, 0, 1);
+
+            } else if (distance > 60.0) {
+              gl_FragColor = vec4(0.4, 0, 0, 1);
+
+            } else if (distance > 46.0) {
+              gl_FragColor = vec4(0.6, 0, 0, 1);
+
+            } else if (distance > 34.0) {
+              gl_FragColor = vec4(0.8, 0, 0, 1);
+
+            } else if (distance > 24.0) {
+              gl_FragColor = vec4(1, 0, 0, 1);
+
+            } else if (distance > 18.0) {
+              gl_FragColor = vec4(1, 0.2, 0.2, 1);
+
+            } else if (distance > 12.0) {
+              gl_FragColor = vec4(1, 0.4, 0.4, 1);
+
+            } else if (distance > 8.0) {
+              gl_FragColor = vec4(1, 0.6, 0.6, 1);
+
+            } else if (distance > 6.0) {
+              gl_FragColor = vec4(1, 0.8, 0.8, 1);
+
+            } else {
+              gl_FragColor = vec4(1, 1, 1, 1);
+            }
         }
     |]
