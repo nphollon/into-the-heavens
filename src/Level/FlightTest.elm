@@ -22,7 +22,7 @@ data library =
                     }
                 , delta =
                     { position = Vector.vector 0 0 0
-                    , orientation = Quaternion.rotateX (turns 0.3)
+                    , orientation = Quaternion.xRotation (turns 0.3)
                     }
                 , bounds = Library.getBounds "Icostar" library
                 , health = 5
@@ -37,7 +37,7 @@ data library =
             , ( 2
               , { frame =
                     { position = Vector.vector 5 120 40
-                    , orientation = Quaternion.rotateX (turns -0.25)
+                    , orientation = Quaternion.xRotation (turns -0.25)
                     }
                 , delta = Frame.identity
                 , bounds = Library.getBounds "Blossom" library

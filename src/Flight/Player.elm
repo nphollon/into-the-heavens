@@ -33,8 +33,8 @@ init library =
         { position = Vector.vector 0 0 0
         , orientation =
             Quaternion.compose
-                (Quaternion.rotateZ (turns 0.5))
-                (Quaternion.rotateX (turns 0.25))
+                (Quaternion.zRotation (turns 0.5))
+                (Quaternion.xRotation (turns 0.25))
         }
     , delta = Frame.identity
     , bounds = Library.getBounds "Player" library
@@ -151,7 +151,7 @@ accelFromAction action object =
 
         targetVelocity =
             Vector.vector 0 0 -targetSpeed
-                |> Quaternion.rotateVector (Mechanics.orientation object)
+                |> Quaternion.rotate (Mechanics.orientation object)
     in
         { position =
             Mechanics.velocity object

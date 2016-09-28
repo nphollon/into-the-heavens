@@ -94,7 +94,7 @@ smartAccel damping target object =
 
         targetVelocity =
             Vector.vector 0 0 -speed
-                |> Quaternion.rotateVector (Mechanics.orientation object)
+                |> Quaternion.rotate (Mechanics.orientation object)
     in
         { position =
             Mechanics.velocity object

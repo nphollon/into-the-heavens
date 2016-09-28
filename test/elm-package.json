@@ -17,8 +17,8 @@
         "elm-lang/core": "4.0.1 <= v < 5.0.0",
         "evancz/elm-http": "3.0.1 <= v < 4.0.0",
         "mgold/elm-random-pcg": "2.1.0 <= v < 3.0.0",
-        "nphollon/collision": "3.0.0 <= v < 4.0.0",
-        "nphollon/geo3d": "1.0.1 <= v < 2.0.0"
+        "nphollon/collision": "3.0.1 <= v < 4.0.0",
+        "nphollon/geo3d": "2.1.0 <= v < 3.0.0"
     },
     "elm-version": "0.17.0 <= v < 0.18.0"
 }

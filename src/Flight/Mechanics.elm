@@ -93,7 +93,7 @@ composeDelta : Body -> Frame -> Frame
 composeDelta parent childDelta =
     { position =
         childDelta.position
-            |> Quaternion.rotateVector (orientation parent)
+            |> Quaternion.rotate (orientation parent)
             |> Vector.add (velocity parent)
     , orientation =
         childDelta.orientation
